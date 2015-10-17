@@ -1,0 +1,26 @@
+<resources>
+
+    <string name="app_name">PhotoAffix BETA</string>
+    <string name="app_name_short">PhotoAffix</string>
+
+    <string name="affix_zero">Affix (0)</string>
+    <string name="affix_x">Affix (%1$d)</string>
+    <string name="clear">Clear</string>
+    <string name="stack">Stack</string>
+    <string name="stack_horizontally">Stack Horizontally</string>
+    <string name="error">Error</string>
+    <string name="affixing_your_photos">Affixing your photos…</string>
+    <string name="share">Share</string>
+    <string name="open_with">Open With…</string>
+    <string name="edit_with">Edit With…</string>
+    <string name="share_using">Share Using…</string>
+    <string name="delete">Delete</string>
+    <string name="confirm_delete">Delete this photo?</string>
+    <string name="yes">Yes</string>
+    <string name="deleting">Deleting…</string>
+    <string name="background_fill_color">Background fill color</string>
+    <string name="background_fill_color_title">Background Fill Color</string>
+    <string name="back">Back</string>
+    <string name="done">Done</string>
+
+</resources>

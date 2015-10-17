@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="button_height">56dp</dimen>
+    <dimen name="grid_padding_small">3dp</dimen>
+    <dimen name="grid_padding_large">6dp</dimen>
+    <dimen name="border_radius">3dp</dimen>
+    <dimen name="grid_circle_margin">8dp</dimen>
+    <dimen name="toolbar_elevation">4dp</dimen>
+    <dimen name="content_inset_less">12dp</dimen>
+    <dimen name="content_inset">16dp</dimen>
+    <dimen name="color_circle_view">32dp</dimen>
+    <dimen name="medium_padding">12dp</dimen>
+
+    <dimen name="content_textsize">16sp</dimen>
+
+    <dimen name="settings_control_text_margin">8dp</dimen>
+    <dimen name="settings_control_height">48dp</dimen>
+
+</resources>
