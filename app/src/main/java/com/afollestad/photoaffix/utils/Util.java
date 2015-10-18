@@ -3,6 +3,7 @@ package com.afollestad.photoaffix.utils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Looper;
 import android.util.Log;
@@ -14,6 +15,9 @@ import com.afollestad.photoaffix.R;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -81,6 +85,15 @@ public class Util {
 
     public static void unlockOrientation(Activity context) {
         context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+    }
+
+    public static InputStream openStream(Context context, Uri uri) throws FileNotFoundException {
+        if (uri == null) return null;
+        if (uri.getScheme() == null || uri.getScheme().equalsIgnoreCase("file")) {
+            return new FileInputStream(uri.getPath());
+        } else {
+            return context.getContentResolver().openInputStream(uri);
+        }
     }
 
     public static void log(String message, Object... formatArgs) {

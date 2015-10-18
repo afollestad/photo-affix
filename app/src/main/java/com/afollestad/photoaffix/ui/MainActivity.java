@@ -48,6 +48,7 @@ import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 import butterknife.Bind;
@@ -112,6 +113,29 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
 
         mStackHorizontally.setChecked(Prefs.stackHorizontally(this));
         mBgFillColor.setColor(Prefs.bgFillColor(this));
+
+        processIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        processIntent(intent);
+    }
+
+    private void processIntent(Intent intent) {
+        if (intent != null && intent.getAction().equals(Intent.ACTION_SEND_MULTIPLE)) {
+            ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+            if (uris != null && uris.size() > 0) {
+                try {
+                    loadImages(uris);
+                    process();
+                } catch (OutOfMemoryError e) {
+                    Util.showError(this, new Exception("You've run out of RAM for processing images; I'm working to improve memory usage! Sit tight while this app is in beta."));
+                    recycle(false);
+                }
+            }
+        }
     }
 
     @Override
@@ -240,7 +264,7 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
         mSelectedPhotos = mAdapter.getSelectedPhotos();
         mImages = new ArrayList<>();
         try {
-            loadImages();
+            loadImages(null);
             process();
         } catch (OutOfMemoryError e) {
             Util.showError(this, new Exception("You've run out of RAM for processing images; I'm working to improve memory usage! Sit tight while this app is in beta."));
@@ -272,11 +296,29 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
         mBgFillColor.setColor(selectedColor);
     }
 
-    private void loadImages() {
-        // Loads raw Bitmaps for all selected photos
-        for (Photo photo : mSelectedPhotos) {
-            Bitmap bm = BitmapFactory.decodeFile(photo._data);
-            mImages.add(bm);
+    private void loadImages(ArrayList<Uri> uris) {
+        if (mImages == null)
+            mImages = new ArrayList<>();
+        if (uris != null) {
+            // Loads raw Bitmaps for photos received through intent
+            for (Uri uri : uris) {
+                InputStream is = null;
+                try {
+                    is = Util.openStream(this, uri);
+                    Bitmap bm = BitmapFactory.decodeStream(is);
+                    mImages.add(bm);
+                } catch (Exception e) {
+                    Util.closeQuietely(is);
+                    Util.showError(this, e);
+                    break;
+                }
+            }
+        } else {
+            // Loads raw Bitmaps for all selected photos
+            for (Photo photo : mSelectedPhotos) {
+                Bitmap bm = BitmapFactory.decodeFile(photo._data);
+                mImages.add(bm);
+            }
         }
     }
 
