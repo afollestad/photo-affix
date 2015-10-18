@@ -16,6 +16,7 @@ import android.os.Looper;
 import android.os.PersistableBundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
+import android.support.annotation.Size;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +31,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.afollestad.inquiry.Inquiry;
 import com.afollestad.inquiry.callbacks.GetCallback;
@@ -80,8 +82,8 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
     ColorCircleView mBgFillColor;
 
     private PhotoGridAdapter mAdapter;
-    private ArrayList<Bitmap> mImages;
     private Photo[] mSelectedPhotos;
+    private int mTraverseIndex;
 
     private int mOriginalSettingsFrameHeight = -1;
     private ValueAnimator mSettingsFrameAnimator;
@@ -126,14 +128,13 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
     private void processIntent(Intent intent) {
         if (intent != null && intent.getAction().equals(Intent.ACTION_SEND_MULTIPLE)) {
             ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-            if (uris != null && uris.size() > 0) {
-                try {
-                    loadImages(uris);
-                    process();
-                } catch (OutOfMemoryError e) {
-                    Util.showError(this, new Exception("You've run out of RAM for processing images; I'm working to improve memory usage! Sit tight while this app is in beta."));
-                    recycle(false);
-                }
+            if (uris != null && uris.size() > 1) {
+                mSelectedPhotos = new Photo[uris.size()];
+                for (int i = 0; i < uris.size(); i++)
+                    mSelectedPhotos[i] = new Photo(uris.get(i));
+                mAffixButton.performClick();
+            } else {
+                Toast.makeText(this, R.string.need_two_or_more, Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -200,10 +201,7 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
             });
             return;
         }
-        if (mImages != null) {
-            for (Bitmap bm : mImages)
-                if (!bm.isRecycled()) bm.recycle();
-        }
+        // TODO?
         if (reload) {
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -262,9 +260,7 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
     public void onClickAffixButton(View v) {
         v.setEnabled(false);
         mSelectedPhotos = mAdapter.getSelectedPhotos();
-        mImages = new ArrayList<>();
         try {
-            loadImages(null);
             process();
         } catch (OutOfMemoryError e) {
             Util.showError(this, new Exception("You've run out of RAM for processing images; I'm working to improve memory usage! Sit tight while this app is in beta."));
@@ -296,30 +292,42 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
         mBgFillColor.setColor(selectedColor);
     }
 
-    private void loadImages(ArrayList<Uri> uris) {
-        if (mImages == null)
-            mImages = new ArrayList<>();
-        if (uris != null) {
-            // Loads raw Bitmaps for photos received through intent
-            for (Uri uri : uris) {
-                InputStream is = null;
-                try {
-                    is = Util.openStream(this, uri);
-                    Bitmap bm = BitmapFactory.decodeStream(is);
-                    mImages.add(bm);
-                } catch (Exception e) {
-                    Util.closeQuietely(is);
-                    Util.showError(this, e);
-                    break;
-                }
-            }
-        } else {
-            // Loads raw Bitmaps for all selected photos
-            for (Photo photo : mSelectedPhotos) {
-                Bitmap bm = BitmapFactory.decodeFile(photo._data);
-                mImages.add(bm);
-            }
+    @Size(2)
+    private int[] getNextBitmapSize() {
+        mTraverseIndex++;
+        if (mTraverseIndex > mSelectedPhotos.length - 1)
+            return null;
+        Photo nextPhoto = mSelectedPhotos[mTraverseIndex];
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        InputStream is = null;
+        try {
+            is = Util.openStream(this, nextPhoto.getUri());
+            BitmapFactory.decodeStream(is, null, options);
+        } catch (Exception e) {
+            Util.showError(this, e);
+        } finally {
+            Util.closeQuietely(is);
         }
+        return new int[]{options.outWidth, options.outHeight};
+    }
+
+    private Bitmap getNextBitmap() {
+        mTraverseIndex++;
+        if (mTraverseIndex > mSelectedPhotos.length - 1)
+            return null;
+        Photo nextPhoto = mSelectedPhotos[mTraverseIndex];
+        InputStream is = null;
+        Bitmap bm = null;
+        try {
+            is = Util.openStream(this, nextPhoto.getUri());
+            bm = BitmapFactory.decodeStream(is);
+        } catch (Exception e) {
+            Util.showError(this, e);
+        } finally {
+            Util.closeQuietely(is);
+        }
+        return bm;
     }
 
     private void process() {
@@ -334,10 +342,13 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
             // The height of the resulting image will be the sum of all the selected images' heights
             int totalWidth = 0;
             int maxHeight = -1;
-            for (Bitmap bm : mImages) {
-                totalWidth += bm.getWidth();
-                if (bm.getHeight() > maxHeight)
-                    maxHeight = bm.getHeight();
+            // Traverse all selected images and load in their sizes
+            mTraverseIndex = -1;
+            int[] size;
+            while ((size = getNextBitmapSize()) != null) {
+                totalWidth += size[0];
+                if (size[1] > maxHeight)
+                    maxHeight = size[1];
             }
             Util.log("Total width = %d, max height = %d", maxHeight, totalWidth);
             result = Bitmap.createBitmap(totalWidth, maxHeight, Bitmap.Config.ARGB_8888);
@@ -347,10 +358,13 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
             // The width of the resulting image will be the sum of all the selected images' widths
             int totalHeight = 0;
             int maxWidth = -1;
-            for (Bitmap bm : mImages) {
-                totalHeight += bm.getHeight();
-                if (bm.getWidth() > maxWidth)
-                    maxWidth = bm.getWidth();
+            // Traverse all selected images and load in their sizes
+            mTraverseIndex = -1;
+            int[] size;
+            while ((size = getNextBitmapSize()) != null) {
+                totalHeight += size[1];
+                if (size[0] > maxWidth)
+                    maxWidth = size[0];
             }
             Util.log("Max width = %d, total height = %d", maxWidth, totalHeight);
             result = Bitmap.createBitmap(maxWidth, totalHeight, Bitmap.Config.ARGB_8888);
@@ -376,7 +390,10 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
                 if (horizontal) {
                     // Keep track of X position of the left of the next image to be drawn
                     int currentX = 0;
-                    for (Bitmap bm : mImages) {
+                    // Traverse all selected images and load in their raw image data
+                    mTraverseIndex = -1;
+                    Bitmap bm;
+                    while ((bm = getNextBitmap()) != null) {
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
                         Util.log("LEFT is at %d...", currentX);
                         // Padding is the offset used to vertically center smaller images
@@ -387,11 +404,16 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
                         resultCanvas.drawBitmap(bm, currentX, padding, paint);
                         // Right of this image is left of the next
                         currentX += bm.getWidth();
+                        // Recycle so it doesn't take up any memory
+                        bm.recycle();
                     }
                 } else {
                     // Keep track of Y position of the top of the next image to be drawn
                     int currentY = 0;
-                    for (Bitmap bm : mImages) {
+                    // Traverse all selected images and load in their raw image data
+                    mTraverseIndex = -1;
+                    Bitmap bm;
+                    while ((bm = getNextBitmap()) != null) {
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
                         Util.log("TOP is at %d...", currentY);
                         // Padding is the offset used to horizontally center smaller images
@@ -402,6 +424,8 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
                         resultCanvas.drawBitmap(bm, padding, currentY, paint);
                         // Bottom of this image is top of the next
                         currentY += bm.getHeight();
+                        // Recycle so it doesn't take up any memory
+                        bm.recycle();
                     }
                 }
 

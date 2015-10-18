@@ -23,5 +23,6 @@
     <string name="back">Back</string>
     <string name="done">Done</string>
     <string name="no_photos_found">No local photos were found!</string>
+    <string name="need_two_or_more">You need two or more images!</string>
 
 </resources>
