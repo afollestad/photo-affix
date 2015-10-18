@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
@@ -342,7 +343,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (size[1] > maxHeight)
                     maxHeight = size[1];
             }
-            Util.log("Total width = %d, max height = %d", maxHeight, totalWidth);
+            Util.log("Total width = %d, max height = %d", totalWidth, maxHeight);
             result = Bitmap.createBitmap(totalWidth, maxHeight, Bitmap.Config.ARGB_8888);
         } else {
             Util.log("Vertically stacking");
@@ -378,7 +379,9 @@ public class MainActivity extends AppCompatActivity implements
         new Thread(new Runnable() {
             @Override
             public void run() {
-                // Perform affixation
+                // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
+                Rect dstRect = new Rect(0, 0, 10, 10);
+
                 if (horizontal) {
                     // Keep track of X position of the left of the next image to be drawn
                     int currentX = 0;
@@ -387,13 +390,24 @@ public class MainActivity extends AppCompatActivity implements
                     Bitmap bm;
                     while ((bm = getNextBitmap()) != null) {
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
-                        Util.log("LEFT is at %d...", currentX);
                         // Padding is the offset used to vertically center smaller images
                         int padding = result.getHeight() - bm.getHeight();
                         if (padding > 0) padding /= 2;
                         Util.log("PADDING = %d", padding);
+
                         // Draw image vertically centered to the right of the last
-                        resultCanvas.drawBitmap(bm, currentX, padding, paint);
+                        final int dstHeight = bm.getHeight() - (padding * 2);
+                        final float dstRatio = (float) bm.getWidth() / (float) bm.getHeight();
+                        final int dstWidth = (int) (dstHeight * dstRatio);
+
+                        dstRect.left = currentX;
+                        dstRect.right = currentX + dstWidth;
+                        dstRect.top = padding;
+                        dstRect.bottom = bm.getHeight() - padding;
+                        Util.log("Left = %d, right = %d, top = %d, bottom = %d",
+                                dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
+                        resultCanvas.drawBitmap(bm, null, dstRect, paint);
+
                         // Right of this image is left of the next
                         currentX += bm.getWidth();
                         // Recycle so it doesn't take up any memory
@@ -412,8 +426,20 @@ public class MainActivity extends AppCompatActivity implements
                         int padding = result.getWidth() - bm.getWidth();
                         if (padding > 0) padding /= 2;
                         Util.log("PADDING = %d", padding);
+
                         // Draw image horizontally centered below the last
-                        resultCanvas.drawBitmap(bm, padding, currentY, paint);
+                        final int dstWidth = bm.getWidth() - (padding * 2);
+                        final float dstRatio = (float) bm.getWidth() / (float) bm.getHeight();
+                        final int dstHeight = (int) (dstWidth / dstRatio);
+
+                        dstRect.left = padding;
+                        dstRect.right = bm.getWidth() - padding;
+                        dstRect.top = currentY;
+                        dstRect.bottom = currentY + dstHeight;
+                        Util.log("Left = %d, right = %d, top = %d, bottom = %d",
+                                dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
+                        resultCanvas.drawBitmap(bm, null, dstRect, paint);
+
                         // Bottom of this image is top of the next
                         currentY += bm.getHeight();
                         // Recycle so it doesn't take up any memory
