@@ -19,7 +19,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Size;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -111,11 +113,16 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        mList.setLayoutManager(new GridLayoutManager(this,
-                getResources().getInteger(R.integer.grid_width)));
+        GridLayoutManager layoutManager = new GridLayoutManager(
+                this, getResources().getInteger(R.integer.grid_width));
+        mList.setLayoutManager(layoutManager);
         mAdapter = new PhotoGridAdapter(this);
         mAdapter.restoreInstanceState(savedInstanceState);
         mList.setAdapter(mAdapter);
+
+        DefaultItemAnimator animator = new DefaultItemAnimator();
+        animator.setSupportsChangeAnimations(false);
+        mList.setItemAnimator(animator);
 
         mStackHorizontally.setChecked(Prefs.stackHorizontally(this));
         mBgFillColor.setColor(Prefs.bgFillColor(this));
@@ -237,7 +244,7 @@ public class MainActivity extends AppCompatActivity implements
             mSettingsFrameAnimator = ValueAnimator.ofObject(new HeightEvaluator(mSettingsFrame), mOriginalSettingsFrameHeight, 0);
             mSettingsFrameAnimator.addListener(new ViewHideAnimationListener(mSettingsFrame));
         }
-        mSettingsFrameAnimator.setInterpolator(new DecelerateInterpolator());
+        mSettingsFrameAnimator.setInterpolator(new FastOutSlowInInterpolator());
         mSettingsFrameAnimator.setDuration(200);
         mSettingsFrameAnimator.start();
     }
