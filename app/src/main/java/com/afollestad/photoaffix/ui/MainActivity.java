@@ -277,8 +277,8 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
         Util.lockOrientation(this);
 
         final Bitmap result;
-        final boolean horizonal = mStackHorizontally.isChecked();
-        if (horizonal) {
+        final boolean horizontal = mStackHorizontally.isChecked();
+        if (horizontal) {
             Util.log("Horizontally stacking");
             // The width of the resulting image will be the largest width of the selected images
             // The height of the resulting image will be the sum of all the selected images' heights
@@ -321,7 +321,7 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
             @Override
             public void run() {
                 // Perform affixation
-                if (horizonal) {
+                if (horizontal) {
                     // Keep track of X position of the left of the next image to be drawn
                     int currentX = 0;
                     for (Bitmap bm : mImages) {
