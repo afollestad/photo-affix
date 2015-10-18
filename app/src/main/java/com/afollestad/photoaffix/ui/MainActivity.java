@@ -44,6 +44,8 @@ import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
 import com.afollestad.photoaffix.views.ColorCircleView;
 
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -83,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 

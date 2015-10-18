@@ -26,6 +26,10 @@
             android:label=""
             android:theme="@style/AppTheme.Black" />
 
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="e9b2b6339277beb481a9c658b72cd0e4c714e0cb" />
     </application>
 
+    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
