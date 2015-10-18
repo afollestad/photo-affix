@@ -376,11 +376,17 @@ public class MainActivity extends AppCompatActivity implements
                 .cancelable(false)
                 .show();
 
+        int[] imagePadding = Prefs.imagePadding(MainActivity.this);
+        final int PADDING_LEFT = imagePadding[0];
+        final int PADDING_TOP = imagePadding[1];
+        final int PADDING_RIGHT = imagePadding[2];
+        final int PADDING_BOTTOM = imagePadding[3];
+
         new Thread(new Runnable() {
             @Override
             public void run() {
                 // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
-                Rect dstRect = new Rect(0, 0, 10, 10);
+                final Rect dstRect = new Rect(0, 0, 10, 10);
 
                 if (horizontal) {
                     // Keep track of X position of the left of the next image to be drawn
@@ -404,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements
                         dstRect.right = currentX + dstWidth;
                         dstRect.top = padding;
                         dstRect.bottom = bm.getHeight() - padding;
-                        Util.log("Left = %d, right = %d, top = %d, bottom = %d",
+                        Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
@@ -436,7 +442,7 @@ public class MainActivity extends AppCompatActivity implements
                         dstRect.right = bm.getWidth() - padding;
                         dstRect.top = currentY;
                         dstRect.bottom = currentY + dstHeight;
-                        Util.log("Left = %d, right = %d, top = %d, bottom = %d",
+                        Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
