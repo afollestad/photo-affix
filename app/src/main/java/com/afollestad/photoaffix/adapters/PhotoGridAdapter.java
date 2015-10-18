@@ -96,7 +96,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
     @Override
     public void onBindViewHolder(PhotoViewHolder holder, int position) {
         Glide.with(mContext)
-                .load(new File(mPhotos[position]._data))
+                .load(mPhotos[position].getUri())
                 .into(holder.image);
         if (mSelectedIndices.contains(position)) {
             holder.check.setVisibility(View.VISIBLE);
