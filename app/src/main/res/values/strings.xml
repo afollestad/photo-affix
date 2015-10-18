@@ -22,5 +22,6 @@
     <string name="background_fill_color_title">Background Fill Color</string>
     <string name="back">Back</string>
     <string name="done">Done</string>
+    <string name="no_photos_found">No local photos were found!</string>
 
 </resources>

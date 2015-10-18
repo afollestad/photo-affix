@@ -29,6 +29,7 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.afollestad.inquiry.Inquiry;
 import com.afollestad.inquiry.callbacks.GetCallback;
@@ -43,9 +44,8 @@ import com.afollestad.photoaffix.data.Photo;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
 import com.afollestad.photoaffix.views.ColorCircleView;
-
 import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.fabric.sdk.android.Fabric;
 
 /**
  * @author Aidan Follestad (afollestad)
@@ -69,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
     Button mAffixButton;
     @Bind(R.id.settingsFrame)
     ViewGroup mSettingsFrame;
+    @Bind(R.id.empty)
+    TextView mEmpty;
 
     @Bind(R.id.stackHorizontallySwitch)
     CheckBox mStackHorizontally;
@@ -137,6 +140,8 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
                     @Override
                     public void result(Photo[] photos) {
                         mAdapter.setPhotos(photos);
+                        mEmpty.setVisibility(photos == null || photos.length == 0 ?
+                                View.VISIBLE : View.GONE);
                     }
                 });
     }

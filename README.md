@@ -2,7 +2,8 @@
 
 ![Showcase](https://raw.githubusercontent.com/afollestad/photo-affix/master/art/demoshowcase.jpg)
 
-This app is still in beta! You can [download the APK](https://github.com/afollestad/photo-affix/raw/master/apk/PhotoAffix.apk) to try it out!
+This app is still in beta! You can [download the APK](https://github.com/afollestad/photo-affix/raw/master/apk/PhotoAffix.apk) 
+to try it out. You can also [opt-in to beta testing on Google Play](https://play.google.com/apps/testing/com.afollestad.photoaffix). 
 
 I commonly use [Screener](https://play.google.com/store/apps/details?id=de.toastcode.screener) to make
 device frame art, and I put the results side by side to make one showcase image for apps. PhotoAffix will help
