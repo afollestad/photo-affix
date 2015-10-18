@@ -4,11 +4,13 @@ import android.content.Intent;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -30,7 +32,7 @@ import uk.co.senab.photoview.PhotoViewAttacher;
 /**
  * @author Aidan Follestad (afollestad)
  */
-public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener {
+public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener, PhotoViewAttacher.OnPhotoTapListener {
 
     @Bind(R.id.appbar_toolbar)
     Toolbar mToolbar;
@@ -40,6 +42,7 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
     ProgressBar mProgress;
 
     private PhotoViewAttacher mAttacher;
+    private ViewPropertyAnimator mToolbarFader;
 
     private final SimpleTarget<GlideDrawable> mTarget = new SimpleTarget<GlideDrawable>() {
         @Override
@@ -67,9 +70,17 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
         });
 
         mAttacher = new PhotoViewAttacher(mImage);
+        mAttacher.setOnPhotoTapListener(this);
         Glide.with(this)
                 .load(new File(getIntent().getData().getPath()))
                 .into(mTarget);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                onPhotoTap(null, 0f, 0f);
+            }
+        }, 2000);
     }
 
     @Override
@@ -137,5 +148,19 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
                         finish();
                     }
                 });
+    }
+
+    @Override
+    public void onPhotoTap(View view, float x, float y) {
+        if (mToolbarFader != null)
+            mToolbarFader.cancel();
+        if (mToolbar == null) return;
+        mToolbarFader = mToolbar.animate();
+        if (mToolbar.getAlpha() > 0f) {
+            mToolbarFader.alpha(0f);
+        } else {
+            mToolbarFader.alpha(1f);
+        }
+        mToolbarFader.setDuration(250).start();
     }
 }

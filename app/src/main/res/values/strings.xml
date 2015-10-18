@@ -24,8 +24,8 @@
     <string name="done">Done</string>
     <string name="no_photos_found">No local photos were found!</string>
     <string name="need_two_or_more">You need two or more images!</string>
-    <string name="image_padding_x">Image padding (%1$d, %2$d, %3$d, %4$d)</string>
-    <string name="image_padding">Image Padding</string>
+    <string name="image_padding_x">Image spacing (%1$d, %2$d, %3$d, %4$d)</string>
+    <string name="image_padding">Image Spacing</string>
     <string name="next">Next</string>
     <string name="defaults">Defaults</string>
 
