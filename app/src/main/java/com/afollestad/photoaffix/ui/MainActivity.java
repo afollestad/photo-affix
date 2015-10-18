@@ -309,6 +309,8 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
         final Canvas resultCanvas = new Canvas(result);
         final Paint paint = new Paint();
         paint.setAntiAlias(true);
+
+        // Fill the canvas (blank image) with the user's selected background fill color
         resultCanvas.drawColor(Prefs.bgFillColor(this));
 
         final MaterialDialog progress = new MaterialDialog.Builder(this)
