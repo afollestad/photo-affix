@@ -41,7 +41,7 @@ public class ColorCircleView extends View {
 
     private void init() {
         setWillNotDraw(false);
-        mCircleRadius = (int) getResources().getDimension(R.dimen.border_radius);
+        mCircleRadius = (int) getResources().getDimension(R.dimen.circle_border_radius);
 
         mFillPaint = new Paint();
         mFillPaint.setAntiAlias(true);

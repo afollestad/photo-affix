@@ -42,6 +42,7 @@ import com.afollestad.photoaffix.adapters.SelectionCallback;
 import com.afollestad.photoaffix.animation.HeightEvaluator;
 import com.afollestad.photoaffix.animation.ViewHideAnimationListener;
 import com.afollestad.photoaffix.data.Photo;
+import com.afollestad.photoaffix.dialogs.ImagePaddingDialog;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
 import com.afollestad.photoaffix.views.ColorCircleView;
@@ -60,7 +61,8 @@ import io.fabric.sdk.android.Fabric;
 /**
  * @author Aidan Follestad (afollestad)
  */
-public class MainActivity extends AppCompatActivity implements SelectionCallback, ColorChooserDialog.ColorCallback {
+public class MainActivity extends AppCompatActivity implements
+        SelectionCallback, ColorChooserDialog.ColorCallback, ImagePaddingDialog.PaddingCallback {
 
     private static final int PERMISSION_RC = 69;
 
@@ -79,6 +81,8 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
     CheckBox mStackHorizontally;
     @Bind(R.id.bgFillColorCircle)
     ColorCircleView mBgFillColor;
+    @Bind(R.id.imagePaddingLabel)
+    TextView mImagePaddingLabel;
 
     private PhotoGridAdapter mAdapter;
     private Photo[] mSelectedPhotos;
@@ -114,6 +118,9 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
 
         mStackHorizontally.setChecked(Prefs.stackHorizontally(this));
         mBgFillColor.setColor(Prefs.bgFillColor(this));
+        final int[] padding = Prefs.imagePadding(this);
+        mImagePaddingLabel.setText(getString(R.string.image_padding_x,
+                padding[0], padding[1], padding[2], padding[3]));
 
         processIntent(getIntent());
     }
@@ -245,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
         v.setEnabled(true);
     }
 
-    @OnClick({R.id.settingStackHorizontally, R.id.settingBgFillColor})
+    @OnClick({R.id.settingStackHorizontally, R.id.settingBgFillColor, R.id.settingImagePadding})
     public void onClickSetting(View view) {
         switch (view.getId()) {
             case R.id.settingStackHorizontally:
@@ -259,6 +266,9 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
                         .preselect(Prefs.bgFillColor(this))
                         .show();
                 break;
+            case R.id.settingImagePadding:
+                new ImagePaddingDialog().show(getFragmentManager(), "[IMAGE_PADDING_DIALOG]");
+                break;
         }
     }
 
@@ -266,6 +276,12 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
     public void onColorSelection(@NonNull ColorChooserDialog colorChooserDialog, @ColorInt int selectedColor) {
         Prefs.bgFillColor(this, selectedColor);
         mBgFillColor.setColor(selectedColor);
+    }
+
+    @Override
+    public void onPaddingChanged(int left, int top, int right, int bottom) {
+        Prefs.imagePadding(this, left, top, right, bottom);
+        mImagePaddingLabel.setText(getString(R.string.image_padding_x, left, top, right, bottom));
     }
 
     @Size(2)

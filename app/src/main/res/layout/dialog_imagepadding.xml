@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="@dimen/content_inset_less"
+    android:paddingEnd="@dimen/md_title_frame_margin_bottom"
+    android:paddingStart="@dimen/md_title_frame_margin_bottom"
+    android:paddingTop="@dimen/grid_circle_margin">
+
+    <EditText
+        android:id="@+id/paddingLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center"
+        android:hint="0"
+        android:inputType="number"
+        android:maxLength="2"
+        android:minWidth="36dp"
+        android:textColor="?android:textColorPrimary"
+        android:textColorHint="?android:textColorSecondary"
+        android:textSize="@dimen/header_textsize"
+        tools:ignore="HardcodedText" />
+
+    <RelativeLayout
+        android:id="@+id/visualizerFrame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_toEndOf="@+id/paddingLeft"
+        android:layout_toStartOf="@+id/paddingRight">
+
+        <EditText
+            android:id="@+id/paddingTop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="4dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:hint="0"
+            android:inputType="number"
+            android:maxLength="2"
+            android:minWidth="36dp"
+            android:textColor="?android:textColorPrimary"
+            android:textColorHint="?android:textColorSecondary"
+            android:textSize="@dimen/header_textsize"
+            tools:ignore="HardcodedText" />
+
+        <com.afollestad.photoaffix.views.PaddingVisualizerView
+            android:id="@+id/visualizer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/paddingTop" />
+
+        <EditText
+            android:id="@+id/paddingBottom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/visualizer"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:hint="0"
+            android:inputType="number"
+            android:maxLength="2"
+            android:minWidth="36dp"
+            android:textColor="?android:textColorPrimary"
+            android:textColorHint="?android:textColorSecondary"
+            android:textSize="@dimen/header_textsize"
+            tools:ignore="HardcodedText" />
+
+    </RelativeLayout>
+
+    <EditText
+        android:id="@+id/paddingRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center"
+        android:hint="0"
+        android:inputType="number"
+        android:maxLength="2"
+        android:minWidth="36dp"
+        android:textColor="?android:textColorPrimary"
+        android:textColorHint="?android:textColorSecondary"
+        android:textSize="@dimen/header_textsize"
+        tools:ignore="HardcodedText" />
+
+</RelativeLayout>

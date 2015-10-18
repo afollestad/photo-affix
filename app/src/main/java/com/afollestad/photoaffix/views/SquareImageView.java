@@ -39,7 +39,7 @@ public class SquareImageView extends ImageView {
 
     private void init() {
         int mAccentColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-        mBorderRadius = (int) getResources().getDimension(R.dimen.border_radius);
+        mBorderRadius = (int) getResources().getDimension(R.dimen.circle_border_radius);
         mEdgePaint = new Paint();
         mEdgePaint.setAntiAlias(true);
         mEdgePaint.setStyle(Paint.Style.STROKE);

@@ -4,7 +4,8 @@
     <dimen name="button_height">56dp</dimen>
     <dimen name="grid_padding_small">3dp</dimen>
     <dimen name="grid_padding_large">6dp</dimen>
-    <dimen name="border_radius">3dp</dimen>
+    <dimen name="circle_border_radius">3dp</dimen>
+    <dimen name="default_square_border_radius">1dp</dimen>
     <dimen name="grid_circle_margin">8dp</dimen>
     <dimen name="toolbar_elevation">4dp</dimen>
     <dimen name="content_inset_less">12dp</dimen>
