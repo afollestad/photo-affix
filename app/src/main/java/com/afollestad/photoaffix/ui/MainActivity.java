@@ -11,7 +11,6 @@ import android.graphics.Paint;
 import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Looper;
 import android.os.PersistableBundle;
 import android.support.annotation.ColorInt;
@@ -188,28 +187,6 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
     protected void onPause() {
         super.onPause();
         Inquiry.deinit();
-        recycle(false);
-    }
-
-    public void recycle(final boolean reload) {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    recycle(reload);
-                }
-            });
-            return;
-        }
-        // TODO?
-        if (reload) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    refresh();
-                }
-            }, 1000);
-        }
     }
 
     public void clearSelection() {
@@ -264,7 +241,6 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
             process();
         } catch (OutOfMemoryError e) {
             Util.showError(this, new Exception("You've run out of RAM for processing images; I'm working to improve memory usage! Sit tight while this app is in beta."));
-            recycle(false);
         }
         v.setEnabled(true);
     }
@@ -456,8 +432,6 @@ public class MainActivity extends AppCompatActivity implements SelectionCallback
 
     private void done(File file) {
         Util.log("Done");
-        // Recycle all the individual loaded images
-        recycle(true);
         // Clear selection
         clearSelection();
         // Unlock orientation so Activity can rotate again
