@@ -39,6 +39,7 @@ import com.afollestad.inquiry.Inquiry;
 import com.afollestad.inquiry.callbacks.GetCallback;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
+import com.afollestad.photoaffix.BuildConfig;
 import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.adapters.PhotoGridAdapter;
 import com.afollestad.photoaffix.adapters.SelectionCallback;
@@ -97,7 +98,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
+        if(!BuildConfig.DEBUG) {
+            Fabric.with(this, new Crashlytics());
+        }
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
