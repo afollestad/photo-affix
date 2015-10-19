@@ -85,7 +85,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/settings_control_text_margin"
             android:fontFamily="sans-serif-light"
-            android:text="@string/image_padding_x"
+            android:text="@string/image_spacing_x"
             android:textColor="@android:color/white"
             android:textSize="@dimen/content_textsize" />
 

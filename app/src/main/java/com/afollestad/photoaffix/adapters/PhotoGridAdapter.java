@@ -98,6 +98,14 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
                     }
                 }
             }
+            if (max > -1) {
+                for (int i = from + 1; i <= max; i++) {
+                    if (mSelectedIndices.contains(i)) {
+                        mSelectedIndices.remove((Integer) i);
+                        notifyItemChanged(i);
+                    }
+                }
+            }
         } else {
             // When selecting from one to next items
             for (int i = from; i <= to; i++) {
@@ -110,6 +118,14 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
                 // Unselect items that were selected during this drag but no longer are
                 for (int i = to + 1; i <= max; i++) {
                     if (i == from) continue;
+                    if (mSelectedIndices.contains(i)) {
+                        mSelectedIndices.remove((Integer) i);
+                        notifyItemChanged(i);
+                    }
+                }
+            }
+            if (min > -1) {
+                for (int i = min; i < from; i++) {
                     if (mSelectedIndices.contains(i)) {
                         mSelectedIndices.remove((Integer) i);
                         notifyItemChanged(i);

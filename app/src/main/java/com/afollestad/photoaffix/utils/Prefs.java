@@ -36,23 +36,19 @@ public class Prefs {
                 .putInt("bg_fill_color", newValue).commit();
     }
 
-    @Size(4)
-    public static int[] imagePadding(Context context) {
+    @Size(2)
+    public static int[] imageSpacing(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
         return new int[]{
-                prefs.getInt("image_padding_left", 0),
-                prefs.getInt("image_padding_top", 0),
-                prefs.getInt("image_padding_right", 0),
-                prefs.getInt("image_padding_bottom", 0)
+                prefs.getInt("image_spacing_horizontal", 0),
+                prefs.getInt("image_spacing_vertical", 0),
         };
     }
 
-    public static void imagePadding(Context context, int left, int top, int right, int bottom) {
+    public static void imageSpacing(Context context, int horizontal, int vertical) {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putInt("image_padding_left", left)
-                .putInt("image_padding_top", top)
-                .putInt("image_padding_right", right)
-                .putInt("image_padding_bottom", bottom)
+                .putInt("image_spacing_horizontal", horizontal)
+                .putInt("image_spacing_vertical", vertical)
                 .commit();
     }
 }

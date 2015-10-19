@@ -44,7 +44,7 @@ import com.afollestad.photoaffix.adapters.SelectionCallback;
 import com.afollestad.photoaffix.animation.HeightEvaluator;
 import com.afollestad.photoaffix.animation.ViewHideAnimationListener;
 import com.afollestad.photoaffix.data.Photo;
-import com.afollestad.photoaffix.dialogs.ImagePaddingDialog;
+import com.afollestad.photoaffix.dialogs.ImageSpacingDialog;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
 import com.afollestad.photoaffix.views.ColorCircleView;
@@ -65,7 +65,7 @@ import io.fabric.sdk.android.Fabric;
  * @author Aidan Follestad (afollestad)
  */
 public class MainActivity extends AppCompatActivity implements
-        SelectionCallback, ColorChooserDialog.ColorCallback, ImagePaddingDialog.PaddingCallback, DragSelectRecyclerView.DragListener {
+        SelectionCallback, ColorChooserDialog.ColorCallback, ImageSpacingDialog.SpacingCallback, DragSelectRecyclerView.DragListener {
 
     private static final int PERMISSION_RC = 69;
 
@@ -129,9 +129,8 @@ public class MainActivity extends AppCompatActivity implements
 
         mStackHorizontally.setChecked(Prefs.stackHorizontally(this));
         mBgFillColor.setColor(Prefs.bgFillColor(this));
-        final int[] padding = Prefs.imagePadding(this);
-        mImagePaddingLabel.setText(getString(R.string.image_padding_x,
-                padding[0], padding[1], padding[2], padding[3]));
+        final int[] padding = Prefs.imageSpacing(this);
+        mImagePaddingLabel.setText(getString(R.string.image_spacing_x, padding[0], padding[1]));
 
         processIntent(getIntent());
     }
@@ -279,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements
                         .show();
                 break;
             case R.id.settingImagePadding:
-                new ImagePaddingDialog().show(getFragmentManager(), "[IMAGE_PADDING_DIALOG]");
+                new ImageSpacingDialog().show(getFragmentManager(), "[IMAGE_PADDING_DIALOG]");
                 break;
         }
     }
@@ -291,9 +290,9 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onPaddingChanged(int left, int top, int right, int bottom) {
-        Prefs.imagePadding(this, left, top, right, bottom);
-        mImagePaddingLabel.setText(getString(R.string.image_padding_x, left, top, right, bottom));
+    public void onSpacingChanged(int horizontal, int vertical) {
+        Prefs.imageSpacing(this, horizontal, vertical);
+        mImagePaddingLabel.setText(getString(R.string.image_spacing_x, horizontal, vertical));
     }
 
     @Size(2)
@@ -340,11 +339,9 @@ public class MainActivity extends AppCompatActivity implements
         // Lock orientation so the Activity won't change configuration during proessing
         Util.lockOrientation(this);
 
-        final int[] imagePadding = Prefs.imagePadding(MainActivity.this);
-        final int PADDING_LEFT = imagePadding[0];
-        final int PADDING_TOP = imagePadding[1];
-        final int PADDING_RIGHT = imagePadding[2];
-        final int PADDING_BOTTOM = imagePadding[3];
+        final int[] imageSpacing = Prefs.imageSpacing(MainActivity.this);
+        final int SPACING_HORIZONTAL = imageSpacing[0];
+        final int SPACING_VERTICAL = imageSpacing[1];
 
         final Bitmap result;
         final boolean horizontal = mStackHorizontally.isChecked();
@@ -362,6 +359,10 @@ public class MainActivity extends AppCompatActivity implements
                 if (size[1] > maxHeight)
                     maxHeight = size[1];
             }
+            // Compensate for spacing
+            totalWidth += SPACING_HORIZONTAL * (mSelectedPhotos.length + 1);
+            maxHeight += SPACING_VERTICAL * 2;
+            // Print data and create large Bitmap
             Util.log("Total width = %d, max height = %d", totalWidth, maxHeight);
             result = Bitmap.createBitmap(totalWidth, maxHeight, Bitmap.Config.ARGB_8888);
         } else {
@@ -378,6 +379,10 @@ public class MainActivity extends AppCompatActivity implements
                 if (size[0] > maxWidth)
                     maxWidth = size[0];
             }
+            // Compensate for spacing
+            totalHeight += SPACING_VERTICAL * (mSelectedPhotos.length + 1);
+            maxWidth += SPACING_HORIZONTAL * 2;
+            // Print data and create large Bitmap
             Util.log("Max width = %d, total height = %d", maxWidth, totalHeight);
             result = Bitmap.createBitmap(maxWidth, totalHeight, Bitmap.Config.ARGB_8888);
         }
@@ -402,121 +407,53 @@ public class MainActivity extends AppCompatActivity implements
                 final Rect dstRect = new Rect(0, 0, 10, 10);
 
                 if (horizontal) {
-                    // Keep track of X position of the left of the next image to be drawn
                     int currentX = 0;
-                    // Traverse all selected images and load in their raw image data
                     mTraverseIndex = -1;
                     Bitmap bm;
+
                     while ((bm = getNextBitmap()) != null) {
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
 
-                        // Draw image vertically centered to the right of the last
-                        final float dstRatio = (float) bm.getWidth() / (float) bm.getHeight();
-                        int dstHeight = bm.getHeight();
+                        // Left is right of last image plus horizontal spacing
+                        dstRect.left = currentX + SPACING_HORIZONTAL;
+                        // Right is left plus width of the current image
+                        dstRect.right = dstRect.left + bm.getWidth();
 
-                        // Apply vertical padding
-                        dstHeight -= PADDING_TOP;
-                        dstHeight -= PADDING_BOTTOM;
-                        int dstWidth = (int) (dstHeight * dstRatio);
-
-                        // Apply horizontal padding
-                        if (mTraverseIndex == 0) {
-                            // First, normal padding on left
-                            dstWidth -= PADDING_LEFT;
-                            dstWidth -= (PADDING_RIGHT / 2);
-
-                            dstRect.left = currentX + PADDING_LEFT;
-                            dstRect.right = (currentX + dstWidth) - (PADDING_RIGHT / 2);
-                        } else if (mTraverseIndex == mSelectedPhotos.length - 1) {
-                            // Last, normal padding on right
-                            dstWidth -= (PADDING_LEFT / 2);
-                            dstWidth -= PADDING_RIGHT;
-
-                            dstRect.left = currentX + (PADDING_LEFT / 2);
-                            dstRect.right = (currentX + dstWidth) - PADDING_RIGHT;
-                        } else {
-                            // Middle, half padding on left and right
-                            dstWidth -= (PADDING_LEFT / 2);
-                            dstWidth -= (PADDING_RIGHT / 2);
-
-                            dstRect.left = currentX + (PADDING_LEFT / 2);
-                            dstRect.right = (currentX + dstWidth) - (PADDING_RIGHT / 2);
-                        }
-
-
-                        // Re-calculate height with width updates
-                        dstHeight = (int) (dstWidth / dstRatio);
-                        Util.log("TRANSFORMED width = %d, height = %d", dstWidth, dstHeight);
-
-                        dstRect.top = PADDING_TOP;
-                        dstRect.bottom = dstHeight - PADDING_BOTTOM;
+                        // Top is very top plus vertical spacing
+                        dstRect.top = SPACING_VERTICAL;
+                        // Bottom is top plus the current image height
+                        dstRect.bottom = dstRect.top + bm.getHeight();
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
-                        // Right of this image is left of the next
-                        currentX += dstWidth;
-                        // Recycle so it doesn't take up any memory
+                        currentX = dstRect.right;
                         bm.recycle();
                     }
                 } else {
-                    // Keep track of Y position of the top of the next image to be drawn
                     int currentY = 0;
-                    // Traverse all selected images and load in their raw image data
                     mTraverseIndex = -1;
                     Bitmap bm;
+
                     while ((bm = getNextBitmap()) != null) {
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
-                        Util.log("TOP is at %d...", currentY);
 
-                        // Draw image horizontally centered below the last
-                        final float dstRatio = (float) bm.getWidth() / (float) bm.getHeight();
-                        int dstWidth = bm.getWidth();
+                        // Top is bottom of the last image plus vertical spacing
+                        dstRect.top = currentY + SPACING_VERTICAL;
+                        // Bottom is top plus height of the current image
+                        dstRect.bottom = dstRect.top + bm.getHeight();
 
-                        // Apply horizontal padding
-                        dstWidth -= PADDING_LEFT;
-                        dstWidth -= PADDING_RIGHT;
-                        int dstHeight = (int) (dstWidth / dstRatio);
-
-                        // Apply vertical padding
-                        if (mTraverseIndex == 0) {
-                            // First, normal padding on top
-                            dstHeight -= PADDING_TOP;
-                            dstHeight -= (PADDING_BOTTOM / 2);
-
-                            dstRect.top = currentY + PADDING_TOP;
-                            dstRect.bottom = currentY + dstHeight + (PADDING_BOTTOM / 2);
-                        } else if (mTraverseIndex == mSelectedPhotos.length - 1) {
-                            // Last, normal padding on bottom
-                            dstHeight -= (PADDING_TOP / 2);
-                            dstHeight -= PADDING_BOTTOM;
-
-                            dstRect.top = currentY + (PADDING_TOP / 2);
-                            dstRect.bottom = currentY + dstHeight + PADDING_BOTTOM;
-                        } else {
-                            // Middle, half padding on top and bottom
-                            dstHeight -= (PADDING_TOP / 2);
-                            dstHeight -= (PADDING_BOTTOM / 2);
-
-                            dstRect.top = currentY + (PADDING_TOP / 2);
-                            dstRect.bottom = currentY + dstHeight + (PADDING_BOTTOM / 2);
-                        }
-
-                        // Re-calculate height with width updates
-                        dstWidth = (int) (dstHeight * dstRatio);
-                        Util.log("TRANSFORMED width = %d, height = %d", dstWidth, dstHeight);
-
-                        dstRect.left = PADDING_LEFT;
-                        dstRect.right = dstWidth - PADDING_RIGHT;
+                        // Left is left side plus horizontal spacing
+                        dstRect.left = SPACING_HORIZONTAL;
+                        // Right is left plus the current image width
+                        dstRect.right = dstRect.left + bm.getWidth();
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
-                        // Bottom of this image is top of the next
-                        currentY += dstHeight;
-                        // Recycle so it doesn't take up any memory
+                        currentY = dstRect.bottom;
                         bm.recycle();
                     }
                 }
