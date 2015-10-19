@@ -91,6 +91,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
             if (min > -1 && min < to) {
                 // Unselect items that were selected during this drag but no longer are
                 for (int i = min; i < to; i++) {
+                    if (i == from) continue;
                     if (mSelectedIndices.contains(i)) {
                         mSelectedIndices.remove((Integer) i);
                         notifyItemChanged(i);
@@ -108,6 +109,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
             if (max > -1 && max > to) {
                 // Unselect items that were selected during this drag but no longer are
                 for (int i = to + 1; i <= max; i++) {
+                    if (i == from) continue;
                     if (mSelectedIndices.contains(i)) {
                         mSelectedIndices.remove((Integer) i);
                         notifyItemChanged(i);
@@ -160,6 +162,9 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
             holder.circle.setActivated(false);
             holder.image.setActivated(false);
         }
+
+        // Used by DragSelectRecyclerView
+        holder.itemView.setTag(position);
     }
 
     @Override

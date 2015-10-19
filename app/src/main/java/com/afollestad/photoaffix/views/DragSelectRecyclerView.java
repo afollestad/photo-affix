@@ -52,6 +52,7 @@ public class DragSelectRecyclerView extends RecyclerView {
         if (mDragSelectActive) {
             if (e.getAction() == MotionEvent.ACTION_UP) {
                 mDragSelectActive = false;
+                return true;
             } else if (e.getAction() == MotionEvent.ACTION_MOVE) {
                 View v = findChildViewUnder(e.getX(), e.getY());
                 if (v != null && mLastDraggedIndex != (Integer) v.getTag()) {
