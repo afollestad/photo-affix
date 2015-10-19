@@ -1,3 +1,4 @@
+-keepattributes SourceFile,LineNumberTable
 -keep class !android.support.v7.internal.view.menu.**,** {*;}
 -keep class butterknife.** { *; }
 -dontwarn butterknife.internal.**

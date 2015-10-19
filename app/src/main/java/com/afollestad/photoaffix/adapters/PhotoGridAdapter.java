@@ -20,7 +20,7 @@ import butterknife.ButterKnife;
 /**
  * @author Aidan Follestad (afollestad)
  */
-public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.PhotoViewHolder> implements View.OnClickListener, View.OnLongClickListener {
+public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.PhotoViewHolder> {
 
     public PhotoGridAdapter(MainActivity context) {
         mContext = context;
@@ -146,9 +146,11 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
 
     @Override
     public void onBindViewHolder(PhotoViewHolder holder, int position) {
-        Glide.with(mContext)
-                .load(mPhotos[position].getUri())
-                .into(holder.image);
+        if (holder.itemView.getTag() == null || (Integer) holder.itemView.getTag() != position) {
+            Glide.with(mContext)
+                    .load(mPhotos[position].getUri())
+                    .into(holder.image);
+        }
         if (mSelectedIndices.contains(position)) {
             holder.check.setVisibility(View.VISIBLE);
             holder.circle.setActivated(true);
@@ -158,33 +160,11 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
             holder.circle.setActivated(false);
             holder.image.setActivated(false);
         }
-
-        holder.itemView.setTag(position);
-        holder.itemView.setOnClickListener(this);
-        holder.itemView.setOnLongClickListener(this);
     }
 
     @Override
     public int getItemCount() {
         return mPhotos != null ? mPhotos.length : 0;
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (v.getTag() != null) {
-            int index = (Integer) v.getTag();
-            toggleSelected(index);
-        }
-    }
-
-    @Override
-    public boolean onLongClick(View v) {
-        if (v.getTag() != null) {
-            int index = (Integer) v.getTag();
-            toggleSelected(index);
-            mContext.mList.setDragSelectActive(true, index);
-        }
-        return false;
     }
 
     public class PhotoViewHolder extends RecyclerView.ViewHolder {
@@ -198,6 +178,21 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
             image = ButterKnife.findById(itemView, R.id.image);
             check = itemView.findViewById(R.id.check);
             circle = itemView.findViewById(R.id.circle);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    toggleSelected(getAdapterPosition());
+                }
+            });
+            itemView.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    toggleSelected(getAdapterPosition());
+                    mContext.mList.setDragSelectActive(true, getAdapterPosition());
+                    return false;
+                }
+            });
         }
     }
 }

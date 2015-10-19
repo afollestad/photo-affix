@@ -19,13 +19,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Size;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -36,6 +37,7 @@ import com.afollestad.inquiry.Inquiry;
 import com.afollestad.inquiry.callbacks.GetCallback;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
+import com.afollestad.photoaffix.BuildConfig;
 import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.adapters.PhotoGridAdapter;
 import com.afollestad.photoaffix.adapters.SelectionCallback;
@@ -95,7 +97,9 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Fabric.with(this, new Crashlytics());
+        if (!BuildConfig.DEBUG) {
+            Fabric.with(this, new Crashlytics());
+        }
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
@@ -118,6 +122,10 @@ public class MainActivity extends AppCompatActivity implements
         mAdapter = new PhotoGridAdapter(this);
         mAdapter.restoreInstanceState(savedInstanceState);
         mList.setAdapter(mAdapter);
+
+        DefaultItemAnimator animator = new DefaultItemAnimator();
+        animator.setSupportsChangeAnimations(false);
+        mList.setItemAnimator(animator);
 
         mStackHorizontally.setChecked(Prefs.stackHorizontally(this));
         mBgFillColor.setColor(Prefs.bgFillColor(this));
@@ -239,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements
             mSettingsFrameAnimator = ValueAnimator.ofObject(new HeightEvaluator(mSettingsFrame), mOriginalSettingsFrameHeight, 0);
             mSettingsFrameAnimator.addListener(new ViewHideAnimationListener(mSettingsFrame));
         }
-        mSettingsFrameAnimator.setInterpolator(new DecelerateInterpolator());
+        mSettingsFrameAnimator.setInterpolator(new FastOutSlowInInterpolator());
         mSettingsFrameAnimator.setDuration(200);
         mSettingsFrameAnimator.start();
     }

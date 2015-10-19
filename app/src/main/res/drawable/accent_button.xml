@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="#fff">
-    <item android:drawable="@drawable/accent_button_holo" />
+    android:color="#1fFFFFFF">
+    <item android:drawable="@drawable/accent_button_material" />
 </ripple>
