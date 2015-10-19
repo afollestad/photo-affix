@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements
         try {
             process();
         } catch (OutOfMemoryError e) {
-            Util.showError(this, new Exception("You've run out of RAM for processing images; I'm working to improve memory usage! Sit tight while this app is in beta."));
+            Util.showMemoryError(MainActivity.this);
         }
         v.setEnabled(true);
     }
@@ -328,6 +328,8 @@ public class MainActivity extends AppCompatActivity implements
             bm = BitmapFactory.decodeStream(is);
         } catch (Exception e) {
             Util.showError(this, e);
+        } catch (OutOfMemoryError e2) {
+            Util.showMemoryError(MainActivity.this);
         } finally {
             Util.closeQuietely(is);
         }

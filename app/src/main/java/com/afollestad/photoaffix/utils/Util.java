@@ -62,8 +62,12 @@ public class Util {
                 .show();
     }
 
+    public static void showMemoryError(Activity context) {
+        Util.showError(context, new Exception("You've run out of RAM for processing images; I'm working to improve memory usage! Sit tight while this app is in beta."));
+    }
+
     public static void lockOrientation(Activity context) {
-        int orientation = context.getRequestedOrientation();
+        int orientation;
         int rotation = ((WindowManager) context.getSystemService(
                 Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
         switch (rotation) {
