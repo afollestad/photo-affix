@@ -10,7 +10,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -42,7 +41,6 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
     ProgressBar mProgress;
 
     private PhotoViewAttacher mAttacher;
-    private ViewPropertyAnimator mToolbarFader;
 
     private final SimpleTarget<GlideDrawable> mTarget = new SimpleTarget<GlideDrawable>() {
         @Override
@@ -152,15 +150,8 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
 
     @Override
     public void onPhotoTap(View view, float x, float y) {
-        if (mToolbarFader != null)
-            mToolbarFader.cancel();
-        if (mToolbar == null) return;
-        mToolbarFader = mToolbar.animate();
-        if (mToolbar.getAlpha() > 0f) {
-            mToolbarFader.alpha(0f);
-        } else {
-            mToolbarFader.alpha(1f);
-        }
-        mToolbarFader.setDuration(250).start();
+        if (mToolbar.getVisibility() == View.VISIBLE)
+            mToolbar.setVisibility(View.GONE);
+        else mToolbar.setVisibility(View.VISIBLE);
     }
 }
