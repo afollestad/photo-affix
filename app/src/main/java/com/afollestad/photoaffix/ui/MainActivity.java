@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements
                 if (item.getItemId() == R.id.clear) {
                     clearSelection();
                     return true;
-                } else if(item.getItemId() == R.id.about) {
+                } else if (item.getItemId() == R.id.about) {
                     AboutDialog.show(MainActivity.this);
                     return true;
                 }
@@ -360,12 +360,24 @@ public class MainActivity extends AppCompatActivity implements
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
                 totalWidth += size[0];
-                if (size[1] > maxHeight)
+                if (maxHeight == -1)
+                    maxHeight = size[1];
+                else if (size[1] > maxHeight)
                     maxHeight = size[1];
             }
             // Compensate for spacing
             totalWidth += SPACING_HORIZONTAL * (mSelectedPhotos.length + 1);
             maxHeight += SPACING_VERTICAL * 2;
+
+            // Crash avoidance
+            if (totalWidth == 0) {
+                Util.showError(this, new Exception("The total generated width is 0. Please notify me of this through the Google+ community."));
+                return;
+            } else if (maxHeight == 0) {
+                Util.showError(this, new Exception("The max found height is 0. Please notify me of this through the Google+ community."));
+                return;
+            }
+
             // Print data and create large Bitmap
             Util.log("Total width = %d, max height = %d", totalWidth, maxHeight);
             result = Bitmap.createBitmap(totalWidth, maxHeight, Bitmap.Config.ARGB_8888);
@@ -380,12 +392,24 @@ public class MainActivity extends AppCompatActivity implements
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
                 totalHeight += size[1];
-                if (size[0] > maxWidth)
+                if (maxWidth == -1)
+                    maxWidth = size[0];
+                else if (size[0] > maxWidth)
                     maxWidth = size[0];
             }
             // Compensate for spacing
             totalHeight += SPACING_VERTICAL * (mSelectedPhotos.length + 1);
             maxWidth += SPACING_HORIZONTAL * 2;
+
+            // Crash avoidance
+            if (totalHeight == 0) {
+                Util.showError(this, new Exception("The total generated height is 0. Please notify me of this through the Google+ community."));
+                return;
+            } else if (maxWidth == 0) {
+                Util.showError(this, new Exception("The max found width is 0. Please notify me of this through the Google+ community."));
+                return;
+            }
+
             // Print data and create large Bitmap
             Util.log("Max width = %d, total height = %d", maxWidth, totalHeight);
             result = Bitmap.createBitmap(maxWidth, totalHeight, Bitmap.Config.ARGB_8888);
