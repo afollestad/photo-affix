@@ -28,5 +28,16 @@
     <string name="image_spacing">Image Spacing</string>
     <string name="horizontal">Horizontal</string>
     <string name="vertical">Vertical</string>
+    <string name="about">About</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="about_body"><![CDATA[
+        PhotoAffix, designed by <b>Aidan Follestad</b>.<br/>
+        <a href=\'http://aidanfollestad.com\'>Website</a>&nbsp;&nbsp;
+        <a href=\'https://twitter.com/afollestad\'>Twitter</a>&nbsp;&nbsp;
+        <a href=\'https://google.com/+AidanFollestad\'>Google+</a>&nbsp;&nbsp;
+        <a href=\'https://github.com/afollestad\'>GitHub</a>&nbsp;&nbsp;
+        <a href=\'https://www.linkedin.com/in/afollestad\'>LinkedIn</a><br/><br/>
+        Icon by the legendary <a href=\'https://plus.google.com/+EduardoPratti\'>Eduardo Pratti</a>.
+    ]]></string>
 
 </resources>

@@ -9,4 +9,8 @@
         android:visible="false"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/about"
+        android:title="@string/about" />
+
 </menu>

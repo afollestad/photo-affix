@@ -44,6 +44,7 @@ import com.afollestad.photoaffix.adapters.SelectionCallback;
 import com.afollestad.photoaffix.animation.HeightEvaluator;
 import com.afollestad.photoaffix.animation.ViewHideAnimationListener;
 import com.afollestad.photoaffix.data.Photo;
+import com.afollestad.photoaffix.dialogs.AboutDialog;
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
@@ -109,6 +110,9 @@ public class MainActivity extends AppCompatActivity implements
             public boolean onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.clear) {
                     clearSelection();
+                    return true;
+                } else if(item.getItemId() == R.id.about) {
+                    AboutDialog.show(MainActivity.this);
                     return true;
                 }
                 return false;
