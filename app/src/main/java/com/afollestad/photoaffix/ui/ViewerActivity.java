@@ -73,12 +73,15 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
                 .load(new File(getIntent().getData().getPath()))
                 .into(mTarget);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                onPhotoTap(null, 0f, 0f);
-            }
-        }, 2000);
+        if (mToolbar != null) {
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mToolbar != null)
+                        onPhotoTap(null, 0f, 0f);
+                }
+            }, 2000);
+        }
     }
 
     @Override

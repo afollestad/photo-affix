@@ -340,6 +340,12 @@ public class MainActivity extends AppCompatActivity implements
         // Lock orientation so the Activity won't change configuration during proessing
         Util.lockOrientation(this);
 
+        final int[] imagePadding = Prefs.imagePadding(MainActivity.this);
+        final int PADDING_LEFT = imagePadding[0];
+        final int PADDING_TOP = imagePadding[1];
+        final int PADDING_RIGHT = imagePadding[2];
+        final int PADDING_BOTTOM = imagePadding[3];
+
         final Bitmap result;
         final boolean horizontal = mStackHorizontally.isChecked();
         if (horizontal) {
@@ -389,12 +395,6 @@ public class MainActivity extends AppCompatActivity implements
                 .cancelable(false)
                 .show();
 
-        int[] imagePadding = Prefs.imagePadding(MainActivity.this);
-        final int PADDING_LEFT = imagePadding[0];
-        final int PADDING_TOP = imagePadding[1];
-        final int PADDING_RIGHT = imagePadding[2];
-        final int PADDING_BOTTOM = imagePadding[3];
-
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -409,14 +409,10 @@ public class MainActivity extends AppCompatActivity implements
                     Bitmap bm;
                     while ((bm = getNextBitmap()) != null) {
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
-                        // Padding is the offset used to vertically center smaller images
-                        int padding = result.getHeight() - bm.getHeight();
-                        if (padding > 0) padding /= 2;
-                        Util.log("PADDING = %d", padding);
 
                         // Draw image vertically centered to the right of the last
                         final float dstRatio = (float) bm.getWidth() / (float) bm.getHeight();
-                        int dstHeight = bm.getHeight() - (padding * 2);
+                        int dstHeight = bm.getHeight();
 
                         // Apply vertical padding
                         dstHeight -= PADDING_TOP;
@@ -447,15 +443,20 @@ public class MainActivity extends AppCompatActivity implements
                             dstRect.right = (currentX + dstWidth) - (PADDING_RIGHT / 2);
                         }
 
-                        dstRect.top = padding + PADDING_TOP;
-                        dstRect.bottom = bm.getHeight() - (padding + PADDING_BOTTOM);
+
+                        // Re-calculate height with width updates
+                        dstHeight = (int) (dstWidth / dstRatio);
+                        Util.log("TRANSFORMED width = %d, height = %d", dstWidth, dstHeight);
+
+                        dstRect.top = PADDING_TOP;
+                        dstRect.bottom = dstHeight - PADDING_BOTTOM;
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
                         // Right of this image is left of the next
-                        currentX += bm.getWidth();
+                        currentX += dstWidth;
                         // Recycle so it doesn't take up any memory
                         bm.recycle();
                     }
@@ -468,14 +469,10 @@ public class MainActivity extends AppCompatActivity implements
                     while ((bm = getNextBitmap()) != null) {
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
                         Util.log("TOP is at %d...", currentY);
-                        // Padding is the offset used to horizontally center smaller images
-                        int padding = result.getWidth() - bm.getWidth();
-                        if (padding > 0) padding /= 2;
-                        Util.log("PADDING = %d", padding);
 
                         // Draw image horizontally centered below the last
                         final float dstRatio = (float) bm.getWidth() / (float) bm.getHeight();
-                        int dstWidth = bm.getWidth() - (padding * 2);
+                        int dstWidth = bm.getWidth();
 
                         // Apply horizontal padding
                         dstWidth -= PADDING_LEFT;
@@ -506,15 +503,19 @@ public class MainActivity extends AppCompatActivity implements
                             dstRect.bottom = currentY + dstHeight + (PADDING_BOTTOM / 2);
                         }
 
-                        dstRect.left = padding + PADDING_LEFT;
-                        dstRect.right = bm.getWidth() - (padding + PADDING_RIGHT);
+                        // Re-calculate height with width updates
+                        dstWidth = (int) (dstHeight * dstRatio);
+                        Util.log("TRANSFORMED width = %d, height = %d", dstWidth, dstHeight);
+
+                        dstRect.left = PADDING_LEFT;
+                        dstRect.right = dstWidth - PADDING_RIGHT;
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
                         // Bottom of this image is top of the next
-                        currentY += bm.getHeight();
+                        currentY += dstHeight;
                         // Recycle so it doesn't take up any memory
                         bm.recycle();
                     }
