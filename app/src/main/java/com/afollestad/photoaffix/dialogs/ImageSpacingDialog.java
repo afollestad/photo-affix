@@ -13,7 +13,6 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.internal.MDTintHelper;
 import com.afollestad.photoaffix.R;
-import com.afollestad.photoaffix.ui.MainActivity;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.views.LineView;
 
@@ -28,7 +27,7 @@ public class ImageSpacingDialog extends DialogFragment {
     public ImageSpacingDialog() {
     }
 
-    private MainActivity mContext;
+    private SpacingCallback mContext;
     @Bind(R.id.spacingHorizontalSeek)
     SeekBar mHorizontalSeek;
     @Bind(R.id.spacingHorizontalLabel)
@@ -56,12 +55,10 @@ public class ImageSpacingDialog extends DialogFragment {
                 .negativeText(android.R.string.cancel)
                 .positiveColor(fillColor)
                 .negativeColor(fillColor)
-                .autoDismiss(false)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                         notifyActivity();
-                        materialDialog.dismiss();
                     }
                 })
                 .build();
@@ -117,6 +114,6 @@ public class ImageSpacingDialog extends DialogFragment {
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        mContext = (MainActivity) activity;
+        mContext = (SpacingCallback) activity;
     }
 }
