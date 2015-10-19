@@ -5,7 +5,7 @@
     <color name="colorPrimaryDark">#0097A7</color>
     <color name="colorAccent">#E91E63</color>
     <color name="colorAccentPressed">#C2185B</color>
-    <color name="disabledButton">#CECECE</color>
+    <color name="disabledButton">#1f000000</color>
     <!--<color name="disabledButton">#80E91E63</color>-->
 
 </resources>
