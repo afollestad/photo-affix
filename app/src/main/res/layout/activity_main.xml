@@ -24,7 +24,7 @@
         android:layout_height="wrap_content"
         android:background="?colorPrimary"
         android:elevation="@dimen/toolbar_elevation"
-        android:paddingBottom="@dimen/medium_padding">
+        android:paddingBottom="@dimen/grid_padding_large">
 
         <Button
             android:id="@+id/affixButton"
@@ -61,7 +61,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <android.support.v7.widget.RecyclerView
+        <!--<android.support.v7.widget.RecyclerView-->
+        <com.afollestad.photoaffix.views.DragSelectRecyclerView
             android:id="@+id/list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

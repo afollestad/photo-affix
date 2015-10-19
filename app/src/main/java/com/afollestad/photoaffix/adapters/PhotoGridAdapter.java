@@ -7,13 +7,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.data.Photo;
 import com.afollestad.photoaffix.data.PhotoHolder;
-import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.ui.MainActivity;
 import com.bumptech.glide.Glide;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import butterknife.ButterKnife;
@@ -21,7 +20,7 @@ import butterknife.ButterKnife;
 /**
  * @author Aidan Follestad (afollestad)
  */
-public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.PhotoViewHolder> implements View.OnClickListener {
+public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.PhotoViewHolder> implements View.OnClickListener, View.OnLongClickListener {
 
     public PhotoGridAdapter(MainActivity context) {
         mContext = context;
@@ -68,6 +67,58 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
             mContext.onSelectionChanged(mSelectedIndices.size());
     }
 
+    public void selectRange(int from, int to, int min, int max) {
+        if (from == to) {
+            // Finger is back on the initial item, unselect everything else
+            for (int i = min; i <= max; i++) {
+                if (i == from) continue;
+                if (mSelectedIndices.contains(i)) {
+                    mSelectedIndices.remove((Integer) i);
+                    notifyItemChanged(i);
+                }
+            }
+            return;
+        }
+
+        if (to < from) {
+            // When selecting from one to previous items
+            for (int i = to; i <= from; i++) {
+                if (!mSelectedIndices.contains(i)) {
+                    mSelectedIndices.add(i);
+                    notifyItemChanged(i);
+                }
+            }
+            if (min > -1 && min < to) {
+                // Unselect items that were selected during this drag but no longer are
+                for (int i = min; i < to; i++) {
+                    if (mSelectedIndices.contains(i)) {
+                        mSelectedIndices.remove((Integer) i);
+                        notifyItemChanged(i);
+                    }
+                }
+            }
+        } else {
+            // When selecting from one to next items
+            for (int i = from; i <= to; i++) {
+                if (!mSelectedIndices.contains(i)) {
+                    mSelectedIndices.add(i);
+                    notifyItemChanged(i);
+                }
+            }
+            if (max > -1 && max > to) {
+                // Unselect items that were selected during this drag but no longer are
+                for (int i = to + 1; i <= max; i++) {
+                    if (mSelectedIndices.contains(i)) {
+                        mSelectedIndices.remove((Integer) i);
+                        notifyItemChanged(i);
+                    }
+                }
+            }
+        }
+        if (mContext != null)
+            mContext.onSelectionChanged(mSelectedIndices.size());
+    }
+
     public void clearSelected() {
         mSelectedIndices.clear();
         notifyDataSetChanged();
@@ -110,6 +161,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
 
         holder.itemView.setTag(position);
         holder.itemView.setOnClickListener(this);
+        holder.itemView.setOnLongClickListener(this);
     }
 
     @Override
@@ -123,6 +175,16 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
             int index = (Integer) v.getTag();
             toggleSelected(index);
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        if (v.getTag() != null) {
+            int index = (Integer) v.getTag();
+            toggleSelected(index);
+            mContext.mList.setDragSelectActive(true, index);
+        }
+        return false;
     }
 
     public class PhotoViewHolder extends RecyclerView.ViewHolder {

@@ -21,7 +21,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,6 +46,7 @@ import com.afollestad.photoaffix.dialogs.ImagePaddingDialog;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
 import com.afollestad.photoaffix.views.ColorCircleView;
+import com.afollestad.photoaffix.views.DragSelectRecyclerView;
 import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
@@ -63,14 +63,14 @@ import io.fabric.sdk.android.Fabric;
  * @author Aidan Follestad (afollestad)
  */
 public class MainActivity extends AppCompatActivity implements
-        SelectionCallback, ColorChooserDialog.ColorCallback, ImagePaddingDialog.PaddingCallback {
+        SelectionCallback, ColorChooserDialog.ColorCallback, ImagePaddingDialog.PaddingCallback, DragSelectRecyclerView.DragListener {
 
     private static final int PERMISSION_RC = 69;
 
     @Bind(R.id.appbar_toolbar)
     Toolbar mToolbar;
     @Bind(R.id.list)
-    RecyclerView mList;
+    public DragSelectRecyclerView mList;
     @Bind(R.id.affixButton)
     Button mAffixButton;
     @Bind(R.id.settingsFrame)
@@ -113,6 +113,8 @@ public class MainActivity extends AppCompatActivity implements
 
         mList.setLayoutManager(new GridLayoutManager(this,
                 getResources().getInteger(R.integer.grid_width)));
+        mList.setDragSelectListener(this);
+
         mAdapter = new PhotoGridAdapter(this);
         mAdapter.restoreInstanceState(savedInstanceState);
         mList.setAdapter(mAdapter);
@@ -550,5 +552,18 @@ public class MainActivity extends AppCompatActivity implements
         // Open the result in the viewer
         startActivity(new Intent(this, ViewerActivity.class)
                 .setDataAndType(Uri.fromFile(file), "image/*"));
+    }
+
+    @Override
+    public void onDragSelection(int initial, int index, int minReached, int maxReached) {
+        if (mAdapter != null)
+            mAdapter.selectRange(initial, index, minReached, maxReached);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mAdapter.getSelectedCount() > 0)
+            clearSelection();
+        else super.onBackPressed();
     }
 }
