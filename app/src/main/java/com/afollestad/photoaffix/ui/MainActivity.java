@@ -181,7 +181,6 @@ public class MainActivity extends AppCompatActivity implements
         }
         Inquiry.init(this);
         Inquiry.get().selectFrom(Uri.parse("content://media/external/images/media"), Photo.class)
-                .projection("_id", "_data", "datetaken")
                 .sort("datetaken DESC")
                 .all(new GetCallback<Photo>() {
                     @Override
