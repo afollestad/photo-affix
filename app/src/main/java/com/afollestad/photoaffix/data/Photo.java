@@ -27,8 +27,8 @@ public class Photo implements Serializable {
 
     public Uri getUri() {
         Uri uri = Uri.parse(_data);
-        if (uri.getScheme() == null)
-            uri = Uri.parse(String.format("file://%s", uri.getPath()));
+        if (!uri.toString().startsWith("file://") && !uri.toString().startsWith("content://"))
+            uri = Uri.parse(String.format("file://%s", uri.toString()));
         return uri;
     }
 }

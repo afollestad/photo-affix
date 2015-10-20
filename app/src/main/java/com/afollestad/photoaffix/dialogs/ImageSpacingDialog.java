@@ -64,6 +64,12 @@ public class ImageSpacingDialog extends DialogFragment {
                         materialDialog.dismiss();
                     }
                 })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
+                        materialDialog.dismiss();
+                    }
+                })
                 .build();
 
         final View v = dialog.getCustomView();
