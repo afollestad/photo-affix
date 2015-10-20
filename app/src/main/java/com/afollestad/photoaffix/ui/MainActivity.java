@@ -340,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void process() {
-        // Lock orientation so the Activity won't change configuration during proessing
+        // Lock orientation so the Activity won't change configuration during processing
         Util.lockOrientation(this);
 
         final int[] imageSpacing = Prefs.imageSpacing(MainActivity.this);
