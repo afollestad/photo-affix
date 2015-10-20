@@ -41,5 +41,6 @@
     ]]></string>
     <string name="output_size">Output Size</string>
     <string name="defaultStr">Default</string>
+    <string name="continueStr">Continue</string>
 
 </resources>

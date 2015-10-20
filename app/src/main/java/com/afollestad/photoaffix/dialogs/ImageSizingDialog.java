@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -27,15 +26,16 @@ public class ImageSizingDialog extends DialogFragment {
     }
 
     public interface SizingCallback {
-        void onSizingResult(double scale, int resultWidth, int resultHeight);
+        void onSizingResult(double scale, int resultWidth, int resultHeight, boolean cancelled);
     }
 
     private SizingCallback mCallback;
+    private int mMinimum;
 
     @Bind(R.id.inputWidth)
-    EditText inputWidth;
+    TextView inputWidth;
     @Bind(R.id.inputHeight)
-    EditText inputHeight;
+    TextView inputHeight;
     @Bind(R.id.inputScaleSeek)
     SeekBar inputScaleSeek;
     @Bind(R.id.inputScaleLabel)
@@ -59,18 +59,28 @@ public class ImageSizingDialog extends DialogFragment {
         MaterialDialog dialog = new MaterialDialog.Builder(getActivity())
                 .title(R.string.output_size)
                 .customView(R.layout.dialog_imagesizing, false)
-                .positiveText(R.string.done)
+                .positiveText(R.string.continueStr)
+                .negativeText(android.R.string.cancel)
                 .neutralText(R.string.defaultStr)
                 .autoDismiss(false)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                         if (mCallback != null) {
-                            final double scale = round((double) inputScaleSeek.getProgress() / 1000d);
+                            final int progress = inputScaleSeek.getProgress() + mMinimum;
+                            final double scale = round((double) progress / 1000d);
                             mCallback.onSizingResult(scale,
                                     Integer.parseInt(inputWidth.getText().toString().trim()),
-                                    Integer.parseInt(inputHeight.getText().toString().trim()));
+                                    Integer.parseInt(inputHeight.getText().toString().trim()),
+                                    false);
                         }
+                        materialDialog.dismiss();
+                    }
+                })
+                .onNegative(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
+                        mCallback.onSizingResult(0.0f, -1, -1, true);
                         materialDialog.dismiss();
                     }
                 })
@@ -86,9 +96,12 @@ public class ImageSizingDialog extends DialogFragment {
         assert v != null;
         ButterKnife.bind(this, v);
 
+        mMinimum = (int) (inputScaleSeek.getMax() * 0.1d);
+        inputScaleSeek.setMax((int) (inputScaleSeek.getMax() * 0.9d));
         inputScaleSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                progress += mMinimum;
                 final double scale = round((double) progress / 1000d);
                 String scaleStr;
                 if (scale == 0) scaleStr = "0.00";

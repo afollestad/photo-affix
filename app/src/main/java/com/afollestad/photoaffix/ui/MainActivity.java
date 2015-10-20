@@ -186,9 +186,11 @@ public class MainActivity extends AppCompatActivity implements
                 .all(new GetCallback<Photo>() {
                     @Override
                     public void result(Photo[] photos) {
-                        mAdapter.setPhotos(photos);
-                        mEmpty.setVisibility(photos == null || photos.length == 0 ?
-                                View.VISIBLE : View.GONE);
+                        if (mEmpty != null) {
+                            mAdapter.setPhotos(photos);
+                            mEmpty.setVisibility(photos == null || photos.length == 0 ?
+                                    View.VISIBLE : View.GONE);
+                        }
                     }
                 });
     }
@@ -425,17 +427,23 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSizingResult(double scale, int resultWidth, int resultHeight) {
+    public void onSizingResult(double scale, int resultWidth, int resultHeight, boolean cancelled) {
+        if(cancelled) {
+            mTraverseIndex = -1;
+            Util.unlockOrientation(this);
+            return;
+        }
         finishProcessing(scale, resultWidth, resultHeight);
     }
 
     private void finishProcessing(final double SCALE, int resultWidth, int resultHeight) {
+        Util.log("IMAGE SCALE = %s, total scaled width = %d, height = %d", SCALE, resultWidth, resultHeight);
         final Bitmap result = Bitmap.createBitmap(resultWidth, resultHeight, Bitmap.Config.ARGB_8888);
 
         final boolean horizontal = mStackHorizontally.isChecked();
         final int[] imageSpacing = Prefs.imageSpacing(MainActivity.this);
-        final int SPACING_HORIZONTAL = imageSpacing[0];
-        final int SPACING_VERTICAL = imageSpacing[1];
+        final int SPACING_HORIZONTAL = (int) (imageSpacing[0] * SCALE);  // TODO should scale be multiplied here?
+        final int SPACING_VERTICAL = (int) (imageSpacing[1] * SCALE);
 
         final Canvas resultCanvas = new Canvas(result);
         final Paint paint = new Paint();
@@ -462,18 +470,20 @@ public class MainActivity extends AppCompatActivity implements
                     Bitmap bm;
 
                     while ((bm = getNextBitmap()) != null) {
-                        Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth() * SCALE, bm.getHeight() * SCALE);
-                        Util.log("SCALED IMAGE width = %d, height = %d", bm.getWidth() * SCALE, bm.getHeight() * SCALE);
+                        final int scaledWidth = (int) (bm.getWidth() * SCALE);
+                        final int scaledHeight = (int) (bm.getHeight() * SCALE);
+                        Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
+                        Util.log("SCALED IMAGE width = %d, height = %d", scaledWidth, scaledHeight);
 
                         // Left is right of last image plus horizontal spacing
                         dstRect.left = currentX + SPACING_HORIZONTAL;
                         // Right is left plus width of the current image
-                        dstRect.right = dstRect.left + bm.getWidth();
+                        dstRect.right = dstRect.left + scaledWidth;
 
                         // Top is very top plus vertical spacing
                         dstRect.top = SPACING_VERTICAL;
                         // Bottom is top plus the current image height
-                        dstRect.bottom = dstRect.top + bm.getHeight();
+                        dstRect.bottom = dstRect.top + scaledHeight;
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
@@ -488,18 +498,20 @@ public class MainActivity extends AppCompatActivity implements
                     Bitmap bm;
 
                     while ((bm = getNextBitmap()) != null) {
+                        final int scaledWidth = (int) (bm.getWidth() * SCALE);
+                        final int scaledHeight = (int) (bm.getHeight() * SCALE);
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
-                        Util.log("SCALED IMAGE width = %d, height = %d", bm.getWidth() * SCALE, bm.getHeight() * SCALE);
+                        Util.log("SCALED IMAGE width = %d, height = %d", scaledWidth, scaledHeight);
 
                         // Top is bottom of the last image plus vertical spacing
                         dstRect.top = currentY + SPACING_VERTICAL;
                         // Bottom is top plus height of the current image
-                        dstRect.bottom = dstRect.top + bm.getHeight();
+                        dstRect.bottom = dstRect.top + scaledHeight;
 
                         // Left is left side plus horizontal spacing
                         dstRect.left = SPACING_HORIZONTAL;
                         // Right is left plus the current image width
-                        dstRect.right = dstRect.left + bm.getWidth();
+                        dstRect.right = dstRect.left + scaledWidth;
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);

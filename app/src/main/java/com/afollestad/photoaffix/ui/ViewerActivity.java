@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -41,6 +42,7 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
     ProgressBar mProgress;
 
     private PhotoViewAttacher mAttacher;
+    private ViewPropertyAnimator mToolbarAnimator;
 
     private final SimpleTarget<GlideDrawable> mTarget = new SimpleTarget<GlideDrawable>() {
         @Override
@@ -69,6 +71,13 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
 
         mAttacher = new PhotoViewAttacher(mImage);
         mAttacher.setOnPhotoTapListener(this);
+        mAttacher.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
+            @Override
+            public void onViewTap(View view, float x, float y) {
+                onPhotoTap(null, 0f, 0f);
+            }
+        });
+
         Glide.with(this)
                 .load(new File(getIntent().getData().getPath()))
                 .into(mTarget);
@@ -153,8 +162,14 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
 
     @Override
     public void onPhotoTap(View view, float x, float y) {
-        if (mToolbar.getVisibility() == View.VISIBLE)
-            mToolbar.setVisibility(View.GONE);
-        else mToolbar.setVisibility(View.VISIBLE);
+        if (mToolbarAnimator != null) mToolbarAnimator.cancel();
+        mToolbarAnimator = mToolbar.animate();
+        if (mToolbar.getAlpha() > 0f) {
+            mToolbarAnimator.alpha(0f);
+        } else {
+            mToolbarAnimator.alpha(1f);
+        }
+        mToolbarAnimator.setDuration(200);
+        mToolbarAnimator.start();
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.support.annotation.ColorInt;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
@@ -48,6 +49,11 @@ public class LineView extends View {
     public void setWidth(int width) {
         width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, getResources().getDisplayMetrics());
         mPaint.setStrokeWidth(width);
+        invalidate();
+    }
+
+    public void setColor(@ColorInt int color) {
+        mPaint.setColor(color);
         invalidate();
     }
 

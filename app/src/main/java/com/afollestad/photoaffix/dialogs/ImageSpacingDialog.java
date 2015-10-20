@@ -98,6 +98,8 @@ public class ImageSpacingDialog extends DialogFragment {
 
         MDTintHelper.setTint(mHorizontalSeek, fillColor);
         MDTintHelper.setTint(mVerticalSeek, fillColor);
+        mHorizontalLine.setColor(fillColor);
+        mVerticalLine.setColor(fillColor);
 
         final int[] spacing = Prefs.imageSpacing(getActivity());
         mHorizontalSeek.setProgress(spacing[0]);

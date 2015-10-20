@@ -17,19 +17,17 @@
         android:gravity="center"
         android:orientation="horizontal">
 
-        <EditText
+        <TextView
             android:id="@+id/inputWidth"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-light"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
-            android:hint="1234"
-            android:inputType="number"
             android:maxLength="4"
             android:minWidth="56dp"
             android:textColor="?android:textColorPrimary"
             android:textSize="@dimen/header_textsize"
-            tools:ignore="HardcodedText" />
+            tools:text="1234" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -41,19 +39,17 @@
             android:textSize="@dimen/header_textsize"
             tools:ignore="HardcodedText" />
 
-        <EditText
+        <TextView
             android:id="@+id/inputHeight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-light"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
-            android:hint="1234"
-            android:inputType="number"
             android:maxLength="4"
             android:minWidth="56dp"
             android:textColor="?android:textColorPrimary"
             android:textSize="@dimen/header_textsize"
-            tools:ignore="HardcodedText" />
+            tools:text="1234" />
 
     </LinearLayout>
 
