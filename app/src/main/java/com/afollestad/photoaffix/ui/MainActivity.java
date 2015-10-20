@@ -45,6 +45,7 @@ import com.afollestad.photoaffix.animation.HeightEvaluator;
 import com.afollestad.photoaffix.animation.ViewHideAnimationListener;
 import com.afollestad.photoaffix.data.Photo;
 import com.afollestad.photoaffix.dialogs.AboutDialog;
+import com.afollestad.photoaffix.dialogs.ImageSizingDialog;
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
@@ -66,7 +67,8 @@ import io.fabric.sdk.android.Fabric;
  * @author Aidan Follestad (afollestad)
  */
 public class MainActivity extends AppCompatActivity implements
-        SelectionCallback, ColorChooserDialog.ColorCallback, ImageSpacingDialog.SpacingCallback, DragSelectRecyclerView.DragListener {
+        SelectionCallback, ColorChooserDialog.ColorCallback, ImageSpacingDialog.SpacingCallback,
+        DragSelectRecyclerView.DragListener, ImageSizingDialog.SizingCallback {
 
     private static final int PERMISSION_RC = 69;
 
@@ -260,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements
         v.setEnabled(false);
         mSelectedPhotos = mAdapter.getSelectedPhotos();
         try {
-            process();
+            startProcessing();
         } catch (OutOfMemoryError e) {
             Util.showMemoryError(MainActivity.this);
         }
@@ -339,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements
         return bm;
     }
 
-    private void process() {
+    private void startProcessing() {
         // Lock orientation so the Activity won't change configuration during processing
         Util.lockOrientation(this);
 
@@ -347,8 +349,10 @@ public class MainActivity extends AppCompatActivity implements
         final int SPACING_HORIZONTAL = imageSpacing[0];
         final int SPACING_VERTICAL = imageSpacing[1];
 
-        final Bitmap result;
         final boolean horizontal = mStackHorizontally.isChecked();
+        int resultWidth;
+        int resultHeight;
+
         if (horizontal) {
             Util.log("Horizontally stacking");
             // The width of the resulting image will be the largest width of the selected images
@@ -380,7 +384,8 @@ public class MainActivity extends AppCompatActivity implements
 
             // Print data and create large Bitmap
             Util.log("Total width = %d, max height = %d", totalWidth, maxHeight);
-            result = Bitmap.createBitmap(totalWidth, maxHeight, Bitmap.Config.ARGB_8888);
+            resultWidth = totalWidth;
+            resultHeight = maxHeight;
         } else {
             Util.log("Vertically stacking");
             // The height of the resulting image will be the largest height of the selected images
@@ -412,8 +417,25 @@ public class MainActivity extends AppCompatActivity implements
 
             // Print data and create large Bitmap
             Util.log("Max width = %d, total height = %d", maxWidth, totalHeight);
-            result = Bitmap.createBitmap(maxWidth, totalHeight, Bitmap.Config.ARGB_8888);
+            resultWidth = maxWidth;
+            resultHeight = totalHeight;
         }
+
+        ImageSizingDialog.show(this, resultWidth, resultHeight);
+    }
+
+    @Override
+    public void onSizingResult(double scale, int resultWidth, int resultHeight) {
+        finishProcessing(scale, resultWidth, resultHeight);
+    }
+
+    private void finishProcessing(final double SCALE, int resultWidth, int resultHeight) {
+        final Bitmap result = Bitmap.createBitmap(resultWidth, resultHeight, Bitmap.Config.ARGB_8888);
+
+        final boolean horizontal = mStackHorizontally.isChecked();
+        final int[] imageSpacing = Prefs.imageSpacing(MainActivity.this);
+        final int SPACING_HORIZONTAL = imageSpacing[0];
+        final int SPACING_VERTICAL = imageSpacing[1];
 
         final Canvas resultCanvas = new Canvas(result);
         final Paint paint = new Paint();
@@ -440,7 +462,8 @@ public class MainActivity extends AppCompatActivity implements
                     Bitmap bm;
 
                     while ((bm = getNextBitmap()) != null) {
-                        Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
+                        Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth() * SCALE, bm.getHeight() * SCALE);
+                        Util.log("SCALED IMAGE width = %d, height = %d", bm.getWidth() * SCALE, bm.getHeight() * SCALE);
 
                         // Left is right of last image plus horizontal spacing
                         dstRect.left = currentX + SPACING_HORIZONTAL;
@@ -466,6 +489,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     while ((bm = getNextBitmap()) != null) {
                         Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
+                        Util.log("SCALED IMAGE width = %d, height = %d", bm.getWidth() * SCALE, bm.getHeight() * SCALE);
 
                         // Top is bottom of the last image plus vertical spacing
                         dstRect.top = currentY + SPACING_VERTICAL;

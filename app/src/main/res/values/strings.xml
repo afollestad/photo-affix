@@ -39,5 +39,7 @@
         <a href=\'https://www.linkedin.com/in/afollestad\'>LinkedIn</a><br/><br/>
         Icon by the legendary <a href=\'https://plus.google.com/+EduardoPratti\'>Eduardo Pratti</a>.
     ]]></string>
+    <string name="output_size">Output Size</string>
+    <string name="defaultStr">Default</string>
 
 </resources>

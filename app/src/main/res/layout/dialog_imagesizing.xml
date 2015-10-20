@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/md_title_frame_margin_bottom"
+    android:paddingEnd="@dimen/md_title_frame_margin_bottom"
+    android:paddingStart="@dimen/md_title_frame_margin_bottom"
+    android:paddingTop="@dimen/md_title_frame_margin_bottom">
+
+    <LinearLayout
+        android:id="@+id/dimensionFrame"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/inputWidth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:hint="1234"
+            android:inputType="number"
+            android:maxLength="4"
+            android:minWidth="56dp"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="@dimen/header_textsize"
+            tools:ignore="HardcodedText" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:text="x"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="@dimen/header_textsize"
+            tools:ignore="HardcodedText" />
+
+        <EditText
+            android:id="@+id/inputHeight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:hint="1234"
+            android:inputType="number"
+            android:maxLength="4"
+            android:minWidth="56dp"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="@dimen/header_textsize"
+            tools:ignore="HardcodedText" />
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <SeekBar
+            android:id="@+id/inputScaleSeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="@dimen/md_dialog_frame_margin"
+            android:layout_toStartOf="@+id/inputScaleLabel"
+            android:max="1000"
+            tools:progress="1000" />
+
+        <TextView
+            android:id="@+id/inputScaleLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:gravity="center"
+            android:minWidth="36dp"
+            android:text="1.00"
+            tools:ignore="HardcodedText" />
+
+    </RelativeLayout>
+
+</LinearLayout>
