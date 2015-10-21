@@ -1,6 +1,7 @@
 package com.afollestad.photoaffix.data;
 
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
 import com.afollestad.inquiry.annotations.Column;
 
@@ -25,6 +26,7 @@ public class Photo implements Serializable {
     @Column
     public long datetaken;
 
+    @NonNull
     public Uri getUri() {
         Uri uri = Uri.parse(_data);
         if (!uri.toString().startsWith("file://") && !uri.toString().startsWith("content://"))

@@ -182,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements
         Inquiry.init(this);
         Inquiry.get().selectFrom(Uri.parse("content://media/external/images/media"), Photo.class)
                 .sort("datetaken DESC")
+                .where("_data IS NOT NULL")
                 .all(new GetCallback<Photo>() {
                     @Override
                     public void result(Photo[] photos) {
@@ -432,7 +433,11 @@ public class MainActivity extends AppCompatActivity implements
             Util.unlockOrientation(this);
             return;
         }
-        finishProcessing(scale, resultWidth, resultHeight);
+        try {
+            finishProcessing(scale, resultWidth, resultHeight);
+        } catch(OutOfMemoryError e) {
+            Util.showMemoryError(this);
+        }
     }
 
     private void finishProcessing(final double SCALE, int resultWidth, int resultHeight) {
