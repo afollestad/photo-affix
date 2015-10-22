@@ -11,8 +11,7 @@ you with that. Plus it's open source.
 
 ---
 
-There are still a few important features to implement, such as downsizing results (since they can 
-be very, very large right now depending on the size of input images). The [issue tracker](https://github.com/afollestad/photo-affix/issues) 
+The [issue tracker](https://github.com/afollestad/photo-affix/issues) 
 shows a list of features that are planned at the moment.
 
 # Libraries Used
