@@ -428,19 +428,28 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onSizingResult(double scale, int resultWidth, int resultHeight, boolean cancelled) {
-        if(cancelled) {
+        if (cancelled) {
             mTraverseIndex = -1;
             Util.unlockOrientation(this);
             return;
         }
         try {
             finishProcessing(scale, resultWidth, resultHeight);
-        } catch(OutOfMemoryError e) {
+        } catch (OutOfMemoryError e) {
             Util.showMemoryError(this);
         }
     }
 
     private void finishProcessing(final double SCALE, int resultWidth, int resultHeight) {
+        // Crash avoidance
+        if (resultWidth == 0) {
+            Util.showError(this, new Exception("The result width is 0. Please notify me of this through the Google+ community."));
+            return;
+        } else if (resultHeight == 0) {
+            Util.showError(this, new Exception("The result height is 0. Please notify me of this through the Google+ community."));
+            return;
+        }
+
         Util.log("IMAGE SCALE = %s, total scaled width = %d, height = %d", SCALE, resultWidth, resultHeight);
         final Bitmap result = Bitmap.createBitmap(resultWidth, resultHeight, Bitmap.Config.ARGB_8888);
 
