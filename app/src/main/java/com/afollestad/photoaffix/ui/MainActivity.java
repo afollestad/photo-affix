@@ -33,6 +33,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.dragselectrecyclerview.DragSelectRecyclerView;
+import com.afollestad.dragselectrecyclerview.DragSelectRecyclerViewAdapter;
 import com.afollestad.inquiry.Inquiry;
 import com.afollestad.inquiry.callbacks.GetCallback;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -40,7 +42,6 @@ import com.afollestad.materialdialogs.color.ColorChooserDialog;
 import com.afollestad.photoaffix.BuildConfig;
 import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.adapters.PhotoGridAdapter;
-import com.afollestad.photoaffix.adapters.SelectionCallback;
 import com.afollestad.photoaffix.animation.HeightEvaluator;
 import com.afollestad.photoaffix.animation.ViewHideAnimationListener;
 import com.afollestad.photoaffix.data.Photo;
@@ -50,7 +51,6 @@ import com.afollestad.photoaffix.dialogs.ImageSpacingDialog;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
 import com.afollestad.photoaffix.views.ColorCircleView;
-import com.afollestad.photoaffix.views.DragSelectRecyclerView;
 import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
@@ -67,8 +67,8 @@ import io.fabric.sdk.android.Fabric;
  * @author Aidan Follestad (afollestad)
  */
 public class MainActivity extends AppCompatActivity implements
-        SelectionCallback, ColorChooserDialog.ColorCallback, ImageSpacingDialog.SpacingCallback,
-        DragSelectRecyclerView.DragListener, ImageSizingDialog.SizingCallback {
+        ColorChooserDialog.ColorCallback, ImageSpacingDialog.SpacingCallback,
+        ImageSizingDialog.SizingCallback, DragSelectRecyclerViewAdapter.SelectionListener {
 
     private static final int PERMISSION_RC = 69;
 
@@ -123,10 +123,10 @@ public class MainActivity extends AppCompatActivity implements
 
         mList.setLayoutManager(new GridLayoutManager(this,
                 getResources().getInteger(R.integer.grid_width)));
-        mList.setDragSelectListener(this);
 
         mAdapter = new PhotoGridAdapter(this);
         mAdapter.restoreInstanceState(savedInstanceState);
+        mAdapter.setSelectionListener(this);
         mList.setAdapter(mAdapter);
 
         DefaultItemAnimator animator = new DefaultItemAnimator();
@@ -227,13 +227,6 @@ public class MainActivity extends AppCompatActivity implements
         mSelectedPhotos = null;
         mAdapter.clearSelected();
         mToolbar.getMenu().findItem(R.id.clear).setVisible(false);
-    }
-
-    @Override
-    public void onSelectionChanged(int count) {
-        mAffixButton.setText(getString(R.string.affix_x, count));
-        mAffixButton.setEnabled(count > 0);
-        mToolbar.getMenu().findItem(R.id.clear).setVisible(mAdapter != null && mAdapter.getSelectedCount() > 0);
     }
 
     @OnClick(R.id.expandButton)
@@ -580,15 +573,16 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onDragSelection(int initial, int index, int minReached, int maxReached) {
-        if (mAdapter != null)
-            mAdapter.selectRange(initial, index, minReached, maxReached);
-    }
-
-    @Override
     public void onBackPressed() {
         if (mAdapter.getSelectedCount() > 0)
             clearSelection();
         else super.onBackPressed();
+    }
+
+    @Override
+    public void onDragSelectionChanged(int count) {
+        mAffixButton.setText(getString(R.string.affix_x, count));
+        mAffixButton.setEnabled(count > 0);
+        mToolbar.getMenu().findItem(R.id.clear).setVisible(mAdapter != null && mAdapter.getSelectedCount() > 0);
     }
 }

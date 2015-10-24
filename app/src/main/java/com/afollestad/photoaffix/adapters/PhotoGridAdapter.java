@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.afollestad.dragselectrecyclerview.DragSelectRecyclerViewAdapter;
 import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.data.Photo;
 import com.afollestad.photoaffix.data.PhotoHolder;
@@ -20,34 +21,28 @@ import butterknife.ButterKnife;
 /**
  * @author Aidan Follestad (afollestad)
  */
-public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.PhotoViewHolder> {
+public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAdapter.PhotoViewHolder> {
 
     public PhotoGridAdapter(MainActivity context) {
         mContext = context;
-        mSelectedIndices = new ArrayList<>();
     }
 
     private MainActivity mContext;
     private Photo[] mPhotos;
-    private ArrayList<Integer> mSelectedIndices;
 
+    @Override
     public void saveInstanceState(Bundle out) {
+        super.saveInstanceState(out);
         if (mPhotos != null)
             out.putSerializable("photos", new PhotoHolder(mPhotos));
-        out.putSerializable("selected_indices", mSelectedIndices);
     }
 
+    @Override
     public void restoreInstanceState(Bundle in) {
-        if (in != null) {
-            if (in.containsKey("selected_indices")) {
-                //noinspection unchecked
-                mSelectedIndices = (ArrayList<Integer>) in.getSerializable("selected_indices");
-                if (mSelectedIndices == null) mSelectedIndices = new ArrayList<>();
-            }
-            if (in.containsKey("photos")) {
-                PhotoHolder ph = (PhotoHolder) in.getSerializable("photos");
-                if (ph != null) setPhotos(ph.photos);
-            }
+        super.restoreInstanceState(in);
+        if (in != null && in.containsKey("photos")) {
+            PhotoHolder ph = (PhotoHolder) in.getSerializable("photos");
+            if (ph != null) setPhotos(ph.photos);
         }
     }
 
@@ -56,101 +51,10 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
         notifyDataSetChanged();
     }
 
-    public void toggleSelected(int index) {
-        if (mSelectedIndices.contains(index)) {
-            mSelectedIndices.remove((Integer) index);
-        } else {
-            mSelectedIndices.add(index);
-        }
-        notifyItemChanged(index);
-        if (mContext != null)
-            mContext.onSelectionChanged(mSelectedIndices.size());
-    }
-
-    public void selectRange(int from, int to, int min, int max) {
-        if (from == to) {
-            // Finger is back on the initial item, unselect everything else
-            for (int i = min; i <= max; i++) {
-                if (i == from) continue;
-                if (mSelectedIndices.contains(i)) {
-                    mSelectedIndices.remove((Integer) i);
-                    notifyItemChanged(i);
-                }
-            }
-            return;
-        }
-
-        if (to < from) {
-            // When selecting from one to previous items
-            for (int i = to; i <= from; i++) {
-                if (!mSelectedIndices.contains(i)) {
-                    mSelectedIndices.add(i);
-                    notifyItemChanged(i);
-                }
-            }
-            if (min > -1 && min < to) {
-                // Unselect items that were selected during this drag but no longer are
-                for (int i = min; i < to; i++) {
-                    if (i == from) continue;
-                    if (mSelectedIndices.contains(i)) {
-                        mSelectedIndices.remove((Integer) i);
-                        notifyItemChanged(i);
-                    }
-                }
-            }
-            if (max > -1) {
-                for (int i = from + 1; i <= max; i++) {
-                    if (mSelectedIndices.contains(i)) {
-                        mSelectedIndices.remove((Integer) i);
-                        notifyItemChanged(i);
-                    }
-                }
-            }
-        } else {
-            // When selecting from one to next items
-            for (int i = from; i <= to; i++) {
-                if (!mSelectedIndices.contains(i)) {
-                    mSelectedIndices.add(i);
-                    notifyItemChanged(i);
-                }
-            }
-            if (max > -1 && max > to) {
-                // Unselect items that were selected during this drag but no longer are
-                for (int i = to + 1; i <= max; i++) {
-                    if (i == from) continue;
-                    if (mSelectedIndices.contains(i)) {
-                        mSelectedIndices.remove((Integer) i);
-                        notifyItemChanged(i);
-                    }
-                }
-            }
-            if (min > -1) {
-                for (int i = min; i < from; i++) {
-                    if (mSelectedIndices.contains(i)) {
-                        mSelectedIndices.remove((Integer) i);
-                        notifyItemChanged(i);
-                    }
-                }
-            }
-        }
-        if (mContext != null)
-            mContext.onSelectionChanged(mSelectedIndices.size());
-    }
-
-    public void clearSelected() {
-        mSelectedIndices.clear();
-        notifyDataSetChanged();
-        if (mContext != null)
-            mContext.onSelectionChanged(0);
-    }
-
-    public int getSelectedCount() {
-        return mSelectedIndices.size();
-    }
-
     public Photo[] getSelectedPhotos() {
+        Integer[] indices = getSelectedIndices();
         ArrayList<Photo> selected = new ArrayList<>();
-        for (Integer index : mSelectedIndices)
+        for (Integer index : indices)
             selected.add(mPhotos[index]);
         return selected.toArray(new Photo[selected.size()]);
     }
@@ -169,7 +73,7 @@ public class PhotoGridAdapter extends RecyclerView.Adapter<PhotoGridAdapter.Phot
                     .load(mPhotos[position].getUri())
                     .into(holder.image);
         }
-        if (mSelectedIndices.contains(position)) {
+        if (isIndexSelected(position)) {
             holder.check.setVisibility(View.VISIBLE);
             holder.circle.setActivated(true);
             holder.image.setActivated(true);
