@@ -28,7 +28,7 @@ public class Prefs {
     @ColorInt
     public static int bgFillColor(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
-                .getInt("bg_fill_color", Color.parseColor("#212121"));
+                .getInt("bg_fill_color", Color.TRANSPARENT);
     }
 
     public static void bgFillColor(Context context, @ColorInt int newValue) {

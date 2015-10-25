@@ -18,7 +18,7 @@
     <string name="confirm_delete">Delete this photo?</string>
     <string name="yes">Yes</string>
     <string name="deleting">Deleting…</string>
-    <string name="background_fill_color">Background fill color</string>
+    <string name="background_fill_color">Background fill</string>
     <string name="background_fill_color_title">Background Fill Color</string>
     <string name="back">Back</string>
     <string name="done">Done</string>
@@ -40,8 +40,12 @@
         Icon by the legendary <a href=\'https://plus.google.com/+EduardoPratti\'>Eduardo Pratti</a>.<br/>
         Play Store feature graphic by <a href=\'https://plus.google.com/+RikiDev\'>Riki Dev</a>.
     ]]></string>
-    <string name="output_size">Output Size</string>
+    <string name="output_settings">Output Settings</string>
     <string name="defaultStr">Default</string>
     <string name="continueStr">Continue</string>
+    <string name="remove">Remove</string>
+    <string name="background_fill_color_transparent">Background fill (transparent)</string>
+    <string name="format">Format:</string>
+    <string name="quality">Quality:</string>
 
 </resources>

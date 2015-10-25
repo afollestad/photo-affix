@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.media.MediaScannerConnection;
@@ -87,8 +88,12 @@ public class MainActivity extends AppCompatActivity implements
     CheckBox mStackHorizontally;
     @Bind(R.id.bgFillColorCircle)
     ColorCircleView mBgFillColor;
+    @Bind(R.id.bgFillColorLabel)
+    TextView mBgFillColorLabel;
     @Bind(R.id.imagePaddingLabel)
     TextView mImagePaddingLabel;
+    @Bind(R.id.removeBgButton)
+    Button mRemoveBgFillBtn;
 
     private PhotoGridAdapter mAdapter;
     private Photo[] mSelectedPhotos;
@@ -133,10 +138,18 @@ public class MainActivity extends AppCompatActivity implements
         animator.setSupportsChangeAnimations(false);
         mList.setItemAnimator(animator);
 
+        final int bgFillColor = Prefs.bgFillColor(this);
         mStackHorizontally.setChecked(Prefs.stackHorizontally(this));
-        mBgFillColor.setColor(Prefs.bgFillColor(this));
+        mBgFillColor.setColor(bgFillColor);
         final int[] padding = Prefs.imageSpacing(this);
         mImagePaddingLabel.setText(getString(R.string.image_spacing_x, padding[0], padding[1]));
+
+        if (bgFillColor != Color.TRANSPARENT) {
+            mRemoveBgFillBtn.setVisibility(View.VISIBLE);
+            mBgFillColorLabel.setText(R.string.background_fill_color);
+        } else {
+            mBgFillColorLabel.setText(R.string.background_fill_color_transparent);
+        }
 
         processIntent(getIntent());
     }
@@ -229,6 +242,13 @@ public class MainActivity extends AppCompatActivity implements
         mToolbar.getMenu().findItem(R.id.clear).setVisible(false);
     }
 
+    @OnClick(R.id.removeBgButton)
+    public void onClickRemoveBgFill() {
+        mRemoveBgFillBtn.setVisibility(View.GONE);
+        //noinspection ConstantConditions
+        onColorSelection(null, Color.TRANSPARENT);
+    }
+
     @OnClick(R.id.expandButton)
     public void onClickExpandButton(ImageView button) {
         if (mOriginalSettingsFrameHeight == -1) {
@@ -286,6 +306,12 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onColorSelection(@NonNull ColorChooserDialog colorChooserDialog, @ColorInt int selectedColor) {
+        if (selectedColor != Color.TRANSPARENT) {
+            mRemoveBgFillBtn.setVisibility(View.VISIBLE);
+            mBgFillColorLabel.setText(R.string.background_fill_color);
+        } else {
+            mBgFillColorLabel.setText(R.string.background_fill_color_transparent);
+        }
         Prefs.bgFillColor(this, selectedColor);
         mBgFillColor.setColor(selectedColor);
     }
@@ -420,20 +446,20 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSizingResult(double scale, int resultWidth, int resultHeight, boolean cancelled) {
+    public void onSizingResult(double scale, int resultWidth, int resultHeight, Bitmap.CompressFormat format, int quality, boolean cancelled) {
         if (cancelled) {
             mTraverseIndex = -1;
             Util.unlockOrientation(this);
             return;
         }
         try {
-            finishProcessing(scale, resultWidth, resultHeight);
+            finishProcessing(scale, resultWidth, resultHeight, format, quality);
         } catch (OutOfMemoryError e) {
             Util.showMemoryError(this);
         }
     }
 
-    private void finishProcessing(final double SCALE, int resultWidth, int resultHeight) {
+    private void finishProcessing(final double SCALE, int resultWidth, int resultHeight, final Bitmap.CompressFormat format, final int quality) {
         // Crash avoidance
         if (resultWidth == 0) {
             Util.showError(this, new Exception("The result width is 0. Please notify me of this through the Google+ community."));
@@ -455,8 +481,12 @@ public class MainActivity extends AppCompatActivity implements
         final Paint paint = new Paint();
         paint.setAntiAlias(true);
 
-        // Fill the canvas (blank image) with the user's selected background fill color
-        resultCanvas.drawColor(Prefs.bgFillColor(this));
+        @ColorInt
+        final int bgFillColor = Prefs.bgFillColor(this);
+        if (bgFillColor != Color.TRANSPARENT) {
+            // Fill the canvas (blank image) with the user's selected background fill color
+            resultCanvas.drawColor(bgFillColor);
+        }
 
         final MaterialDialog progress = new MaterialDialog.Builder(this)
                 .content(R.string.affixing_your_photos)
@@ -529,12 +559,12 @@ public class MainActivity extends AppCompatActivity implements
                 }
 
                 // Save results to file
-                File cacheFile = Util.makeTempFile(MainActivity.this, ".jpg");
+                File cacheFile = Util.makeTempFile(MainActivity.this, ".png");
                 Util.log("Saving result to %s", cacheFile.getAbsolutePath().replace("%", "%%"));
                 FileOutputStream os = null;
                 try {
                     os = new FileOutputStream(cacheFile);
-                    result.compress(Bitmap.CompressFormat.JPEG, 100, os);
+                    result.compress(format, quality, os);
                 } catch (Exception e) {
                     Util.log("Error: %s", e.getMessage());
                     e.printStackTrace();

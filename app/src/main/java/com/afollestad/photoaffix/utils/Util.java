@@ -3,6 +3,7 @@ package com.afollestad.photoaffix.utils;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Looper;
@@ -106,5 +107,12 @@ public class Util {
         } else {
             Log.d("PHOTO_AFFIX", message);
         }
+    }
+
+    public static int lighten(int color, float factor) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        hsv[2] *= factor; // value component
+        return Color.HSVToColor(hsv);
     }
 }

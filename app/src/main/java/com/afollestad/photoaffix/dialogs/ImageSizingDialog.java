@@ -3,11 +3,15 @@ package com.afollestad.photoaffix.dialogs;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.afollestad.materialdialogs.DialogAction;
@@ -26,7 +30,7 @@ public class ImageSizingDialog extends DialogFragment {
     }
 
     public interface SizingCallback {
-        void onSizingResult(double scale, int resultWidth, int resultHeight, boolean cancelled);
+        void onSizingResult(double scale, int resultWidth, int resultHeight, Bitmap.CompressFormat format, int quality, boolean cancelled);
     }
 
     private SizingCallback mCallback;
@@ -40,6 +44,14 @@ public class ImageSizingDialog extends DialogFragment {
     SeekBar inputScaleSeek;
     @Bind(R.id.inputScaleLabel)
     TextView inputScaleLabel;
+    @Bind(R.id.formatSpinner)
+    Spinner mFormatSpinner;
+    @Bind(R.id.qualityTitle)
+    TextView mQualityTitle;
+    @Bind(R.id.qualitySeeker)
+    SeekBar mQualitySeeker;
+    @Bind(R.id.qualityLabel)
+    TextView mQualityLabel;
 
     private double round(double x) {
         return Math.round(x * 100.0) / 100.0;
@@ -57,7 +69,7 @@ public class ImageSizingDialog extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         MaterialDialog dialog = new MaterialDialog.Builder(getActivity())
-                .title(R.string.output_size)
+                .title(R.string.output_settings)
                 .customView(R.layout.dialog_imagesizing, false)
                 .positiveText(R.string.continueStr)
                 .negativeText(android.R.string.cancel)
@@ -72,6 +84,8 @@ public class ImageSizingDialog extends DialogFragment {
                             mCallback.onSizingResult(scale,
                                     Integer.parseInt(inputWidth.getText().toString().trim()),
                                     Integer.parseInt(inputHeight.getText().toString().trim()),
+                                    mFormatSpinner.getSelectedItemPosition() == 0 ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                                    mQualitySeeker.getProgress(),
                                     false);
                         }
                         materialDialog.dismiss();
@@ -80,7 +94,7 @@ public class ImageSizingDialog extends DialogFragment {
                 .onNegative(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        mCallback.onSizingResult(0.0f, -1, -1, true);
+                        mCallback.onSizingResult(0.0f, -1, -1, Bitmap.CompressFormat.PNG, 100, true);
                         materialDialog.dismiss();
                     }
                 })
@@ -126,6 +140,42 @@ public class ImageSizingDialog extends DialogFragment {
             }
         });
         inputScaleSeek.setProgress(inputScaleSeek.getMax());
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item,
+                new String[]{"PNG", "JPEG"});
+        adapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
+        mFormatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                final int visibility = position == 1 ? View.VISIBLE : View.GONE;
+                mQualityTitle.setVisibility(visibility);
+                mQualitySeeker.setVisibility(visibility);
+                mQualityLabel.setVisibility(visibility);
+                mQualitySeeker.setProgress(100);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        mFormatSpinner.setAdapter(adapter);
+
+        mQualitySeeker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                mQualityLabel.setText(String.format("%d", progress));
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
+        mQualitySeeker.setMax(100);
+        mQualitySeeker.setProgress(100);
 
         return dialog;
     }
