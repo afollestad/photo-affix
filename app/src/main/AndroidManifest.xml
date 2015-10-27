@@ -2,18 +2,17 @@
     package="com.afollestad.photoaffix">
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
+        android:label="${appName}"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity
-            android:name=".ui.MainActivity"
-            android:label="@string/app_name_short">
+        <activity android:name=".ui.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -28,7 +27,6 @@
 
         <activity
             android:name=".ui.ViewerActivity"
-            android:label=""
             android:theme="@style/AppTheme.Black" />
 
         <meta-data
@@ -36,5 +34,4 @@
             android:value="e9b2b6339277beb481a9c658b72cd0e4c714e0cb" />
     </application>
 
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

@@ -342,16 +342,36 @@ public class MainActivity extends AppCompatActivity implements
         return new int[]{options.outWidth, options.outHeight};
     }
 
-    private Bitmap getNextBitmap() {
+    private BitmapFactory.Options getNextBitmapOptions() {
         mTraverseIndex++;
         if (mTraverseIndex > mSelectedPhotos.length - 1)
             return null;
         Photo nextPhoto = mSelectedPhotos[mTraverseIndex];
         InputStream is = null;
+        BitmapFactory.Options options = null;
+        try {
+            is = Util.openStream(this, nextPhoto.getUri());
+            options = new BitmapFactory.Options();
+            //Only the properties, so we can get the width/height
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(is, null, options);
+        } catch (Exception e) {
+            Util.showError(this, e);
+        } catch (OutOfMemoryError e2) {
+            Util.showMemoryError(MainActivity.this);
+        } finally {
+            Util.closeQuietely(is);
+        }
+        return options;
+    }
+
+    private Bitmap getNextBitmap(BitmapFactory.Options options) {
+        Photo nextPhoto = mSelectedPhotos[mTraverseIndex];
+        InputStream is = null;
         Bitmap bm = null;
         try {
             is = Util.openStream(this, nextPhoto.getUri());
-            bm = BitmapFactory.decodeStream(is);
+            bm = BitmapFactory.decodeStream(is, null, options);
         } catch (Exception e) {
             Util.showError(this, e);
         } catch (OutOfMemoryError e2) {
@@ -479,7 +499,9 @@ public class MainActivity extends AppCompatActivity implements
 
         final Canvas resultCanvas = new Canvas(result);
         final Paint paint = new Paint();
+        paint.setFilterBitmap(true);
         paint.setAntiAlias(true);
+        paint.setDither(true);
 
         @ColorInt
         final int bgFillColor = Prefs.bgFillColor(this);
@@ -503,12 +525,12 @@ public class MainActivity extends AppCompatActivity implements
                 if (horizontal) {
                     int currentX = 0;
                     mTraverseIndex = -1;
-                    Bitmap bm;
 
-                    while ((bm = getNextBitmap()) != null) {
-                        final int scaledWidth = (int) (bm.getWidth() * SCALE);
-                        final int scaledHeight = (int) (bm.getHeight() * SCALE);
-                        Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
+                    BitmapFactory.Options bitmapOptions;
+                    while ((bitmapOptions = getNextBitmapOptions()) != null) {
+                        final int scaledWidth = (int) (bitmapOptions.outWidth * SCALE);
+                        final int scaledHeight = (int) (bitmapOptions.outHeight * SCALE);
+                        Util.log("CURRENT IMAGE width = %d, height = %d", bitmapOptions.outWidth, bitmapOptions.outHeight);
                         Util.log("SCALED IMAGE width = %d, height = %d", scaledWidth, scaledHeight);
 
                         // Left is right of last image plus horizontal spacing
@@ -523,6 +545,14 @@ public class MainActivity extends AppCompatActivity implements
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
+
+                        bitmapOptions.inJustDecodeBounds = false;
+                        bitmapOptions.inSampleSize = bitmapOptions.outWidth / (dstRect.right - dstRect.left);
+
+                        Bitmap bm = getNextBitmap(bitmapOptions);
+                        if (bm == null) {
+                            break;
+                        }
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
                         currentX = dstRect.right;
@@ -531,12 +561,13 @@ public class MainActivity extends AppCompatActivity implements
                 } else {
                     int currentY = 0;
                     mTraverseIndex = -1;
-                    Bitmap bm;
 
-                    while ((bm = getNextBitmap()) != null) {
-                        final int scaledWidth = (int) (bm.getWidth() * SCALE);
-                        final int scaledHeight = (int) (bm.getHeight() * SCALE);
-                        Util.log("CURRENT IMAGE width = %d, height = %d", bm.getWidth(), bm.getHeight());
+                    BitmapFactory.Options bitmapOptions;
+
+                    while ((bitmapOptions = getNextBitmapOptions()) != null) {
+                        final int scaledWidth = (int) (bitmapOptions.outWidth * SCALE);
+                        final int scaledHeight = (int) (bitmapOptions.outHeight * SCALE);
+                        Util.log("CURRENT IMAGE width = %d, height = %d", bitmapOptions.outWidth, bitmapOptions.outHeight);
                         Util.log("SCALED IMAGE width = %d, height = %d", scaledWidth, scaledHeight);
 
                         // Top is bottom of the last image plus vertical spacing
@@ -551,6 +582,14 @@ public class MainActivity extends AppCompatActivity implements
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
+
+                        bitmapOptions.inJustDecodeBounds = false;
+                        bitmapOptions.inSampleSize = (dstRect.right - dstRect.left) / bitmapOptions.outWidth;
+
+                        Bitmap bm = getNextBitmap(bitmapOptions);
+                        if (bm == null) {
+                            break;
+                        }
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
                         currentY = dstRect.bottom;
