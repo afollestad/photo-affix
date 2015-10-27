@@ -1,6 +1,6 @@
 # Photo Affix
 
-![Showcase](https://raw.githubusercontent.com/afollestad/photo-affix/master/art/affixshowcase.png)
+![Showcase](https://raw.githubusercontent.com/afollestad/photo-affix/master/art/showcaseimg.png)
 
 This app is still in beta! You can [download the APK](https://github.com/afollestad/photo-affix/raw/master/apk/PhotoAffix.apk) 
 to try it out. You can also [opt-in to beta testing on Google Play](https://play.google.com/apps/testing/com.afollestad.photoaffix). 
