@@ -18,8 +18,8 @@ android {
         applicationId "com.afollestad.photoaffix"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 9
-        versionName "0.2.0 BETA"
+        versionCode 10
+        versionName "0.2.1 BETA"
         manifestPlaceholders = [appName: "@string/app_name"]
     }
     buildTypes {
