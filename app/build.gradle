@@ -49,10 +49,10 @@ dependencies {
     compile 'com.afollestad:inquiry:1.2.0'
     compile 'com.commit451:PhotoView:1.2.4'
 
-    compile('com.github.afollestad.material-dialogs:core:0.8.4.2@aar') {
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.0@aar') {
         transitive = true
     }
-    compile('com.github.afollestad.material-dialogs:commons:0.8.4.2@aar') {
+    compile('com.github.afollestad.material-dialogs:commons:0.8.5.0@aar') {
         transitive = true
     }
     compile('com.afollestad:drag-select-recyclerview:0.1.2@aar') {
