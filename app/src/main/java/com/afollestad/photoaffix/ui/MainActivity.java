@@ -295,6 +295,7 @@ public class MainActivity extends AppCompatActivity implements
                 new ColorChooserDialog.Builder(this, R.string.background_fill_color_title)
                         .backButton(R.string.back)
                         .doneButton(R.string.done)
+                        .allowUserColorInputAlpha(false)
                         .preselect(Prefs.bgFillColor(this))
                         .show();
                 break;
@@ -641,9 +642,14 @@ public class MainActivity extends AppCompatActivity implements
                         Util.log("Scanned %s, uri = %s", path, uri != null ? uri.toString().replace("%", "%%") : null);
                     }
                 });
-        // Open the result in the viewer
-        startActivity(new Intent(this, ViewerActivity.class)
-                .setDataAndType(Uri.fromFile(file), "image/*"));
+
+        try {
+            // Open the result in the viewer
+            startActivity(new Intent(this, ViewerActivity.class)
+                    .setDataAndType(Uri.fromFile(file), "image/*"));
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     @Override
