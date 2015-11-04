@@ -325,6 +325,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Size(2)
     private int[] getNextBitmapSize() {
+        if (mSelectedPhotos == null || mSelectedPhotos.length == 0) {
+            mSelectedPhotos = mAdapter.getSelectedPhotos();
+            if (mSelectedPhotos == null || mSelectedPhotos.length == 0)
+                return new int[]{10, 10}; // crash workaround
+        }
         mTraverseIndex++;
         if (mTraverseIndex > mSelectedPhotos.length - 1)
             return null;

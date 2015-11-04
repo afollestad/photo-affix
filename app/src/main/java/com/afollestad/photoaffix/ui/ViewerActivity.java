@@ -162,7 +162,8 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
 
     @Override
     public void onPhotoTap(View view, float x, float y) {
-        if (mToolbarAnimator != null) mToolbarAnimator.cancel();
+        if (mToolbar == null) return;
+        else if (mToolbarAnimator != null) mToolbarAnimator.cancel();
         mToolbarAnimator = mToolbar.animate();
         if (mToolbar.getAlpha() > 0f) {
             mToolbarAnimator.alpha(0f);
