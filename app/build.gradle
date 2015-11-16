@@ -12,7 +12,7 @@ apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
         applicationId "com.afollestad.photoaffix"
@@ -49,13 +49,13 @@ dependencies {
     compile 'com.afollestad:inquiry:1.2.0'
     compile 'com.commit451:PhotoView:1.2.4'
 
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.0@aar') {
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.1@aar') {
         transitive = true
     }
-    compile('com.github.afollestad.material-dialogs:commons:0.8.5.0@aar') {
+    compile('com.github.afollestad.material-dialogs:commons:0.8.5.1@aar') {
         transitive = true
     }
-    compile('com.afollestad:drag-select-recyclerview:0.1.2@aar') {
+    compile('com.github.afollestad:drag-select-recyclerview:7c97b7d599@aar') {
         transitive = true
     }
     compile('com.crashlytics.sdk.android:crashlytics:2.5.2@aar') {

@@ -104,6 +104,7 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
         switch (item.getItemId()) {
             case R.id.share: {
                 Intent target = new Intent(Intent.ACTION_SEND)
+                        .putExtra(Intent.EXTRA_STREAM, getIntent().getData())
                         .setDataAndType(getIntent().getData(), "image/*");
                 Intent chooser = Intent.createChooser(target, getString(R.string.share_using));
                 startActivity(chooser);
