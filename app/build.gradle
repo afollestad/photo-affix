@@ -42,13 +42,13 @@ dependencies {
     compile 'com.afollestad:inquiry:1.4.0'
     compile 'com.commit451:PhotoView:1.2.4'
 
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.1@aar') {
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.2@aar') {
         transitive = true
     }
-    compile('com.github.afollestad.material-dialogs:commons:0.8.5.1@aar') {
+    compile('com.github.afollestad.material-dialogs:commons:0.8.5.2@aar') {
         transitive = true
     }
-    compile('com.github.afollestad:drag-select-recyclerview:0.2.1@aar') {
+    compile('com.github.afollestad:drag-select-recyclerview:0.3.0@aar') {
         transitive = true
     }
     compile('com.crashlytics.sdk.android:crashlytics:2.5.2@aar') {

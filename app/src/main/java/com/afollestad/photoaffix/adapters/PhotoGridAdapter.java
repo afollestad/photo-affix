@@ -82,9 +82,6 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
             holder.circle.setActivated(false);
             holder.image.setActivated(false);
         }
-
-        // Used by DragSelectRecyclerView
-        holder.itemView.setTag(position);
     }
 
     @Override
