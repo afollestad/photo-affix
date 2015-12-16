@@ -1,5 +1,7 @@
 # Photo Affix
 
+[![Build Status](https://travis-ci.org/afollestad/photo-affix.svg)](https://travis-ci.org/afollestad/photo-affix)
+
 ![Showcase](https://raw.githubusercontent.com/afollestad/photo-affix/master/art/showcase.png)
 
 This app is still in beta! You can [download the APK](https://github.com/afollestad/photo-affix/raw/master/apk/PhotoAffix.apk) 
