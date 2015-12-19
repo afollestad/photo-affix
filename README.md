@@ -1,6 +1,7 @@
 # Photo Affix
 
 [![Build Status](https://travis-ci.org/afollestad/photo-affix.svg)](https://travis-ci.org/afollestad/photo-affix)
+[![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 ![Showcase](https://raw.githubusercontent.com/afollestad/photo-affix/master/art/showcase.png)
 
