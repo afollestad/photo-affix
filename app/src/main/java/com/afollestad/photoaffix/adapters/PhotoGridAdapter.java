@@ -68,11 +68,12 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
 
     @Override
     public void onBindViewHolder(PhotoViewHolder holder, int position) {
-        if (holder.itemView.getTag() == null || (Integer) holder.itemView.getTag() != position) {
-            Glide.with(mContext)
-                    .load(mPhotos[position].getUri())
-                    .into(holder.image);
-        }
+        super.onBindViewHolder(holder, position);
+
+        Glide.with(mContext)
+                .load(mPhotos[position].getUri())
+                .into(holder.image);
+
         if (isIndexSelected(position)) {
             holder.check.setVisibility(View.VISIBLE);
             holder.circle.setActivated(true);
