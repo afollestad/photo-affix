@@ -17,6 +17,7 @@ import android.os.Looper;
 import android.os.PersistableBundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.Size;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -224,7 +225,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onPause() {
         super.onPause();
-        Inquiry.deinit();
+        if (isFinishing())
+            Inquiry.deinit();
     }
 
     public void clearSelection() {
@@ -348,7 +350,9 @@ public class MainActivity extends AppCompatActivity implements
         return new int[]{options.outWidth, options.outHeight};
     }
 
+    @Nullable
     private BitmapFactory.Options getNextBitmapOptions() {
+        if (mSelectedPhotos == null) return null;
         mTraverseIndex++;
         if (mTraverseIndex > mSelectedPhotos.length - 1)
             return null;

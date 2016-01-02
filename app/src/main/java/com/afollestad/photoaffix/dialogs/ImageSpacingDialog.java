@@ -3,8 +3,10 @@ package com.afollestad.photoaffix.dialogs;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -47,7 +49,9 @@ public class ImageSpacingDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final int fillColor = Prefs.bgFillColor(getActivity());
+        int fillColor = Prefs.bgFillColor(getActivity());
+        if (fillColor == Color.TRANSPARENT)
+            fillColor = ContextCompat.getColor(getActivity(), R.color.colorAccent);
         MaterialDialog dialog = new MaterialDialog.Builder(getActivity())
                 .title(R.string.image_spacing)
                 .customView(R.layout.dialog_imagespacing, true)
@@ -55,6 +59,7 @@ public class ImageSpacingDialog extends DialogFragment {
                 .negativeText(android.R.string.cancel)
                 .positiveColor(fillColor)
                 .negativeColor(fillColor)
+                .widgetColor(fillColor)
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
