@@ -200,6 +200,7 @@ public class MainActivity extends AppCompatActivity implements
                 .all(new GetCallback<Photo>() {
                     @Override
                     public void result(Photo[] photos) {
+                        if (isFinishing()) return;
                         if (mEmpty != null) {
                             mAdapter.setPhotos(photos);
                             mEmpty.setVisibility(photos == null || photos.length == 0 ?
