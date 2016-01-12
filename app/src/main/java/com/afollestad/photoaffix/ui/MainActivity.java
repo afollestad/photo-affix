@@ -348,6 +348,7 @@ public class MainActivity extends AppCompatActivity implements
             BitmapFactory.decodeStream(is, null, options);
         } catch (Exception e) {
             Util.showError(this, e);
+            return new int[]{0, 0};
         } finally {
             Util.closeQuietely(is);
         }
@@ -371,8 +372,10 @@ public class MainActivity extends AppCompatActivity implements
             BitmapFactory.decodeStream(is, null, options);
         } catch (Exception e) {
             Util.showError(this, e);
+            return null;
         } catch (OutOfMemoryError e2) {
             Util.showMemoryError(MainActivity.this);
+            return null;
         } finally {
             Util.closeQuietely(is);
         }
@@ -422,6 +425,7 @@ public class MainActivity extends AppCompatActivity implements
             mTraverseIndex = -1;
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
+                if (size[0] == 0 && size[1] == 0) return;
                 totalWidth += size[0];
                 if (maxHeight == -1)
                     maxHeight = size[1];
@@ -455,6 +459,7 @@ public class MainActivity extends AppCompatActivity implements
             mTraverseIndex = -1;
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
+                if (size[0] == 0 && size[1] == 0) return;
                 totalHeight += size[1];
                 if (maxWidth == -1)
                     maxWidth = size[0];
@@ -539,13 +544,14 @@ public class MainActivity extends AppCompatActivity implements
             public void run() {
                 // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
                 final Rect dstRect = new Rect(0, 0, 10, 10);
+                int processedCount = 0;
 
                 if (horizontal) {
                     int currentX = 0;
                     mTraverseIndex = -1;
-
                     BitmapFactory.Options bitmapOptions;
                     while ((bitmapOptions = getNextBitmapOptions()) != null) {
+                        processedCount++;
                         final int scaledWidth = (int) (bitmapOptions.outWidth * SCALE);
                         final int scaledHeight = (int) (bitmapOptions.outHeight * SCALE);
                         Util.log("CURRENT IMAGE width = %d, height = %d", bitmapOptions.outWidth, bitmapOptions.outHeight);
@@ -567,10 +573,8 @@ public class MainActivity extends AppCompatActivity implements
                         bitmapOptions.inJustDecodeBounds = false;
                         calculateInSampleSize(bitmapOptions, dstRect.bottom - dstRect.top);
 
-                        Bitmap bm = getNextBitmap(bitmapOptions);
-                        if (bm == null) {
-                            break;
-                        }
+                        final Bitmap bm = getNextBitmap(bitmapOptions);
+                        if (bm == null) break;
                         bm.setDensity(Bitmap.DENSITY_NONE);
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
@@ -580,10 +584,9 @@ public class MainActivity extends AppCompatActivity implements
                 } else {
                     int currentY = 0;
                     mTraverseIndex = -1;
-
                     BitmapFactory.Options bitmapOptions;
-
                     while ((bitmapOptions = getNextBitmapOptions()) != null) {
+                        processedCount++;
                         final int scaledWidth = (int) (bitmapOptions.outWidth * SCALE);
                         final int scaledHeight = (int) (bitmapOptions.outHeight * SCALE);
                         Util.log("CURRENT IMAGE width = %d, height = %d", bitmapOptions.outWidth, bitmapOptions.outHeight);
@@ -605,15 +608,22 @@ public class MainActivity extends AppCompatActivity implements
                         bitmapOptions.inJustDecodeBounds = false;
                         bitmapOptions.inSampleSize = (dstRect.right - dstRect.left) / bitmapOptions.outWidth;
 
-                        Bitmap bm = getNextBitmap(bitmapOptions);
-                        if (bm == null) {
-                            break;
-                        }
+                        final Bitmap bm = getNextBitmap(bitmapOptions);
+                        if (bm == null) break;
                         resultCanvas.drawBitmap(bm, null, dstRect, paint);
 
                         currentY = dstRect.bottom;
                         bm.recycle();
                     }
+                }
+
+                if (processedCount == 0) {
+                    try {
+                        result.recycle();
+                    } catch (Throwable ignored) {
+                    }
+                    progress.dismiss();
+                    return;
                 }
 
                 // Save results to file
