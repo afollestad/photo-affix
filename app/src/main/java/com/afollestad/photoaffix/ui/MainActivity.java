@@ -168,7 +168,7 @@ public class MainActivity extends AppCompatActivity implements
                 mSelectedPhotos = new Photo[uris.size()];
                 for (int i = 0; i < uris.size(); i++)
                     mSelectedPhotos[i] = new Photo(uris.get(i));
-                mAffixButton.performClick();
+                beginProcessing();
             } else {
                 Toast.makeText(this, R.string.need_two_or_more, Toast.LENGTH_SHORT).show();
             }
@@ -274,16 +274,20 @@ public class MainActivity extends AppCompatActivity implements
         mSettingsFrameAnimator.start();
     }
 
-    @OnClick(R.id.affixButton)
-    public void onClickAffixButton(View v) {
-        v.setEnabled(false);
-        mSelectedPhotos = mAdapter.getSelectedPhotos();
+    private void beginProcessing() {
+        mAffixButton.setEnabled(false);
         try {
             startProcessing();
         } catch (OutOfMemoryError e) {
             Util.showMemoryError(MainActivity.this);
         }
-        v.setEnabled(true);
+        mAffixButton.setEnabled(true);
+    }
+
+    @OnClick(R.id.affixButton)
+    public void onClickAffixButton(View v) {
+        mSelectedPhotos = mAdapter.getSelectedPhotos();
+        beginProcessing();
     }
 
     @OnClick({R.id.settingStackHorizontally, R.id.settingBgFillColor, R.id.settingImagePadding})
