@@ -28,8 +28,8 @@ android {
         applicationId "com.afollestad.photoaffix"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 15
-        versionName "0.3.1 BETA"
+        versionCode 16
+        versionName "0.3.2 BETA"
     }
     buildTypes {
         release {

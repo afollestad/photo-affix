@@ -503,7 +503,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void finishProcessing(final double SCALE, int resultWidth, int resultHeight, final Bitmap.CompressFormat format, final int quality) {
+    private void finishProcessing(final double SCALE, final int resultWidth, final int resultHeight, final Bitmap.CompressFormat format, final int quality) {
         // Crash avoidance
         if (resultWidth == 0) {
             Util.showError(this, new Exception("The result width is 0. Please notify me of this through the Google+ community."));
@@ -563,10 +563,10 @@ public class MainActivity extends AppCompatActivity implements
                         // Right is left plus width of the current image
                         dstRect.right = dstRect.left + scaledWidth;
 
-                        // Top is very top plus vertical spacing
-                        dstRect.top = SPACING_VERTICAL;
-                        // Bottom is top plus the current image height
-                        dstRect.bottom = dstRect.top + scaledHeight;
+                        // Centers images vertically
+                        final int centerY = (resultHeight / 2) - (SPACING_VERTICAL * 2);
+                        dstRect.top = centerY - (scaledHeight / 2);
+                        dstRect.bottom = centerY + (scaledHeight / 2);
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
@@ -598,10 +598,10 @@ public class MainActivity extends AppCompatActivity implements
                         // Bottom is top plus height of the current image
                         dstRect.bottom = dstRect.top + scaledHeight;
 
-                        // Left is left side plus horizontal spacing
-                        dstRect.left = SPACING_HORIZONTAL;
-                        // Right is left plus the current image width
-                        dstRect.right = dstRect.left + scaledWidth;
+                        // Centers images horizontally
+                        final int centerX = (resultWidth / 2) - (SPACING_HORIZONTAL * 2);
+                        dstRect.left = centerX - (scaledWidth / 2);
+                        dstRect.right = centerX + (scaledWidth / 2);
 
                         Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
