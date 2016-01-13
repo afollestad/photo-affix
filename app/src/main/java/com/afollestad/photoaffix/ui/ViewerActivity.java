@@ -154,7 +154,7 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
                 new String[]{file.getAbsolutePath()}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     public void onScanCompleted(String path, Uri uri) {
-                        progress.dismiss();
+                        MainActivity.dismissDialog(progress);
                         Util.log("Scanned %s, uri = %s", path, uri != null ? uri.toString().replace("%", "%%") : null);
                         finish();
                     }

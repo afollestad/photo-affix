@@ -2,6 +2,7 @@ package com.afollestad.photoaffix.ui;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
+import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -102,6 +103,15 @@ public class MainActivity extends AppCompatActivity implements
 
     private int mOriginalSettingsFrameHeight = -1;
     private ValueAnimator mSettingsFrameAnimator;
+
+    // Avoids a rare crash
+    public static void dismissDialog(@Nullable Dialog dialog) {
+        if (dialog == null) return;
+        try {
+            dialog.dismiss();
+        } catch (Throwable ignored) {
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -623,7 +633,7 @@ public class MainActivity extends AppCompatActivity implements
                         result.recycle();
                     } catch (Throwable ignored) {
                     }
-                    progress.dismiss();
+                    dismissDialog(progress);
                     return;
                 }
 
@@ -646,7 +656,7 @@ public class MainActivity extends AppCompatActivity implements
                 // Recycle the large final image
                 result.recycle();
                 // Close progress dialog and move on to the done phase
-                progress.dismiss();
+                dismissDialog(progress);
                 done(cacheFile);
             }
         }).start();

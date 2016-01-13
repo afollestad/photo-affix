@@ -17,6 +17,7 @@ import android.widget.TextView;
 import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.photoaffix.R;
+import com.afollestad.photoaffix.ui.MainActivity;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -88,14 +89,14 @@ public class ImageSizingDialog extends DialogFragment {
                                     mQualitySeeker.getProgress(),
                                     false);
                         }
-                        materialDialog.dismiss();
+                        MainActivity.dismissDialog(materialDialog);
                     }
                 })
                 .onNegative(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
                         mCallback.onSizingResult(0.0f, -1, -1, Bitmap.CompressFormat.PNG, 100, true);
-                        materialDialog.dismiss();
+                        MainActivity.dismissDialog(materialDialog);
                     }
                 })
                 .onNeutral(new MaterialDialog.SingleButtonCallback() {
