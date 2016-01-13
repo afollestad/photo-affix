@@ -411,7 +411,11 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public static void calculateInSampleSize(BitmapFactory.Options options, int reqHeight) {
-        options.inSampleSize = options.outHeight / reqHeight;
+        if (reqHeight < 1) {
+            options.inSampleSize = 1;
+        } else {
+            options.inSampleSize = options.outHeight / reqHeight;
+        }
     }
 
     private void startProcessing() {
