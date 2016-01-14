@@ -54,8 +54,10 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
     public Photo[] getSelectedPhotos() {
         Integer[] indices = getSelectedIndices();
         ArrayList<Photo> selected = new ArrayList<>();
-        for (Integer index : indices)
+        for (Integer index : indices) {
+            if (index < 0) continue;
             selected.add(mPhotos[index]);
+        }
         return selected.toArray(new Photo[selected.size()]);
     }
 

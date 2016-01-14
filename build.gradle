@@ -1,9 +1,12 @@
+apply plugin: 'com.github.ben-manes.versions'
+
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:2.0.0-alpha3'
+        classpath 'com.github.ben-manes:gradle-versions-plugin:0.12.0'
     }
 }
 
