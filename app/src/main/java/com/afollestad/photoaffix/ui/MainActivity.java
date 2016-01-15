@@ -172,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void processIntent(Intent intent) {
-        if (intent != null && intent.getAction().equals(Intent.ACTION_SEND_MULTIPLE)) {
+        if (intent != null && Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
             ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
             if (uris != null && uris.size() > 1) {
                 mSelectedPhotos = new Photo[uris.size()];
