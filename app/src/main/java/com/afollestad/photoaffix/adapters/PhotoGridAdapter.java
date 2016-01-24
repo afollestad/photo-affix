@@ -71,6 +71,7 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
     @Override
     public void onBindViewHolder(PhotoViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
+        if (mContext == null || mContext.isFinishing()) return;
 
         Glide.with(mContext)
                 .load(mPhotos[position].getUri())
