@@ -12,7 +12,7 @@ apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    buildToolsVersion '23.0.3'
 
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
@@ -28,8 +28,8 @@ android {
         applicationId "com.afollestad.photoaffix"
         minSdkVersion 21
         targetSdkVersion 23
-        versionCode 19
-        versionName "0.3.5 BETA"
+        versionCode 20
+        versionName "0.3.6 BETA"
     }
     buildTypes {
         release {
@@ -45,20 +45,20 @@ repositories {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:23.1.1'
+    compile 'com.android.support:appcompat-v7:23.3.0'
 
     compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.github.bumptech.glide:glide:3.6.1'
     compile 'com.commit451:PhotoView:1.2.4'
 
-    compile 'com.github.afollestad:inquiry:543bde64b2'
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.3@aar') {
+    compile 'com.github.afollestad:inquiry:ff02f33293'
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.8@aar') {
         transitive = true
     }
-    compile('com.github.afollestad.material-dialogs:commons:0.8.5.3@aar') {
+    compile('com.github.afollestad.material-dialogs:commons:0.8.5.8@aar') {
         transitive = true
     }
-    compile('com.github.afollestad:drag-select-recyclerview:0.3.1@aar') {
+    compile('com.github.afollestad:drag-select-recyclerview:0.3.5@aar') {
         transitive = true
     }
     compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
