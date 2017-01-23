@@ -1,17 +1,16 @@
-apply plugin: 'com.github.ben-manes.versions'
-
 buildscript {
     repositories {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0-alpha5'
-        classpath 'com.github.ben-manes:gradle-versions-plugin:0.12.0'
+        classpath 'com.android.tools.build:gradle:2.2.3'
     }
 }
 
 allprojects {
     repositories {
+        maven { url 'https://maven.fabric.io/public' }
+        mavenCentral()
         jcenter()
         maven { url "https://jitpack.io" }
     }
