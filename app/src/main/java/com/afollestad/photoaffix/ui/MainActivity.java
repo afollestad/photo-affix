@@ -42,7 +42,6 @@ import com.afollestad.inquiry.Inquiry;
 import com.afollestad.inquiry.callbacks.GetCallback;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.materialdialogs.color.ColorChooserDialog;
-import com.afollestad.photoaffix.BuildConfig;
 import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.adapters.PhotoGridAdapter;
 import com.afollestad.photoaffix.animation.HeightEvaluator;
@@ -54,17 +53,16 @@ import com.afollestad.photoaffix.dialogs.ImageSpacingDialog;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.utils.Util;
 import com.afollestad.photoaffix.views.ColorCircleView;
-import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.fabric.sdk.android.Fabric;
+import butterknife.Unbinder;
 
 /**
  * @author Aidan Follestad (afollestad)
@@ -75,34 +73,26 @@ public class MainActivity extends AppCompatActivity implements
 
     private static final int PERMISSION_RC = 69;
 
-    @Bind(R.id.appbar_toolbar)
-    Toolbar mToolbar;
-    @Bind(R.id.list)
-    public DragSelectRecyclerView mList;
-    @Bind(R.id.affixButton)
-    Button mAffixButton;
-    @Bind(R.id.settingsFrame)
-    ViewGroup mSettingsFrame;
-    @Bind(R.id.empty)
-    TextView mEmpty;
+    @BindView(R.id.appbar_toolbar) Toolbar toolbar;
+    @BindView(R.id.list) public DragSelectRecyclerView list;
+    @BindView(R.id.affixButton) Button affixButton;
+    @BindView(R.id.settingsFrame) ViewGroup settingsFrame;
+    @BindView(R.id.empty) TextView empty;
 
-    @Bind(R.id.stackHorizontallySwitch)
-    CheckBox mStackHorizontally;
-    @Bind(R.id.bgFillColorCircle)
-    ColorCircleView mBgFillColor;
-    @Bind(R.id.bgFillColorLabel)
-    TextView mBgFillColorLabel;
-    @Bind(R.id.imagePaddingLabel)
-    TextView mImagePaddingLabel;
-    @Bind(R.id.removeBgButton)
-    Button mRemoveBgFillBtn;
+    @BindView(R.id.stackHorizontallySwitch) CheckBox stackHorizontallyCheck;
+    @BindView(R.id.bgFillColorCircle) ColorCircleView bgFillColorCircle;
+    @BindView(R.id.bgFillColorLabel) TextView bgFillColorLabel;
+    @BindView(R.id.imagePaddingLabel) TextView imagePaddingLabel;
+    @BindView(R.id.removeBgButton) Button removeBgFillBtn;
 
-    private PhotoGridAdapter mAdapter;
-    private Photo[] mSelectedPhotos;
-    private int mTraverseIndex;
+    private PhotoGridAdapter adapter;
+    private Photo[] selectedPhotos;
+    private int traverseIndex;
 
-    private int mOriginalSettingsFrameHeight = -1;
-    private ValueAnimator mSettingsFrameAnimator;
+    private int originalSettingsFrameHeight = -1;
+    private ValueAnimator settingsFrameAnimator;
+
+    private Unbinder unbinder;
 
     // Avoids a rare crash
     public static void dismissDialog(@Nullable Dialog dialog) {
@@ -116,14 +106,14 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (!BuildConfig.DEBUG) {
-            Fabric.with(this, new Crashlytics());
-        }
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
 
-        mToolbar.inflateMenu(R.menu.menu_main);
-        mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+        unbinder = ButterKnife.bind(this);
+        Inquiry.newInstance(this, null)
+                .build();
+
+        toolbar.inflateMenu(R.menu.menu_main);
+        toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.clear) {
@@ -137,29 +127,29 @@ public class MainActivity extends AppCompatActivity implements
             }
         });
 
-        mList.setLayoutManager(new GridLayoutManager(this,
+        list.setLayoutManager(new GridLayoutManager(this,
                 getResources().getInteger(R.integer.grid_width)));
 
-        mAdapter = new PhotoGridAdapter(this);
-        mAdapter.restoreInstanceState(savedInstanceState);
-        mAdapter.setSelectionListener(this);
-        mList.setAdapter(mAdapter);
+        adapter = new PhotoGridAdapter(this);
+        adapter.restoreInstanceState(savedInstanceState);
+        adapter.setSelectionListener(this);
+        list.setAdapter(adapter);
 
         DefaultItemAnimator animator = new DefaultItemAnimator();
         animator.setSupportsChangeAnimations(false);
-        mList.setItemAnimator(animator);
+        list.setItemAnimator(animator);
 
         final int bgFillColor = Prefs.bgFillColor(this);
-        mStackHorizontally.setChecked(Prefs.stackHorizontally(this));
-        mBgFillColor.setColor(bgFillColor);
+        stackHorizontallyCheck.setChecked(Prefs.stackHorizontally(this));
+        bgFillColorCircle.setColor(bgFillColor);
         final int[] padding = Prefs.imageSpacing(this);
-        mImagePaddingLabel.setText(getString(R.string.image_spacing_x, padding[0], padding[1]));
+        imagePaddingLabel.setText(getString(R.string.image_spacing_x, padding[0], padding[1]));
 
         if (bgFillColor != Color.TRANSPARENT) {
-            mRemoveBgFillBtn.setVisibility(View.VISIBLE);
-            mBgFillColorLabel.setText(R.string.background_fill_color);
+            removeBgFillBtn.setVisibility(View.VISIBLE);
+            bgFillColorLabel.setText(R.string.background_fill_color);
         } else {
-            mBgFillColorLabel.setText(R.string.background_fill_color_transparent);
+            bgFillColorLabel.setText(R.string.background_fill_color_transparent);
         }
 
         processIntent(getIntent());
@@ -175,9 +165,9 @@ public class MainActivity extends AppCompatActivity implements
         if (intent != null && Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) {
             ArrayList<Uri> uris = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
             if (uris != null && uris.size() > 1) {
-                mSelectedPhotos = new Photo[uris.size()];
+                selectedPhotos = new Photo[uris.size()];
                 for (int i = 0; i < uris.size(); i++)
-                    mSelectedPhotos[i] = new Photo(uris.get(i));
+                    selectedPhotos[i] = new Photo(uris.get(i));
                 beginProcessing();
             } else {
                 Toast.makeText(this, R.string.need_two_or_more, Toast.LENGTH_SHORT).show();
@@ -188,13 +178,14 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ButterKnife.unbind(this);
+        unbinder.unbind();
+        unbinder = null;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
-        if (mAdapter != null) mAdapter.saveInstanceState(outState);
+        if (adapter != null) adapter.saveInstanceState(outState);
     }
 
     private void refresh() {
@@ -203,17 +194,18 @@ public class MainActivity extends AppCompatActivity implements
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_RC);
             return;
         }
-        Inquiry.init(this);
-        Inquiry.get().selectFrom(Uri.parse("content://media/external/images/media"), Photo.class)
+
+        Inquiry.get(this)
+                .selectFrom(Uri.parse("content://media/external/images/media"), Photo.class)
                 .sort("datetaken DESC")
                 .where("_data IS NOT NULL")
                 .all(new GetCallback<Photo>() {
                     @Override
                     public void result(Photo[] photos) {
                         if (isFinishing()) return;
-                        if (mEmpty != null) {
-                            mAdapter.setPhotos(photos);
-                            mEmpty.setVisibility(photos == null || photos.length == 0 ?
+                        if (empty != null) {
+                            adapter.setPhotos(photos);
+                            empty.setVisibility(photos == null || photos.length == 0 ?
                                     View.VISIBLE : View.GONE);
                         }
                     }
@@ -237,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onPause() {
         super.onPause();
         if (isFinishing())
-            Inquiry.deinit();
+            Inquiry.destroy(this);
     }
 
     public void clearSelection() {
@@ -250,54 +242,54 @@ public class MainActivity extends AppCompatActivity implements
             });
             return;
         }
-        mSelectedPhotos = null;
-        mAdapter.clearSelected();
-        mToolbar.getMenu().findItem(R.id.clear).setVisible(false);
+        selectedPhotos = null;
+        adapter.clearSelected();
+        toolbar.getMenu().findItem(R.id.clear).setVisible(false);
     }
 
     @OnClick(R.id.removeBgButton)
     public void onClickRemoveBgFill() {
-        mRemoveBgFillBtn.setVisibility(View.GONE);
+        removeBgFillBtn.setVisibility(View.GONE);
         //noinspection ConstantConditions
         onColorSelection(null, Color.TRANSPARENT);
     }
 
     @OnClick(R.id.expandButton)
     public void onClickExpandButton(ImageView button) {
-        if (mOriginalSettingsFrameHeight == -1) {
+        if (originalSettingsFrameHeight == -1) {
             final int settingControlHeight = (int) getResources().getDimension(R.dimen.settings_control_height);
-            mOriginalSettingsFrameHeight = settingControlHeight * mSettingsFrame.getChildCount();
+            originalSettingsFrameHeight = settingControlHeight * settingsFrame.getChildCount();
         }
-        if (mSettingsFrameAnimator != null)
-            mSettingsFrameAnimator.cancel();
-        if (mSettingsFrame.getVisibility() == View.GONE) {
-            mSettingsFrame.setVisibility(View.VISIBLE);
+        if (settingsFrameAnimator != null)
+            settingsFrameAnimator.cancel();
+        if (settingsFrame.getVisibility() == View.GONE) {
+            settingsFrame.setVisibility(View.VISIBLE);
             button.setImageResource(R.drawable.ic_collapse);
-            mSettingsFrameAnimator = ValueAnimator.ofObject(new HeightEvaluator(mSettingsFrame), 0, mOriginalSettingsFrameHeight);
+            settingsFrameAnimator = ValueAnimator.ofObject(new HeightEvaluator(settingsFrame), 0, originalSettingsFrameHeight);
 
         } else {
             button.setImageResource(R.drawable.ic_expand);
-            mSettingsFrameAnimator = ValueAnimator.ofObject(new HeightEvaluator(mSettingsFrame), mOriginalSettingsFrameHeight, 0);
-            mSettingsFrameAnimator.addListener(new ViewHideAnimationListener(mSettingsFrame));
+            settingsFrameAnimator = ValueAnimator.ofObject(new HeightEvaluator(settingsFrame), originalSettingsFrameHeight, 0);
+            settingsFrameAnimator.addListener(new ViewHideAnimationListener(settingsFrame));
         }
-        mSettingsFrameAnimator.setInterpolator(new FastOutSlowInInterpolator());
-        mSettingsFrameAnimator.setDuration(200);
-        mSettingsFrameAnimator.start();
+        settingsFrameAnimator.setInterpolator(new FastOutSlowInInterpolator());
+        settingsFrameAnimator.setDuration(200);
+        settingsFrameAnimator.start();
     }
 
     private void beginProcessing() {
-        mAffixButton.setEnabled(false);
+        affixButton.setEnabled(false);
         try {
             startProcessing();
         } catch (OutOfMemoryError e) {
             Util.showMemoryError(MainActivity.this);
         }
-        mAffixButton.setEnabled(true);
+        affixButton.setEnabled(true);
     }
 
     @OnClick(R.id.affixButton)
     public void onClickAffixButton(View v) {
-        mSelectedPhotos = mAdapter.getSelectedPhotos();
+        selectedPhotos = adapter.getSelectedPhotos();
         beginProcessing();
     }
 
@@ -305,8 +297,8 @@ public class MainActivity extends AppCompatActivity implements
     public void onClickSetting(View view) {
         switch (view.getId()) {
             case R.id.settingStackHorizontally:
-                mStackHorizontally.setChecked(!mStackHorizontally.isChecked());
-                Prefs.stackHorizontally(this, mStackHorizontally.isChecked());
+                stackHorizontallyCheck.setChecked(!stackHorizontallyCheck.isChecked());
+                Prefs.stackHorizontally(this, stackHorizontallyCheck.isChecked());
                 break;
             case R.id.settingBgFillColor:
                 new ColorChooserDialog.Builder(this, R.string.background_fill_color_title)
@@ -325,32 +317,32 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onColorSelection(@NonNull ColorChooserDialog colorChooserDialog, @ColorInt int selectedColor) {
         if (selectedColor != Color.TRANSPARENT) {
-            mRemoveBgFillBtn.setVisibility(View.VISIBLE);
-            mBgFillColorLabel.setText(R.string.background_fill_color);
+            removeBgFillBtn.setVisibility(View.VISIBLE);
+            bgFillColorLabel.setText(R.string.background_fill_color);
         } else {
-            mBgFillColorLabel.setText(R.string.background_fill_color_transparent);
+            bgFillColorLabel.setText(R.string.background_fill_color_transparent);
         }
         Prefs.bgFillColor(this, selectedColor);
-        mBgFillColor.setColor(selectedColor);
+        bgFillColorCircle.setColor(selectedColor);
     }
 
     @Override
     public void onSpacingChanged(int horizontal, int vertical) {
         Prefs.imageSpacing(this, horizontal, vertical);
-        mImagePaddingLabel.setText(getString(R.string.image_spacing_x, horizontal, vertical));
+        imagePaddingLabel.setText(getString(R.string.image_spacing_x, horizontal, vertical));
     }
 
     @Size(2)
     private int[] getNextBitmapSize() {
-        if (mSelectedPhotos == null || mSelectedPhotos.length == 0) {
-            mSelectedPhotos = mAdapter.getSelectedPhotos();
-            if (mSelectedPhotos == null || mSelectedPhotos.length == 0)
+        if (selectedPhotos == null || selectedPhotos.length == 0) {
+            selectedPhotos = adapter.getSelectedPhotos();
+            if (selectedPhotos == null || selectedPhotos.length == 0)
                 return new int[]{10, 10}; // crash workaround
         }
-        mTraverseIndex++;
-        if (mTraverseIndex > mSelectedPhotos.length - 1)
+        traverseIndex++;
+        if (traverseIndex > selectedPhotos.length - 1)
             return null;
-        Photo nextPhoto = mSelectedPhotos[mTraverseIndex];
+        Photo nextPhoto = selectedPhotos[traverseIndex];
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         InputStream is = null;
@@ -368,11 +360,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Nullable
     private BitmapFactory.Options getNextBitmapOptions() {
-        if (mSelectedPhotos == null) return null;
-        mTraverseIndex++;
-        if (mTraverseIndex > mSelectedPhotos.length - 1)
+        if (selectedPhotos == null) return null;
+        traverseIndex++;
+        if (traverseIndex > selectedPhotos.length - 1)
             return null;
-        Photo nextPhoto = mSelectedPhotos[mTraverseIndex];
+        Photo nextPhoto = selectedPhotos[traverseIndex];
         InputStream is = null;
         BitmapFactory.Options options = null;
         try {
@@ -394,7 +386,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private Bitmap getNextBitmap(BitmapFactory.Options options) {
-        Photo nextPhoto = mSelectedPhotos[mTraverseIndex];
+        Photo nextPhoto = selectedPhotos[traverseIndex];
         InputStream is = null;
         Bitmap bm = null;
         try {
@@ -426,7 +418,7 @@ public class MainActivity extends AppCompatActivity implements
         final int SPACING_HORIZONTAL = imageSpacing[0];
         final int SPACING_VERTICAL = imageSpacing[1];
 
-        final boolean horizontal = mStackHorizontally.isChecked();
+        final boolean horizontal = stackHorizontallyCheck.isChecked();
         int resultWidth;
         int resultHeight;
 
@@ -437,7 +429,7 @@ public class MainActivity extends AppCompatActivity implements
             int totalWidth = 0;
             int maxHeight = -1;
             // Traverse all selected images and load in their sizes
-            mTraverseIndex = -1;
+            traverseIndex = -1;
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
                 if (size[0] == 0 && size[1] == 0) return;
@@ -448,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements
                     maxHeight = size[1];
             }
             // Compensate for spacing
-            totalWidth += SPACING_HORIZONTAL * (mSelectedPhotos.length + 1);
+            totalWidth += SPACING_HORIZONTAL * (selectedPhotos.length + 1);
             maxHeight += SPACING_VERTICAL * 2;
 
             // Crash avoidance
@@ -471,7 +463,7 @@ public class MainActivity extends AppCompatActivity implements
             int totalHeight = 0;
             int maxWidth = -1;
             // Traverse all selected images and load in their sizes
-            mTraverseIndex = -1;
+            traverseIndex = -1;
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
                 if (size[0] == 0 && size[1] == 0) return;
@@ -482,7 +474,7 @@ public class MainActivity extends AppCompatActivity implements
                     maxWidth = size[0];
             }
             // Compensate for spacing
-            totalHeight += SPACING_VERTICAL * (mSelectedPhotos.length + 1);
+            totalHeight += SPACING_VERTICAL * (selectedPhotos.length + 1);
             maxWidth += SPACING_HORIZONTAL * 2;
 
             // Crash avoidance
@@ -506,7 +498,7 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onSizingResult(double scale, int resultWidth, int resultHeight, Bitmap.CompressFormat format, int quality, boolean cancelled) {
         if (cancelled) {
-            mTraverseIndex = -1;
+            traverseIndex = -1;
             Util.unlockOrientation(this);
             return;
         }
@@ -530,7 +522,7 @@ public class MainActivity extends AppCompatActivity implements
         Util.log("IMAGE SCALE = %s, total scaled width = %d, height = %d", SCALE, resultWidth, resultHeight);
         final Bitmap result = Bitmap.createBitmap(resultWidth, resultHeight, Bitmap.Config.ARGB_8888);
 
-        final boolean horizontal = mStackHorizontally.isChecked();
+        final boolean horizontal = stackHorizontallyCheck.isChecked();
         final int[] imageSpacing = Prefs.imageSpacing(MainActivity.this);
         final int SPACING_HORIZONTAL = (int) (imageSpacing[0] * SCALE);  // TODO should scale be multiplied here?
         final int SPACING_VERTICAL = (int) (imageSpacing[1] * SCALE);
@@ -563,7 +555,7 @@ public class MainActivity extends AppCompatActivity implements
 
                 if (horizontal) {
                     int currentX = 0;
-                    mTraverseIndex = -1;
+                    traverseIndex = -1;
                     BitmapFactory.Options bitmapOptions;
                     while ((bitmapOptions = getNextBitmapOptions()) != null) {
                         processedCount++;
@@ -598,7 +590,7 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 } else {
                     int currentY = 0;
-                    mTraverseIndex = -1;
+                    traverseIndex = -1;
                     BitmapFactory.Options bitmapOptions;
                     while ((bitmapOptions = getNextBitmapOptions()) != null) {
                         processedCount++;
@@ -692,15 +684,15 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onBackPressed() {
-        if (mAdapter.getSelectedCount() > 0)
+        if (adapter.getSelectedCount() > 0)
             clearSelection();
         else super.onBackPressed();
     }
 
     @Override
     public void onDragSelectionChanged(int count) {
-        mAffixButton.setText(getString(R.string.affix_x, count));
-        mAffixButton.setEnabled(count > 0);
-        mToolbar.getMenu().findItem(R.id.clear).setVisible(mAdapter != null && mAdapter.getSelectedCount() > 0);
+        affixButton.setText(getString(R.string.affix_x, count));
+        affixButton.setEnabled(count > 0);
+        toolbar.getMenu().findItem(R.id.clear).setVisible(adapter != null && adapter.getSelectedCount() > 0);
     }
 }

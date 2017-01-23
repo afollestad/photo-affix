@@ -25,8 +25,9 @@ import com.bumptech.glide.request.target.SimpleTarget;
 
 import java.io.File;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
 /**
@@ -34,22 +35,20 @@ import uk.co.senab.photoview.PhotoViewAttacher;
  */
 public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuItemClickListener, PhotoViewAttacher.OnPhotoTapListener {
 
-    @Bind(R.id.appbar_toolbar)
-    Toolbar mToolbar;
-    @Bind(R.id.image)
-    ImageView mImage;
-    @Bind(R.id.progress)
-    ProgressBar mProgress;
+    @BindView(R.id.appbar_toolbar) Toolbar toolbar;
+    @BindView(R.id.image) ImageView image;
+    @BindView(R.id.progress) ProgressBar progress;
 
-    private PhotoViewAttacher mAttacher;
-    private ViewPropertyAnimator mToolbarAnimator;
+    private Unbinder unbinder;
+    private PhotoViewAttacher attacher;
+    private ViewPropertyAnimator toolbarAnimator;
 
     private final SimpleTarget<GlideDrawable> mTarget = new SimpleTarget<GlideDrawable>() {
         @Override
         public void onResourceReady(GlideDrawable resource, GlideAnimation<? super GlideDrawable> glideAnimation) {
-            mImage.setImageDrawable(resource);
-            mAttacher.update();
-            mProgress.setVisibility(View.GONE);
+            image.setImageDrawable(resource);
+            attacher.update();
+            progress.setVisibility(View.GONE);
         }
     };
 
@@ -57,21 +56,21 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewer);
-        ButterKnife.bind(this);
+        unbinder = ButterKnife.bind(this);
 
-        mToolbar.inflateMenu(R.menu.menu_viewer);
-        mToolbar.setOnMenuItemClickListener(this);
-        mToolbar.setNavigationIcon(R.drawable.ic_close);
-        mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        toolbar.inflateMenu(R.menu.menu_viewer);
+        toolbar.setOnMenuItemClickListener(this);
+        toolbar.setNavigationIcon(R.drawable.ic_close);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 finish();
             }
         });
 
-        mAttacher = new PhotoViewAttacher(mImage);
-        mAttacher.setOnPhotoTapListener(this);
-        mAttacher.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
+        attacher = new PhotoViewAttacher(image);
+        attacher.setOnPhotoTapListener(this);
+        attacher.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
             @Override
             public void onViewTap(View view, float x, float y) {
                 onPhotoTap(null, 0f, 0f);
@@ -82,11 +81,11 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
                 .load(new File(getIntent().getData().getPath()))
                 .into(mTarget);
 
-        if (mToolbar != null) {
+        if (toolbar != null) {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    if (mToolbar != null)
+                    if (toolbar != null)
                         onPhotoTap(null, 0f, 0f);
                 }
             }, 2000);
@@ -96,7 +95,8 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        ButterKnife.unbind(this);
+        unbinder.unbind();
+        unbinder = null;
     }
 
     @Override
@@ -163,15 +163,18 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
 
     @Override
     public void onPhotoTap(View view, float x, float y) {
-        if (mToolbar == null) return;
-        else if (mToolbarAnimator != null) mToolbarAnimator.cancel();
-        mToolbarAnimator = mToolbar.animate();
-        if (mToolbar.getAlpha() > 0f) {
-            mToolbarAnimator.alpha(0f);
+        if (toolbar == null) return;
+        else if (toolbarAnimator != null) toolbarAnimator.cancel();
+        toolbarAnimator = toolbar.animate();
+        if (toolbar.getAlpha() > 0f) {
+            toolbarAnimator.alpha(0f);
         } else {
-            mToolbarAnimator.alpha(1f);
+            toolbarAnimator.alpha(1f);
         }
-        mToolbarAnimator.setDuration(200);
-        mToolbarAnimator.start();
+        toolbarAnimator.setDuration(200);
+        toolbarAnimator.start();
+    }
+
+    @Override public void onOutsidePhotoTap() {
     }
 }

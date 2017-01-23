@@ -19,8 +19,9 @@ import com.afollestad.photoaffix.ui.MainActivity;
 import com.afollestad.photoaffix.utils.Prefs;
 import com.afollestad.photoaffix.views.LineView;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * @author Aidan Follestad (afollestad)
@@ -30,19 +31,15 @@ public class ImageSpacingDialog extends DialogFragment {
     public ImageSpacingDialog() {
     }
 
-    private SpacingCallback mContext;
-    @Bind(R.id.spacingHorizontalSeek)
-    SeekBar mHorizontalSeek;
-    @Bind(R.id.spacingHorizontalLabel)
-    TextView mHorizontalLabel;
-    @Bind(R.id.spacingVerticalSeek)
-    SeekBar mVerticalSeek;
-    @Bind(R.id.spacingVerticalLabel)
-    TextView mVerticalLabel;
-    @Bind(R.id.verticalLine)
-    LineView mVerticalLine;
-    @Bind(R.id.horizontalLine)
-    LineView mHorizontalLine;
+    private SpacingCallback context;
+    private Unbinder unbinder;
+
+    @BindView(R.id.spacingHorizontalSeek) SeekBar horizontalSeek;
+    @BindView(R.id.spacingHorizontalLabel) TextView horizontalLabel;
+    @BindView(R.id.spacingVerticalSeek) SeekBar verticalSeek;
+    @BindView(R.id.spacingVerticalLabel) TextView verticalLabel;
+    @BindView(R.id.verticalLine) LineView verticalLine;
+    @BindView(R.id.horizontalLine) LineView horizontalLine;
 
     public interface SpacingCallback {
         void onSpacingChanged(int horizontal, int vertical);
@@ -77,17 +74,17 @@ public class ImageSpacingDialog extends DialogFragment {
 
         final View v = dialog.getCustomView();
         assert v != null;
-        ButterKnife.bind(this, v);
+        unbinder = ButterKnife.bind(this, v);
 
         SeekBar.OnSeekBarChangeListener seekListener = new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (seekBar.getId() == R.id.spacingHorizontalSeek) {
-                    mHorizontalLabel.setText(String.format("%d", progress));
-                    mHorizontalLine.setWidth(progress);
+                    horizontalLabel.setText(String.format("%d", progress));
+                    horizontalLine.setWidth(progress);
                 } else {
-                    mVerticalLabel.setText(String.format("%d", progress));
-                    mVerticalLine.setWidth(progress);
+                    verticalLabel.setText(String.format("%d", progress));
+                    verticalLine.setWidth(progress);
                 }
             }
 
@@ -99,17 +96,17 @@ public class ImageSpacingDialog extends DialogFragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         };
-        mHorizontalSeek.setOnSeekBarChangeListener(seekListener);
-        mVerticalSeek.setOnSeekBarChangeListener(seekListener);
+        horizontalSeek.setOnSeekBarChangeListener(seekListener);
+        verticalSeek.setOnSeekBarChangeListener(seekListener);
 
-        MDTintHelper.setTint(mHorizontalSeek, fillColor);
-        MDTintHelper.setTint(mVerticalSeek, fillColor);
-        mHorizontalLine.setColor(fillColor);
-        mVerticalLine.setColor(fillColor);
+        MDTintHelper.setTint(horizontalSeek, fillColor);
+        MDTintHelper.setTint(verticalSeek, fillColor);
+        horizontalLine.setColor(fillColor);
+        verticalLine.setColor(fillColor);
 
         final int[] spacing = Prefs.imageSpacing(getActivity());
-        mHorizontalSeek.setProgress(spacing[0]);
-        mVerticalSeek.setProgress(spacing[1]);
+        horizontalSeek.setProgress(spacing[0]);
+        verticalSeek.setProgress(spacing[1]);
 
         return dialog;
     }
@@ -117,17 +114,18 @@ public class ImageSpacingDialog extends DialogFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        ButterKnife.unbind(this);
+        unbinder.unbind();
+        unbinder = null;
     }
 
     private void notifyActivity() {
-        if (mContext == null) return;
-        mContext.onSpacingChanged(mHorizontalSeek.getProgress(), mVerticalSeek.getProgress());
+        if (context == null) return;
+        context.onSpacingChanged(horizontalSeek.getProgress(), verticalSeek.getProgress());
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        mContext = (SpacingCallback) activity;
+        context = (SpacingCallback) activity;
     }
 }

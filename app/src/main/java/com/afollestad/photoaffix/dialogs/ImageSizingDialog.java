@@ -19,8 +19,9 @@ import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.ui.MainActivity;
 
-import butterknife.Bind;
+import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.Unbinder;
 
 /**
  * @author Aidan Follestad (afollestad)
@@ -34,25 +35,19 @@ public class ImageSizingDialog extends DialogFragment {
         void onSizingResult(double scale, int resultWidth, int resultHeight, Bitmap.CompressFormat format, int quality, boolean cancelled);
     }
 
-    private SizingCallback mCallback;
-    private int mMinimum;
+    private SizingCallback callback;
+    private int minimum;
 
-    @Bind(R.id.inputWidth)
-    TextView inputWidth;
-    @Bind(R.id.inputHeight)
-    TextView inputHeight;
-    @Bind(R.id.inputScaleSeek)
-    SeekBar inputScaleSeek;
-    @Bind(R.id.inputScaleLabel)
-    TextView inputScaleLabel;
-    @Bind(R.id.formatSpinner)
-    Spinner mFormatSpinner;
-    @Bind(R.id.qualityTitle)
-    TextView mQualityTitle;
-    @Bind(R.id.qualitySeeker)
-    SeekBar mQualitySeeker;
-    @Bind(R.id.qualityLabel)
-    TextView mQualityLabel;
+    private Unbinder unbinder;
+
+    @BindView(R.id.inputWidth) TextView inputWidth;
+    @BindView(R.id.inputHeight) TextView inputHeight;
+    @BindView(R.id.inputScaleSeek) SeekBar inputScaleSeek;
+    @BindView(R.id.inputScaleLabel) TextView inputScaleLabel;
+    @BindView(R.id.formatSpinner) Spinner formatSpinner;
+    @BindView(R.id.qualityTitle) TextView qualityTitle;
+    @BindView(R.id.qualitySeeker) SeekBar qualitySeeker;
+    @BindView(R.id.qualityLabel) TextView qualityLabel;
 
     private double round(double x) {
         return Math.round(x * 100.0) / 100.0;
@@ -79,14 +74,14 @@ public class ImageSizingDialog extends DialogFragment {
                 .onPositive(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        if (mCallback != null) {
-                            final int progress = inputScaleSeek.getProgress() + mMinimum;
+                        if (callback != null) {
+                            final int progress = inputScaleSeek.getProgress() + minimum;
                             final double scale = round((double) progress / 1000d);
-                            mCallback.onSizingResult(scale,
+                            callback.onSizingResult(scale,
                                     Integer.parseInt(inputWidth.getText().toString().trim()),
                                     Integer.parseInt(inputHeight.getText().toString().trim()),
-                                    mFormatSpinner.getSelectedItemPosition() == 0 ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-                                    mQualitySeeker.getProgress(),
+                                    formatSpinner.getSelectedItemPosition() == 0 ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                                    qualitySeeker.getProgress(),
                                     false);
                         }
                         MainActivity.dismissDialog(materialDialog);
@@ -95,7 +90,7 @@ public class ImageSizingDialog extends DialogFragment {
                 .onNegative(new MaterialDialog.SingleButtonCallback() {
                     @Override
                     public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        mCallback.onSizingResult(0.0f, -1, -1, Bitmap.CompressFormat.PNG, 100, true);
+                        callback.onSizingResult(0.0f, -1, -1, Bitmap.CompressFormat.PNG, 100, true);
                         MainActivity.dismissDialog(materialDialog);
                     }
                 })
@@ -109,14 +104,14 @@ public class ImageSizingDialog extends DialogFragment {
 
         final View v = dialog.getCustomView();
         assert v != null;
-        ButterKnife.bind(this, v);
+        unbinder = ButterKnife.bind(this, v);
 
-        mMinimum = (int) (inputScaleSeek.getMax() * 0.1d);
+        minimum = (int) (inputScaleSeek.getMax() * 0.1d);
         inputScaleSeek.setMax((int) (inputScaleSeek.getMax() * 0.9d));
         inputScaleSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                progress += mMinimum;
+                progress += minimum;
                 final double scale = round((double) progress / 1000d);
                 String scaleStr;
                 if (scale == 0) scaleStr = "0.00";
@@ -145,26 +140,26 @@ public class ImageSizingDialog extends DialogFragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), R.layout.spinner_item,
                 new String[]{"PNG", "JPEG"});
         adapter.setDropDownViewResource(R.layout.spinner_item_dropdown);
-        mFormatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        formatSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 final int visibility = position == 1 ? View.VISIBLE : View.GONE;
-                mQualityTitle.setVisibility(visibility);
-                mQualitySeeker.setVisibility(visibility);
-                mQualityLabel.setVisibility(visibility);
-                mQualitySeeker.setProgress(100);
+                qualityTitle.setVisibility(visibility);
+                qualitySeeker.setVisibility(visibility);
+                qualityLabel.setVisibility(visibility);
+                qualitySeeker.setProgress(100);
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-        mFormatSpinner.setAdapter(adapter);
+        formatSpinner.setAdapter(adapter);
 
-        mQualitySeeker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        qualitySeeker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mQualityLabel.setText(String.format("%d", progress));
+                qualityLabel.setText(String.format("%d", progress));
             }
 
             @Override
@@ -175,8 +170,8 @@ public class ImageSizingDialog extends DialogFragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
-        mQualitySeeker.setMax(100);
-        mQualitySeeker.setProgress(100);
+        qualitySeeker.setMax(100);
+        qualitySeeker.setProgress(100);
 
         return dialog;
     }
@@ -185,12 +180,13 @@ public class ImageSizingDialog extends DialogFragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         if (activity instanceof SizingCallback)
-            mCallback = (SizingCallback) activity;
+            callback = (SizingCallback) activity;
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        ButterKnife.unbind(this);
+        unbinder.unbind();
+        unbinder = null;
     }
 }

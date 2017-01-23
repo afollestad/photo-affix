@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 
+import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
@@ -24,17 +25,17 @@ import butterknife.ButterKnife;
 public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAdapter.PhotoViewHolder> {
 
     public PhotoGridAdapter(MainActivity context) {
-        mContext = context;
+        this.context = context;
     }
 
-    private MainActivity mContext;
-    private Photo[] mPhotos;
+    private final MainActivity context;
+    private Photo[] photos;
 
     @Override
     public void saveInstanceState(Bundle out) {
         super.saveInstanceState(out);
-        if (mPhotos != null)
-            out.putSerializable("photos", new PhotoHolder(mPhotos));
+        if (photos != null)
+            out.putSerializable("photos", new PhotoHolder(photos));
     }
 
     @Override
@@ -47,7 +48,7 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
     }
 
     public void setPhotos(Photo[] photos) {
-        mPhotos = photos;
+        this.photos = photos;
         notifyDataSetChanged();
     }
 
@@ -56,7 +57,7 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
         ArrayList<Photo> selected = new ArrayList<>();
         for (Integer index : indices) {
             if (index < 0) continue;
-            selected.add(mPhotos[index]);
+            selected.add(photos[index]);
         }
         return selected.toArray(new Photo[selected.size()]);
     }
@@ -71,10 +72,10 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
     @Override
     public void onBindViewHolder(PhotoViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (mContext == null || mContext.isFinishing()) return;
+        if (context == null || context.isFinishing()) return;
 
-        Glide.with(mContext)
-                .load(mPhotos[position].getUri())
+        Glide.with(context)
+                .load(photos[position].getUri())
                 .into(holder.image);
 
         if (isIndexSelected(position)) {
@@ -90,20 +91,18 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
 
     @Override
     public int getItemCount() {
-        return mPhotos != null ? mPhotos.length : 0;
+        return photos != null ? photos.length : 0;
     }
 
-    public class PhotoViewHolder extends RecyclerView.ViewHolder {
+    class PhotoViewHolder extends RecyclerView.ViewHolder {
 
-        final ImageView image;
-        final View check;
-        final View circle;
+        @BindView(R.id.image) ImageView image;
+        @BindView(R.id.check) View check;
+        @BindView(R.id.circle) View circle;
 
-        public PhotoViewHolder(View itemView) {
+        PhotoViewHolder(View itemView) {
             super(itemView);
-            image = ButterKnife.findById(itemView, R.id.image);
-            check = itemView.findViewById(R.id.check);
-            circle = itemView.findViewById(R.id.circle);
+            ButterKnife.bind(this, itemView);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -115,7 +114,7 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
                 @Override
                 public boolean onLongClick(View v) {
                     toggleSelected(getAdapterPosition());
-                    mContext.mList.setDragSelectActive(true, getAdapterPosition());
+                    context.list.setDragSelectActive(true, getAdapterPosition());
                     return false;
                 }
             });

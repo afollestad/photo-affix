@@ -1,5 +1,6 @@
 package com.afollestad.photoaffix.utils;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -10,6 +11,7 @@ import android.support.annotation.Size;
 /**
  * @author Aidan Follestad (afollestad)
  */
+@SuppressLint("CommitPrefEdits")
 public class Prefs {
 
     private Prefs() {

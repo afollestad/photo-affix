@@ -109,10 +109,10 @@ public class Util {
         }
     }
 
-    public static int lighten(int color, float factor) {
-        float[] hsv = new float[3];
-        Color.colorToHSV(color, hsv);
-        hsv[2] *= factor; // value component
-        return Color.HSVToColor(hsv);
-    }
+//    public static int lighten(int color, float factor) {
+//        float[] hsv = new float[3];
+//        Color.colorToHSV(color, hsv);
+//        hsv[2] *= factor; // value component
+//        return Color.HSVToColor(hsv);
+//    }
 }

@@ -8,7 +8,7 @@ import android.view.View;
  */
 public class ViewHideAnimationListener implements Animator.AnimatorListener {
 
-    final View view;
+    private final View view;
 
     public ViewHideAnimationListener(View view) {
         this.view = view;

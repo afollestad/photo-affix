@@ -14,9 +14,9 @@ import com.afollestad.photoaffix.R;
  */
 public class CircleView extends View {
 
-    private int mCircleRadius;
-    private Paint mEdgePaint;
-    private Paint mFillPaint;
+    private int circleRadius;
+    private Paint edgePaint;
+    private Paint fillPaint;
 
     public CircleView(Context context) {
         super(context);
@@ -33,25 +33,20 @@ public class CircleView extends View {
         init();
     }
 
-    public CircleView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
-    }
-
     private void init() {
         setWillNotDraw(false);
         int mAccentColor = ContextCompat.getColor(getContext(), R.color.colorAccent);
-        mCircleRadius = (int) getResources().getDimension(R.dimen.circle_border_radius);
+        circleRadius = (int) getResources().getDimension(R.dimen.circle_border_radius);
 
-        mFillPaint = new Paint();
-        mFillPaint.setAntiAlias(true);
-        mFillPaint.setColor(mAccentColor);
+        fillPaint = new Paint();
+        fillPaint.setAntiAlias(true);
+        fillPaint.setColor(mAccentColor);
 
-        mEdgePaint = new Paint();
-        mEdgePaint.setAntiAlias(true);
-        mEdgePaint.setStyle(Paint.Style.STROKE);
-        mEdgePaint.setColor(mAccentColor);
-        mEdgePaint.setStrokeWidth(mCircleRadius);
+        edgePaint = new Paint();
+        edgePaint.setAntiAlias(true);
+        edgePaint.setStyle(Paint.Style.STROKE);
+        edgePaint.setColor(mAccentColor);
+        edgePaint.setStrokeWidth(circleRadius);
     }
 
     @Override
@@ -64,8 +59,8 @@ public class CircleView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         final int center = (getMeasuredWidth() / 2);
-        final int radius = (getMeasuredWidth() / 2) - mCircleRadius;
-        if (isActivated()) canvas.drawCircle(center, center, radius, mFillPaint);
-        canvas.drawCircle(center, center, radius, mEdgePaint);
+        final int radius = (getMeasuredWidth() / 2) - circleRadius;
+        if (isActivated()) canvas.drawCircle(center, center, radius, fillPaint);
+        canvas.drawCircle(center, center, radius, edgePaint);
     }
 }

@@ -14,6 +14,8 @@ import android.view.View;
  */
 public class LineView extends View {
 
+    private Paint paint;
+
     public LineView(Context context) {
         super(context);
         init();
@@ -29,31 +31,24 @@ public class LineView extends View {
         init();
     }
 
-    public LineView(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
-        init();
-    }
-
-    private Paint mPaint;
-
     private void init() {
         setWillNotDraw(false);
-        mPaint = new Paint();
-        mPaint.setAntiAlias(true);
-        mPaint.setColor(Color.BLACK);
-        mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(Color.BLACK);
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
         if (isInEditMode())
             setWidth(8);
     }
 
     public void setWidth(int width) {
         width = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, width, getResources().getDisplayMetrics());
-        mPaint.setStrokeWidth(width);
+        paint.setStrokeWidth(width);
         invalidate();
     }
 
     public void setColor(@ColorInt int color) {
-        mPaint.setColor(color);
+        paint.setColor(color);
         invalidate();
     }
 
@@ -65,12 +60,12 @@ public class LineView extends View {
                     (getMeasuredHeight() / 2),
                     getMeasuredWidth(),
                     (getMeasuredHeight() / 2),
-                    mPaint);
+                    paint);
         } else {
             canvas.drawLine((getMeasuredWidth() / 2),
                     0,
                     (getMeasuredWidth() / 2),
-                    getMeasuredHeight(), mPaint);
+                    getMeasuredHeight(), paint);
         }
     }
 }
