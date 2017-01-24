@@ -52,8 +52,7 @@ public class LineView extends View {
         invalidate();
     }
 
-    @Override
-    protected void onDraw(Canvas canvas) {
+    @Override protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (getTag() != null && getTag().equals("1")) {
             canvas.drawLine(0,

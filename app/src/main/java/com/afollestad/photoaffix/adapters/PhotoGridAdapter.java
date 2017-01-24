@@ -31,15 +31,13 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
     private final MainActivity context;
     private Photo[] photos;
 
-    @Override
-    public void saveInstanceState(Bundle out) {
+    @Override public void saveInstanceState(Bundle out) {
         super.saveInstanceState(out);
         if (photos != null)
             out.putSerializable("photos", new PhotoHolder(photos));
     }
 
-    @Override
-    public void restoreInstanceState(Bundle in) {
+    @Override public void restoreInstanceState(Bundle in) {
         super.restoreInstanceState(in);
         if (in != null && in.containsKey("photos")) {
             PhotoHolder ph = (PhotoHolder) in.getSerializable("photos");
@@ -62,15 +60,13 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
         return selected.toArray(new Photo[selected.size()]);
     }
 
-    @Override
-    public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    @Override public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.griditem_photo, parent, false);
         return new PhotoViewHolder(v);
     }
 
-    @Override
-    public void onBindViewHolder(PhotoViewHolder holder, int position) {
+    @Override public void onBindViewHolder(PhotoViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         if (context == null || context.isFinishing()) return;
 
@@ -89,8 +85,7 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
         }
     }
 
-    @Override
-    public int getItemCount() {
+    @Override public int getItemCount() {
         return photos != null ? photos.length : 0;
     }
 

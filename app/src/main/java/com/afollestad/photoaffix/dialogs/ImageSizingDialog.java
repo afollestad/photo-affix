@@ -62,8 +62,7 @@ public class ImageSizingDialog extends DialogFragment {
         dialog.show(context.getFragmentManager(), "[IMAGE_SIZING_DIALOG]");
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
         MaterialDialog dialog = new MaterialDialog.Builder(getActivity())
                 .title(R.string.output_settings)
                 .customView(R.layout.dialog_imagesizing, false)
@@ -81,7 +80,7 @@ public class ImageSizingDialog extends DialogFragment {
                                     Integer.parseInt(inputWidth.getText().toString().trim()),
                                     Integer.parseInt(inputHeight.getText().toString().trim()),
                                     formatSpinner.getSelectedItemPosition() == 0 ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-                                    qualitySeeker.getProgress(),
+                                    qualitySeeker.getProgress() + 1,
                                     false);
                         }
                         MainActivity.dismissDialog(materialDialog);
@@ -147,7 +146,7 @@ public class ImageSizingDialog extends DialogFragment {
                 qualityTitle.setVisibility(visibility);
                 qualitySeeker.setVisibility(visibility);
                 qualityLabel.setVisibility(visibility);
-                qualitySeeker.setProgress(100);
+                qualitySeeker.setProgress(99);
             }
 
             @Override
@@ -159,7 +158,7 @@ public class ImageSizingDialog extends DialogFragment {
         qualitySeeker.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                qualityLabel.setText(String.format("%d", progress));
+                qualityLabel.setText(String.format("%d", progress + 1));
             }
 
             @Override
@@ -170,21 +169,20 @@ public class ImageSizingDialog extends DialogFragment {
             public void onStopTrackingTouch(SeekBar seekBar) {
             }
         });
-        qualitySeeker.setMax(100);
-        qualitySeeker.setProgress(100);
+
+        qualitySeeker.setMax(99);
+        qualitySeeker.setProgress(99);
 
         return dialog;
     }
 
-    @Override
-    public void onAttach(Activity activity) {
+    @Override public void onAttach(Activity activity) {
         super.onAttach(activity);
         if (activity instanceof SizingCallback)
             callback = (SizingCallback) activity;
     }
 
-    @Override
-    public void onDestroyView() {
+    @Override public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
         unbinder = null;

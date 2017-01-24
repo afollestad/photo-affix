@@ -52,8 +52,7 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
         }
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_viewer);
         unbinder = ButterKnife.bind(this);
@@ -92,15 +91,13 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
         }
     }
 
-    @Override
-    protected void onDestroy() {
+    @Override protected void onDestroy() {
         super.onDestroy();
         unbinder.unbind();
         unbinder = null;
     }
 
-    @Override
-    public boolean onMenuItemClick(MenuItem item) {
+    @Override public boolean onMenuItemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.share: {
                 Intent target = new Intent(Intent.ACTION_SEND)
@@ -161,8 +158,7 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
                 });
     }
 
-    @Override
-    public void onPhotoTap(View view, float x, float y) {
+    @Override public void onPhotoTap(View view, float x, float y) {
         if (toolbar == null) return;
         else if (toolbarAnimator != null) toolbarAnimator.cancel();
         toolbarAnimator = toolbar.animate();

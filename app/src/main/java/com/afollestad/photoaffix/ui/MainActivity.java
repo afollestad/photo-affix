@@ -64,6 +64,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 
+import static com.afollestad.photoaffix.utils.Util.log;
+
 /**
  * @author Aidan Follestad (afollestad)
  */
@@ -79,11 +81,14 @@ public class MainActivity extends AppCompatActivity implements
     @BindView(R.id.settingsFrame) ViewGroup settingsFrame;
     @BindView(R.id.empty) TextView empty;
 
+    @BindView(R.id.stackHorizontallyLabel) TextView stackHorizontallyLabel;
     @BindView(R.id.stackHorizontallySwitch) CheckBox stackHorizontallyCheck;
     @BindView(R.id.bgFillColorCircle) ColorCircleView bgFillColorCircle;
     @BindView(R.id.bgFillColorLabel) TextView bgFillColorLabel;
     @BindView(R.id.imagePaddingLabel) TextView imagePaddingLabel;
     @BindView(R.id.removeBgButton) Button removeBgFillBtn;
+    @BindView(R.id.scalePriorityLabel) TextView scalePriorityLabel;
+    @BindView(R.id.scalePrioritySwitch) CheckBox scalePrioritySwitch;
 
     private PhotoGridAdapter adapter;
     private Photo[] selectedPhotos;
@@ -103,8 +108,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    @Override protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -139,8 +143,17 @@ public class MainActivity extends AppCompatActivity implements
         animator.setSupportsChangeAnimations(false);
         list.setItemAnimator(animator);
 
+        final boolean stackHorizontally = Prefs.stackHorizontally(this);
+        stackHorizontallyCheck.setChecked(stackHorizontally);
+        stackHorizontallyLabel.setText(stackHorizontally ?
+                R.string.stack_horizontally : R.string.stack_vertically);
+
+        final boolean scalePriority = Prefs.scalePriority(this);
+        scalePrioritySwitch.setChecked(scalePriority);
+        scalePriorityLabel.setText(scalePriority ?
+                R.string.scale_priority_on : R.string.scale_priority_off);
+
         final int bgFillColor = Prefs.bgFillColor(this);
-        stackHorizontallyCheck.setChecked(Prefs.stackHorizontally(this));
         bgFillColorCircle.setColor(bgFillColor);
         final int[] padding = Prefs.imageSpacing(this);
         imagePaddingLabel.setText(getString(R.string.image_spacing_x, padding[0], padding[1]));
@@ -155,8 +168,7 @@ public class MainActivity extends AppCompatActivity implements
         processIntent(getIntent());
     }
 
-    @Override
-    protected void onNewIntent(Intent intent) {
+    @Override protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         processIntent(intent);
     }
@@ -175,15 +187,14 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    protected void onDestroy() {
+    @Override protected void onDestroy() {
         super.onDestroy();
         unbinder.unbind();
         unbinder = null;
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+    @Override public void onSaveInstanceState(Bundle outState,
+                                              PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         if (adapter != null) adapter.saveInstanceState(outState);
     }
@@ -212,21 +223,19 @@ public class MainActivity extends AppCompatActivity implements
                 });
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    @Override public void onRequestPermissionsResult(int requestCode,
+                                                     @NonNull String[] permissions,
+                                                     @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_RC)
-            refresh();
+        if (requestCode == PERMISSION_RC) refresh();
     }
 
-    @Override
-    protected void onResume() {
+    @Override protected void onResume() {
         super.onResume();
         refresh();
     }
 
-    @Override
-    protected void onPause() {
+    @Override protected void onPause() {
         super.onPause();
         if (isFinishing())
             Inquiry.destroy(this);
@@ -247,15 +256,13 @@ public class MainActivity extends AppCompatActivity implements
         toolbar.getMenu().findItem(R.id.clear).setVisible(false);
     }
 
-    @OnClick(R.id.removeBgButton)
-    public void onClickRemoveBgFill() {
+    @OnClick(R.id.removeBgButton) public void onClickRemoveBgFill() {
         removeBgFillBtn.setVisibility(View.GONE);
         //noinspection ConstantConditions
         onColorSelection(null, Color.TRANSPARENT);
     }
 
-    @OnClick(R.id.expandButton)
-    public void onClickExpandButton(ImageView button) {
+    @OnClick(R.id.expandButton) public void onClickExpandButton(ImageView button) {
         if (originalSettingsFrameHeight == -1) {
             final int settingControlHeight = (int) getResources().getDimension(R.dimen.settings_control_height);
             originalSettingsFrameHeight = settingControlHeight * settingsFrame.getChildCount();
@@ -265,11 +272,13 @@ public class MainActivity extends AppCompatActivity implements
         if (settingsFrame.getVisibility() == View.GONE) {
             settingsFrame.setVisibility(View.VISIBLE);
             button.setImageResource(R.drawable.ic_collapse);
-            settingsFrameAnimator = ValueAnimator.ofObject(new HeightEvaluator(settingsFrame), 0, originalSettingsFrameHeight);
+            settingsFrameAnimator = ValueAnimator.ofObject(
+                    new HeightEvaluator(settingsFrame), 0, originalSettingsFrameHeight);
 
         } else {
             button.setImageResource(R.drawable.ic_expand);
-            settingsFrameAnimator = ValueAnimator.ofObject(new HeightEvaluator(settingsFrame), originalSettingsFrameHeight, 0);
+            settingsFrameAnimator = ValueAnimator.ofObject(
+                    new HeightEvaluator(settingsFrame), originalSettingsFrameHeight, 0);
             settingsFrameAnimator.addListener(new ViewHideAnimationListener(settingsFrame));
         }
         settingsFrameAnimator.setInterpolator(new FastOutSlowInInterpolator());
@@ -287,17 +296,19 @@ public class MainActivity extends AppCompatActivity implements
         affixButton.setEnabled(true);
     }
 
-    @OnClick(R.id.affixButton)
-    public void onClickAffixButton(View v) {
+    @OnClick(R.id.affixButton) public void onClickAffixButton(View v) {
         selectedPhotos = adapter.getSelectedPhotos();
         beginProcessing();
     }
 
-    @OnClick({R.id.settingStackHorizontally, R.id.settingBgFillColor, R.id.settingImagePadding})
+    @OnClick({R.id.settingStackHorizontally, R.id.settingBgFillColor,
+            R.id.settingImagePadding, R.id.settingScalePriority})
     public void onClickSetting(View view) {
         switch (view.getId()) {
             case R.id.settingStackHorizontally:
                 stackHorizontallyCheck.setChecked(!stackHorizontallyCheck.isChecked());
+                stackHorizontallyLabel.setText(stackHorizontallyCheck.isChecked() ?
+                        R.string.stack_horizontally : R.string.stack_vertically);
                 Prefs.stackHorizontally(this, stackHorizontallyCheck.isChecked());
                 break;
             case R.id.settingBgFillColor:
@@ -310,6 +321,12 @@ public class MainActivity extends AppCompatActivity implements
                 break;
             case R.id.settingImagePadding:
                 new ImageSpacingDialog().show(getFragmentManager(), "[IMAGE_PADDING_DIALOG]");
+                break;
+            case R.id.settingScalePriority:
+                scalePrioritySwitch.setChecked(!scalePrioritySwitch.isChecked());
+                scalePriorityLabel.setText(scalePrioritySwitch.isChecked() ?
+                        R.string.scale_priority_on : R.string.scale_priority_off);
+                Prefs.scalePriority(this, scalePrioritySwitch.isChecked());
                 break;
         }
     }
@@ -326,14 +343,12 @@ public class MainActivity extends AppCompatActivity implements
         bgFillColorCircle.setColor(selectedColor);
     }
 
-    @Override
-    public void onSpacingChanged(int horizontal, int vertical) {
+    @Override public void onSpacingChanged(int horizontal, int vertical) {
         Prefs.imageSpacing(this, horizontal, vertical);
         imagePaddingLabel.setText(getString(R.string.image_spacing_x, horizontal, vertical));
     }
 
-    @Size(2)
-    private int[] getNextBitmapSize() {
+    @Size(2) private int[] getNextBitmapSize() {
         if (selectedPhotos == null || selectedPhotos.length == 0) {
             selectedPhotos = adapter.getSelectedPhotos();
             if (selectedPhotos == null || selectedPhotos.length == 0)
@@ -358,8 +373,7 @@ public class MainActivity extends AppCompatActivity implements
         return new int[]{options.outWidth, options.outHeight};
     }
 
-    @Nullable
-    private BitmapFactory.Options getNextBitmapOptions() {
+    @Nullable private BitmapFactory.Options getNextBitmapOptions() {
         if (selectedPhotos == null) return null;
         traverseIndex++;
         if (traverseIndex > selectedPhotos.length - 1)
@@ -423,72 +437,148 @@ public class MainActivity extends AppCompatActivity implements
         int resultHeight;
 
         if (horizontal) {
-            Util.log("Horizontally stacking");
+            log("Horizontally stacking");
+
             // The width of the resulting image will be the largest width of the selected images
             // The height of the resulting image will be the sum of all the selected images' heights
-            int totalWidth = 0;
             int maxHeight = -1;
-            // Traverse all selected images and load in their sizes
+            int minHeight = -1;
+
+            // Traverse all selected images to find largest and smallest heights
             traverseIndex = -1;
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
                 if (size[0] == 0 && size[1] == 0) return;
-                totalWidth += size[0];
                 if (maxHeight == -1)
                     maxHeight = size[1];
                 else if (size[1] > maxHeight)
                     maxHeight = size[1];
+                if (minHeight == -1)
+                    minHeight = size[1];
+                else if (size[1] < minHeight)
+                    minHeight = size[1];
             }
+
+            // Traverse images again now that we know the min/max height, scale widths accordingly
+            traverseIndex = -1;
+            int totalWidth = 0;
+            boolean scalePriority = Prefs.scalePriority(this);
+            while ((size = getNextBitmapSize()) != null) {
+                if (size[0] == 0 && size[1] == 0) return;
+                int w = size[0];
+                int h = size[1];
+                float ratio = (float) w / (float) h;
+                if (scalePriority) {
+                    // Scale to largest
+                    if (h < maxHeight) {
+                        log("Height of image %d is less than max (%d), scaling...",
+                                traverseIndex, maxHeight);
+                        h = maxHeight;
+                        w = (int) ((float) h * ratio);
+                    }
+                } else {
+                    // Scale to smallest
+                    if (h > minHeight) {
+                        log("Height of image %d is larger than min (%d), scaling...",
+                                traverseIndex, minHeight);
+                        h = minHeight;
+                        w = (int) ((float) h * ratio);
+                    }
+                }
+                totalWidth += w;
+            }
+
             // Compensate for spacing
             totalWidth += SPACING_HORIZONTAL * (selectedPhotos.length + 1);
+            minHeight += SPACING_VERTICAL * 2;
             maxHeight += SPACING_VERTICAL * 2;
 
             // Crash avoidance
             if (totalWidth == 0) {
-                Util.showError(this, new Exception("The total generated width is 0. Please notify me of this through the Google+ community."));
+                Util.showError(this, new Exception("The total generated width is 0. Please " +
+                        "notify me of this through the Google+ community."));
                 return;
             } else if (maxHeight == 0) {
-                Util.showError(this, new Exception("The max found height is 0. Please notify me of this through the Google+ community."));
+                Util.showError(this, new Exception("The max found height is 0. Please notify " +
+                        "me of this through the Google+ community."));
                 return;
             }
 
             // Print data and create large Bitmap
-            Util.log("Total width = %d, max height = %d", totalWidth, maxHeight);
+            log("Total width = %d, max height = %d", totalWidth, maxHeight);
             resultWidth = totalWidth;
-            resultHeight = maxHeight;
+            resultHeight = scalePriority ? maxHeight : minHeight;
         } else {
-            Util.log("Vertically stacking");
+            log("Vertically stacking");
+
             // The height of the resulting image will be the largest height of the selected images
             // The width of the resulting image will be the sum of all the selected images' widths
-            int totalHeight = 0;
             int maxWidth = -1;
-            // Traverse all selected images and load in their sizes
+            int minWidth = -1;
+
+            // Traverse all selected images and load min/max width, scale height accordingly
             traverseIndex = -1;
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
                 if (size[0] == 0 && size[1] == 0) return;
-                totalHeight += size[1];
                 if (maxWidth == -1)
                     maxWidth = size[0];
                 else if (size[0] > maxWidth)
                     maxWidth = size[0];
+                if (minWidth == -1)
+                    minWidth = size[0];
+                else if (size[0] < minWidth)
+                    minWidth = size[0];
             }
+
+            // Traverse images again now that we know the min/max height, scale widths accordingly
+            traverseIndex = -1;
+            int totalHeight = 0;
+            boolean scalePriority = Prefs.scalePriority(this);
+            while ((size = getNextBitmapSize()) != null) {
+                if (size[0] == 0 && size[1] == 0) return;
+                int w = size[0];
+                int h = size[1];
+                float ratio = (float) h / (float) w;
+                if (scalePriority) {
+                    // Scale to largest
+                    if (w < maxWidth) {
+                        w = maxWidth;
+                        h = (int) ((float) w * ratio);
+                        log("Height of image %d is larger than min (%d), scaling...",
+                                traverseIndex, maxWidth);
+                    }
+                } else {
+                    // Scale to smallest
+                    if (w > minWidth) {
+                        w = minWidth;
+                        h = (int) ((float) w * ratio);
+                        log("Width of image %d is larger than min (%d), scaling...",
+                                traverseIndex, minWidth);
+                    }
+                }
+                totalHeight += h;
+            }
+
             // Compensate for spacing
             totalHeight += SPACING_VERTICAL * (selectedPhotos.length + 1);
+            minWidth += SPACING_HORIZONTAL * 2;
             maxWidth += SPACING_HORIZONTAL * 2;
 
             // Crash avoidance
             if (totalHeight == 0) {
-                Util.showError(this, new Exception("The total generated height is 0. Please notify me of this through the Google+ community."));
+                Util.showError(this, new Exception("The total generated height is 0. Please " +
+                        "notify me of this through the Google+ community."));
                 return;
             } else if (maxWidth == 0) {
-                Util.showError(this, new Exception("The max found width is 0. Please notify me of this through the Google+ community."));
+                Util.showError(this, new Exception("The max found width is 0. Please notify " +
+                        "me of this through the Google+ community."));
                 return;
             }
 
             // Print data and create large Bitmap
-            Util.log("Max width = %d, total height = %d", maxWidth, totalHeight);
-            resultWidth = maxWidth;
+            log("Max width = %d, total height = %d", maxWidth, totalHeight);
+            resultWidth = scalePriority ? maxWidth : minWidth;
             resultHeight = totalHeight;
         }
 
@@ -496,7 +586,8 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onSizingResult(double scale, int resultWidth, int resultHeight, Bitmap.CompressFormat format, int quality, boolean cancelled) {
+    public void onSizingResult(double scale, int resultWidth, int resultHeight,
+                               Bitmap.CompressFormat format, int quality, boolean cancelled) {
         if (cancelled) {
             traverseIndex = -1;
             Util.unlockOrientation(this);
@@ -509,17 +600,20 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    private void finishProcessing(final double SCALE, final int resultWidth, final int resultHeight, final Bitmap.CompressFormat format, final int quality) {
+    private void finishProcessing(final double SCALE, final int resultWidth, final int resultHeight,
+                                  final Bitmap.CompressFormat format, final int quality) {
         // Crash avoidance
         if (resultWidth == 0) {
-            Util.showError(this, new Exception("The result width is 0. Please notify me of this through the Google+ community."));
+            Util.showError(this, new Exception("The result width is 0. Please notify " +
+                    "me of this through the Google+ community."));
             return;
         } else if (resultHeight == 0) {
-            Util.showError(this, new Exception("The result height is 0. Please notify me of this through the Google+ community."));
+            Util.showError(this, new Exception("The result height is 0. Please notify " +
+                    "me of this through the Google+ community."));
             return;
         }
 
-        Util.log("IMAGE SCALE = %s, total scaled width = %d, height = %d", SCALE, resultWidth, resultHeight);
+        log("IMAGE SCALE = %s, total scaled width = %d, height = %d", SCALE, resultWidth, resultHeight);
         final Bitmap result = Bitmap.createBitmap(resultWidth, resultHeight, Bitmap.Config.ARGB_8888);
 
         final boolean horizontal = stackHorizontallyCheck.isChecked();
@@ -533,8 +627,7 @@ public class MainActivity extends AppCompatActivity implements
         paint.setAntiAlias(true);
         paint.setDither(true);
 
-        @ColorInt
-        final int bgFillColor = Prefs.bgFillColor(this);
+        @ColorInt final int bgFillColor = Prefs.bgFillColor(this);
         if (bgFillColor != Color.TRANSPARENT) {
             // Fill the canvas (blank image) with the user's selected background fill color
             resultCanvas.drawColor(bgFillColor);
@@ -559,10 +652,17 @@ public class MainActivity extends AppCompatActivity implements
                     BitmapFactory.Options bitmapOptions;
                     while ((bitmapOptions = getNextBitmapOptions()) != null) {
                         processedCount++;
-                        final int scaledWidth = (int) (bitmapOptions.outWidth * SCALE);
-                        final int scaledHeight = (int) (bitmapOptions.outHeight * SCALE);
-                        Util.log("CURRENT IMAGE width = %d, height = %d", bitmapOptions.outWidth, bitmapOptions.outHeight);
-                        Util.log("SCALED IMAGE width = %d, height = %d", scaledWidth, scaledHeight);
+                        int scaledWidth = (int) (bitmapOptions.outWidth * SCALE);
+                        int scaledHeight = (int) (bitmapOptions.outHeight * SCALE);
+
+                        if (scaledHeight < resultHeight) {
+                            final float ratio = (float) scaledWidth / (float) scaledHeight;
+                            scaledHeight = resultHeight;
+                            scaledWidth = (int) ((float) scaledHeight * ratio);
+                        }
+
+                        log("CURRENT IMAGE width = %d, height = %d", bitmapOptions.outWidth, bitmapOptions.outHeight);
+                        log("SCALED IMAGE width = %d, height = %d", scaledWidth, scaledHeight);
 
                         // Left is right of last image plus horizontal spacing
                         dstRect.left = currentX + SPACING_HORIZONTAL;
@@ -574,7 +674,7 @@ public class MainActivity extends AppCompatActivity implements
                         dstRect.top = centerY - (scaledHeight / 2);
                         dstRect.bottom = centerY + (scaledHeight / 2);
 
-                        Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
+                        log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
 
                         bitmapOptions.inJustDecodeBounds = false;
@@ -594,10 +694,17 @@ public class MainActivity extends AppCompatActivity implements
                     BitmapFactory.Options bitmapOptions;
                     while ((bitmapOptions = getNextBitmapOptions()) != null) {
                         processedCount++;
-                        final int scaledWidth = (int) (bitmapOptions.outWidth * SCALE);
-                        final int scaledHeight = (int) (bitmapOptions.outHeight * SCALE);
-                        Util.log("CURRENT IMAGE width = %d, height = %d", bitmapOptions.outWidth, bitmapOptions.outHeight);
-                        Util.log("SCALED IMAGE width = %d, height = %d", scaledWidth, scaledHeight);
+                        int scaledWidth = (int) (bitmapOptions.outWidth * SCALE);
+                        int scaledHeight = (int) (bitmapOptions.outHeight * SCALE);
+
+                        if (scaledWidth < resultWidth) {
+                            final float ratio = (float) scaledHeight / (float) scaledWidth;
+                            scaledWidth = resultWidth;
+                            scaledHeight = (int) ((float) scaledWidth * ratio);
+                        }
+
+                        log("CURRENT IMAGE width = %d, height = %d", bitmapOptions.outWidth, bitmapOptions.outHeight);
+                        log("SCALED IMAGE width = %d, height = %d", scaledWidth, scaledHeight);
 
                         // Top is bottom of the last image plus vertical spacing
                         dstRect.top = currentY + SPACING_VERTICAL;
@@ -609,7 +716,7 @@ public class MainActivity extends AppCompatActivity implements
                         dstRect.left = centerX - (scaledWidth / 2);
                         dstRect.right = centerX + (scaledWidth / 2);
 
-                        Util.log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
+                        log("LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d",
                                 dstRect.left, dstRect.right, dstRect.top, dstRect.bottom);
 
                         bitmapOptions.inJustDecodeBounds = false;
@@ -635,13 +742,13 @@ public class MainActivity extends AppCompatActivity implements
 
                 // Save results to file
                 File cacheFile = Util.makeTempFile(MainActivity.this, ".png");
-                Util.log("Saving result to %s", cacheFile.getAbsolutePath().replace("%", "%%"));
+                log("Saving result to %s", cacheFile.getAbsolutePath().replace("%", "%%"));
                 FileOutputStream os = null;
                 try {
                     os = new FileOutputStream(cacheFile);
                     result.compress(format, quality, os);
                 } catch (Exception e) {
-                    Util.log("Error: %s", e.getMessage());
+                    log("Error: %s", e.getMessage());
                     e.printStackTrace();
                     Util.showError(MainActivity.this, e);
                     cacheFile = null;
@@ -659,7 +766,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void done(File file) {
-        Util.log("Done");
+        log("Done");
         // Clear selection
         clearSelection();
         // Unlock orientation so Activity can rotate again
@@ -669,7 +776,7 @@ public class MainActivity extends AppCompatActivity implements
                 new String[]{file.toString()}, null,
                 new MediaScannerConnection.OnScanCompletedListener() {
                     public void onScanCompleted(String path, Uri uri) {
-                        Util.log("Scanned %s, uri = %s", path, uri != null ? uri.toString().replace("%", "%%") : null);
+                        log("Scanned %s, uri = %s", path, uri != null ? uri.toString().replace("%", "%%") : null);
                     }
                 });
 
@@ -682,17 +789,16 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    public void onBackPressed() {
+    @Override public void onBackPressed() {
         if (adapter.getSelectedCount() > 0)
             clearSelection();
         else super.onBackPressed();
     }
 
-    @Override
-    public void onDragSelectionChanged(int count) {
+    @Override public void onDragSelectionChanged(int count) {
         affixButton.setText(getString(R.string.affix_x, count));
         affixButton.setEnabled(count > 0);
-        toolbar.getMenu().findItem(R.id.clear).setVisible(adapter != null && adapter.getSelectedCount() > 0);
+        toolbar.getMenu().findItem(R.id.clear).setVisible(
+                adapter != null && adapter.getSelectedCount() > 0);
     }
 }

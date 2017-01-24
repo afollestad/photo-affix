@@ -7,7 +7,10 @@
     <string name="affix_x">Affix (%1$d)</string>
     <string name="clear">Clear</string>
     <string name="stack">Stack</string>
-    <string name="stack_horizontally">Stack Horizontally</string>
+    <string name="stack_horizontally">Stack horizontally</string>
+    <string name="stack_vertically">Stack vertically</string>
+    <string name="scale_priority_on">Scale smaller images to largest</string>
+    <string name="scale_priority_off">Scale larger images to smallest</string>
     <string name="error">Error</string>
     <string name="affixing_your_photos">Affixing your photos…</string>
     <string name="share">Share</string>
@@ -37,7 +40,7 @@
         <a href=\'https://google.com/+AidanFollestad\'>Google+</a>&nbsp;&nbsp;
         <a href=\'https://github.com/afollestad\'>GitHub</a>&nbsp;&nbsp;
         <a href=\'https://www.linkedin.com/in/afollestad\'>LinkedIn</a><br/><br/>
-        Icon by the legendary <a href=\'https://plus.google.com/+EduardoPratti\'>Eduardo Pratti</a>.<br/>
+        Icon by <a href=\'https://plus.google.com/+EduardoPratti\'>Eduardo Pratti</a>.<br/>
         Play Store feature graphic by <a href=\'https://plus.google.com/+RikiDev\'>RB Designs</a>.<br/>
         Contributions from <a href=\'https://plus.google.com/+DanielCiao\'>Daniel Ciao</a>.<br/><br/>
         This project is <a href=\'https://github.com/afollestad/photo-affix\'>open source</a>.<br/>

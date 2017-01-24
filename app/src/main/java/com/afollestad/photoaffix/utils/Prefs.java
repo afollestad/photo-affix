@@ -27,6 +27,16 @@ public class Prefs {
                 .putBoolean("stack_horizontally", newValue).commit();
     }
 
+    public static boolean scalePriority(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean("scale_priority", true);
+    }
+
+    public static void scalePriority(Context context, boolean scalePriority) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putBoolean("scale_priority", scalePriority).commit();
+    }
+
     @ColorInt
     public static int bgFillColor(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)

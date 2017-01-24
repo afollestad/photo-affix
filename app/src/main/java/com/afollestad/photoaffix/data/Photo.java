@@ -19,15 +19,11 @@ public class Photo implements Serializable {
         _data = uri.toString();
     }
 
-    @Column
-    public long _id;
-    @Column
-    public String _data;
-    @Column
-    public long datetaken;
+    @Column public long _id;
+    @Column public String _data;
+    @Column public long datetaken;
 
-    @NonNull
-    public Uri getUri() {
+    @NonNull public Uri getUri() {
         Uri uri = Uri.parse(_data);
         if (!uri.toString().startsWith("file://") && !uri.toString().startsWith("content://"))
             uri = Uri.parse(String.format("file://%s", uri.toString()));

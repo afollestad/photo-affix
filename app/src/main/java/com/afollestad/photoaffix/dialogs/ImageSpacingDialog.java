@@ -42,11 +42,11 @@ public class ImageSpacingDialog extends DialogFragment {
     @BindView(R.id.horizontalLine) LineView horizontalLine;
 
     public interface SpacingCallback {
+
         void onSpacingChanged(int horizontal, int vertical);
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    @Override public Dialog onCreateDialog(Bundle savedInstanceState) {
         int fillColor = Prefs.bgFillColor(getActivity());
         if (fillColor == Color.TRANSPARENT)
             fillColor = ContextCompat.getColor(getActivity(), R.color.colorAccent);
@@ -88,12 +88,10 @@ public class ImageSpacingDialog extends DialogFragment {
                 }
             }
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
+            @Override public void onStartTrackingTouch(SeekBar seekBar) {
             }
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
+            @Override public void onStopTrackingTouch(SeekBar seekBar) {
             }
         };
         horizontalSeek.setOnSeekBarChangeListener(seekListener);
@@ -111,8 +109,7 @@ public class ImageSpacingDialog extends DialogFragment {
         return dialog;
     }
 
-    @Override
-    public void onDestroyView() {
+    @Override public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
         unbinder = null;
