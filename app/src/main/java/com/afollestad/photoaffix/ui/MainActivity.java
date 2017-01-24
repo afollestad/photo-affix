@@ -449,6 +449,7 @@ public class MainActivity extends AppCompatActivity implements
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
                 if (size[0] == 0 && size[1] == 0) return;
+                log("Image %d size: %d/%d", traverseIndex, size[0], size[1]);
                 if (maxHeight == -1)
                     maxHeight = size[1];
                 else if (size[1] > maxHeight)
@@ -458,6 +459,7 @@ public class MainActivity extends AppCompatActivity implements
                 else if (size[1] < minHeight)
                     minHeight = size[1];
             }
+            log("Min height: %d, max height: %d", minHeight, maxHeight);
 
             // Traverse images again now that we know the min/max height, scale widths accordingly
             traverseIndex = -1;
@@ -471,18 +473,18 @@ public class MainActivity extends AppCompatActivity implements
                 if (scalePriority) {
                     // Scale to largest
                     if (h < maxHeight) {
-                        log("Height of image %d is less than max (%d), scaling...",
-                                traverseIndex, maxHeight);
                         h = maxHeight;
                         w = (int) ((float) h * ratio);
+                        log("Height of image %d is less than max (%d), scaled up to %d/%d...",
+                                traverseIndex, maxHeight, w, h);
                     }
                 } else {
                     // Scale to smallest
                     if (h > minHeight) {
-                        log("Height of image %d is larger than min (%d), scaling...",
-                                traverseIndex, minHeight);
                         h = minHeight;
                         w = (int) ((float) h * ratio);
+                        log("Height of image %d is larger than min (%d), scaled down to %d/%d...",
+                                traverseIndex, minHeight, w, h);
                     }
                 }
                 totalWidth += w;
@@ -505,7 +507,7 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             // Print data and create large Bitmap
-            log("Total width = %d, max height = %d", totalWidth, maxHeight);
+            log("Total width with spacing = %d, max height with spacing = %d", totalWidth, maxHeight);
             resultWidth = totalWidth;
             resultHeight = scalePriority ? maxHeight : minHeight;
         } else {
@@ -521,6 +523,7 @@ public class MainActivity extends AppCompatActivity implements
             int[] size;
             while ((size = getNextBitmapSize()) != null) {
                 if (size[0] == 0 && size[1] == 0) return;
+                log("Image %d size: %d/%d", traverseIndex, size[0], size[1]);
                 if (maxWidth == -1)
                     maxWidth = size[0];
                 else if (size[0] > maxWidth)
@@ -545,16 +548,16 @@ public class MainActivity extends AppCompatActivity implements
                     if (w < maxWidth) {
                         w = maxWidth;
                         h = (int) ((float) w * ratio);
-                        log("Height of image %d is larger than min (%d), scaling...",
-                                traverseIndex, maxWidth);
+                        log("Height of image %d is larger than min (%d), scaled down to %d/%d...",
+                                traverseIndex, maxWidth, w, h);
                     }
                 } else {
                     // Scale to smallest
                     if (w > minWidth) {
                         w = minWidth;
                         h = (int) ((float) w * ratio);
-                        log("Width of image %d is larger than min (%d), scaling...",
-                                traverseIndex, minWidth);
+                        log("Width of image %d is larger than min (%d), scaled height down to %d/%d...",
+                                traverseIndex, minWidth, w, h);
                     }
                 }
                 totalHeight += h;
@@ -577,7 +580,7 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             // Print data and create large Bitmap
-            log("Max width = %d, total height = %d", maxWidth, totalHeight);
+            log("Max width with spacing = %d, total height with spacing = %d", maxWidth, totalHeight);
             resultWidth = scalePriority ? maxWidth : minWidth;
             resultHeight = totalHeight;
         }
