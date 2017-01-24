@@ -58,18 +58,8 @@ public class ImageSpacingDialog extends DialogFragment {
                 .positiveColor(fillColor)
                 .negativeColor(fillColor)
                 .widgetColor(fillColor)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        notifyActivity();
-                    }
-                })
-                .onNegative(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        MainActivity.dismissDialog(materialDialog);
-                    }
-                })
+                .onPositive((materialDialog, dialogAction) -> notifyActivity())
+                .onNegative((materialDialog, dialogAction) -> MainActivity.dismissDialog(materialDialog))
                 .build();
 
         final View v = dialog.getCustomView();

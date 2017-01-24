@@ -99,19 +99,11 @@ public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAda
             super(itemView);
             ButterKnife.bind(this, itemView);
 
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    toggleSelected(getAdapterPosition());
-                }
-            });
-            itemView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    toggleSelected(getAdapterPosition());
-                    context.list.setDragSelectActive(true, getAdapterPosition());
-                    return false;
-                }
+            itemView.setOnClickListener(v -> toggleSelected(getAdapterPosition()));
+            itemView.setOnLongClickListener(v -> {
+                toggleSelected(getAdapterPosition());
+                context.list.setDragSelectActive(true, getAdapterPosition());
+                return false;
             });
         }
     }

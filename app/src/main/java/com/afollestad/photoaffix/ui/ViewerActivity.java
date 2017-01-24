@@ -60,33 +60,20 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
         toolbar.inflateMenu(R.menu.menu_viewer);
         toolbar.setOnMenuItemClickListener(this);
         toolbar.setNavigationIcon(R.drawable.ic_close);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
+        toolbar.setNavigationOnClickListener(v -> finish());
 
         attacher = new PhotoViewAttacher(image);
         attacher.setOnPhotoTapListener(this);
-        attacher.setOnViewTapListener(new PhotoViewAttacher.OnViewTapListener() {
-            @Override
-            public void onViewTap(View view, float x, float y) {
-                onPhotoTap(null, 0f, 0f);
-            }
-        });
+        attacher.setOnViewTapListener((view, x, y) -> onPhotoTap(null, 0f, 0f));
 
         Glide.with(this)
                 .load(new File(getIntent().getData().getPath()))
                 .into(mTarget);
 
         if (toolbar != null) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    if (toolbar != null)
-                        onPhotoTap(null, 0f, 0f);
-                }
+            new Handler().postDelayed(() -> {
+                if (toolbar != null)
+                    onPhotoTap(null, 0f, 0f);
             }, 2000);
         }
     }
@@ -149,12 +136,10 @@ public class ViewerActivity extends AppCompatActivity implements Toolbar.OnMenuI
         file.delete();
         MediaScannerConnection.scanFile(ViewerActivity.this,
                 new String[]{file.getAbsolutePath()}, null,
-                new MediaScannerConnection.OnScanCompletedListener() {
-                    public void onScanCompleted(String path, Uri uri) {
-                        MainActivity.dismissDialog(progress);
-                        Util.log("Scanned %s, uri = %s", path, uri != null ? uri.toString().replace("%", "%%") : null);
-                        finish();
-                    }
+                (path, uri) -> {
+                    MainActivity.dismissDialog(progress);
+                    Util.log("Scanned %s, uri = %s", path, uri != null ? uri.toString().replace("%", "%%") : null);
+                    finish();
                 });
     }
 

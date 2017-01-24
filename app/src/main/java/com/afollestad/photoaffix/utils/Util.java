@@ -48,12 +48,7 @@ public class Util {
 
     public static void showError(final Activity context, final Exception e) {
         if (Looper.myLooper() != Looper.getMainLooper()) {
-            context.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    showError(context, e);
-                }
-            });
+            context.runOnUiThread(() -> showError(context, e));
             return;
         }
         new MaterialDialog.Builder(context)

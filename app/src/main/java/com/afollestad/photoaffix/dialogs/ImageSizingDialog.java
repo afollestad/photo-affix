@@ -70,35 +70,25 @@ public class ImageSizingDialog extends DialogFragment {
                 .negativeText(android.R.string.cancel)
                 .neutralText(R.string.defaultStr)
                 .autoDismiss(false)
-                .onPositive(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        if (callback != null) {
-                            final int progress = inputScaleSeek.getProgress() + minimum;
-                            final double scale = round((double) progress / 1000d);
-                            callback.onSizingResult(scale,
-                                    Integer.parseInt(inputWidth.getText().toString().trim()),
-                                    Integer.parseInt(inputHeight.getText().toString().trim()),
-                                    formatSpinner.getSelectedItemPosition() == 0 ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-                                    qualitySeeker.getProgress() + 1,
-                                    false);
-                        }
-                        MainActivity.dismissDialog(materialDialog);
+                .onPositive((materialDialog, dialogAction) -> {
+                    if (callback != null) {
+                        final int progress = inputScaleSeek.getProgress() + minimum;
+                        final double scale = round((double) progress / 1000d);
+                        callback.onSizingResult(scale,
+                                Integer.parseInt(inputWidth.getText().toString().trim()),
+                                Integer.parseInt(inputHeight.getText().toString().trim()),
+                                formatSpinner.getSelectedItemPosition() == 0 ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
+                                qualitySeeker.getProgress() + 1,
+                                false);
                     }
+                    MainActivity.dismissDialog(materialDialog);
                 })
-                .onNegative(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        callback.onSizingResult(0.0f, -1, -1, Bitmap.CompressFormat.PNG, 100, true);
-                        MainActivity.dismissDialog(materialDialog);
-                    }
+                .onNegative((materialDialog, dialogAction) -> {
+                    callback.onSizingResult(0.0f, -1, -1, Bitmap.CompressFormat.PNG, 100, true);
+                    MainActivity.dismissDialog(materialDialog);
                 })
-                .onNeutral(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog materialDialog, @NonNull DialogAction dialogAction) {
-                        inputScaleSeek.setProgress(inputScaleSeek.getMax());
-                    }
-                })
+                .onNeutral((materialDialog, dialogAction) ->
+                        inputScaleSeek.setProgress(inputScaleSeek.getMax()))
                 .build();
 
         final View v = dialog.getCustomView();
