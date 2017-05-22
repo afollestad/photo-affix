@@ -2,9 +2,10 @@ package com.afollestad.photoaffix.ui;
 
 import android.content.Intent;
 import android.media.MediaScannerConnection;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
@@ -13,8 +14,8 @@ import android.view.ViewPropertyAnimator;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
-import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.afollestad.photoaffix.BuildConfig;
 import com.afollestad.photoaffix.R;
 import com.afollestad.photoaffix.utils.Util;
 import com.bumptech.glide.Glide;
@@ -29,7 +30,9 @@ import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import uk.co.senab.photoview.PhotoViewAttacher;
 
-/** @author Aidan Follestad (afollestad) */
+/**
+ * @author Aidan Follestad (afollestad)
+ */
 public class ViewerActivity extends AppCompatActivity
     implements Toolbar.OnMenuItemClickListener, PhotoViewAttacher.OnPhotoTapListener {
 
@@ -77,7 +80,9 @@ public class ViewerActivity extends AppCompatActivity
       new Handler()
           .postDelayed(
               () -> {
-                if (toolbar != null) onPhotoTap(null, 0f, 0f);
+                if (toolbar != null) {
+                  onPhotoTap(null, 0f, 0f);
+                }
               },
               2000);
     }
@@ -93,50 +98,42 @@ public class ViewerActivity extends AppCompatActivity
   @Override
   public boolean onMenuItemClick(MenuItem item) {
     switch (item.getItemId()) {
-      case R.id.share:
-        {
-          Intent target =
-              new Intent(Intent.ACTION_SEND)
-                  .putExtra(Intent.EXTRA_STREAM, getIntent().getData())
-                  .setDataAndType(getIntent().getData(), "image/*");
-          Intent chooser = Intent.createChooser(target, getString(R.string.share_using));
-          startActivity(chooser);
-          break;
-        }
-      case R.id.edit:
-        {
-          Intent target =
-              new Intent(Intent.ACTION_EDIT).setDataAndType(getIntent().getData(), "image/*");
-          Intent chooser = Intent.createChooser(target, getString(R.string.edit_with));
-          startActivity(chooser);
-          break;
-        }
-      case R.id.openExternal:
-        {
-          Intent target =
-              new Intent(Intent.ACTION_VIEW).setDataAndType(getIntent().getData(), "image/*");
-          Intent chooser = Intent.createChooser(target, getString(R.string.open_with));
-          startActivity(chooser);
-          break;
-        }
-      case R.id.delete:
-        {
-          new MaterialDialog.Builder(this)
-              .content(R.string.confirm_delete)
-              .positiveText(R.string.yes)
-              .negativeText(android.R.string.cancel)
-              .onPositive(
-                  new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(
-                        @NonNull MaterialDialog materialDialog,
-                        @NonNull DialogAction dialogAction) {
-                      delete();
-                    }
-                  })
-              .show();
-          break;
-        }
+      case R.id.share: {
+        Uri uri = FileProvider.getUriForFile(this,
+            BuildConfig.APPLICATION_ID + ".provider",
+            new File(getIntent().getData().getPath()));
+        Intent target =
+            new Intent(Intent.ACTION_SEND)
+                .putExtra(Intent.EXTRA_STREAM, uri)
+                .setDataAndType(uri, "image/*");
+        Intent chooser = Intent.createChooser(target, getString(R.string.share_using));
+        startActivity(chooser);
+        break;
+      }
+      case R.id.edit: {
+        Intent target =
+            new Intent(Intent.ACTION_EDIT).setDataAndType(getIntent().getData(), "image/*");
+        Intent chooser = Intent.createChooser(target, getString(R.string.edit_with));
+        startActivity(chooser);
+        break;
+      }
+      case R.id.openExternal: {
+        Intent target =
+            new Intent(Intent.ACTION_VIEW).setDataAndType(getIntent().getData(), "image/*");
+        Intent chooser = Intent.createChooser(target, getString(R.string.open_with));
+        startActivity(chooser);
+        break;
+      }
+      case R.id.delete: {
+        new MaterialDialog.Builder(this)
+            .content(R.string.confirm_delete)
+            .positiveText(R.string.yes)
+            .negativeText(android.R.string.cancel)
+            .onPositive(
+                (materialDialog, dialogAction) -> delete())
+            .show();
+        break;
+      }
     }
     return false;
   }
@@ -153,7 +150,7 @@ public class ViewerActivity extends AppCompatActivity
     file.delete();
     MediaScannerConnection.scanFile(
         ViewerActivity.this,
-        new String[] {file.getAbsolutePath()},
+        new String[]{file.getAbsolutePath()},
         null,
         (path, uri) -> {
           MainActivity.dismissDialog(progress);
@@ -178,5 +175,6 @@ public class ViewerActivity extends AppCompatActivity
   }
 
   @Override
-  public void onOutsidePhotoTap() {}
+  public void onOutsidePhotoTap() {
+  }
 }

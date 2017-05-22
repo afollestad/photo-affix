@@ -1,37 +1,48 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.afollestad.photoaffix">
+          package="com.afollestad.photoaffix">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.INTERNET"/>
 
-    <application
-        android:allowBackup="true"
-        android:fullBackupContent="false"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+  <application
+    android:allowBackup="true"
+    android:fullBackupContent="false"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:supportsRtl="true"
+    android:theme="@style/AppTheme">
 
-        <activity android:name=".ui.MainActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+    <activity android:name=".ui.MainActivity">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEND_MULTIPLE" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="image/*" />
-            </intent-filter>
-        </activity>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.SEND_MULTIPLE"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:mimeType="image/*"/>
+      </intent-filter>
+    </activity>
 
-        <activity
-            android:name=".ui.ViewerActivity"
-            android:theme="@style/AppTheme.Black" />
+    <activity
+      android:name=".ui.ViewerActivity"
+      android:theme="@style/AppTheme.Black"/>
 
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="e9b2b6339277beb481a9c658b72cd0e4c714e0cb" />
-    </application>
+    <provider
+      android:name="android.support.v4.content.FileProvider"
+      android:authorities="${applicationId}.provider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/provider_paths"/>
+    </provider>
+
+    <meta-data
+      android:name="io.fabric.ApiKey"
+      android:value="e9b2b6339277beb481a9c658b72cd0e4c714e0cb"/>
+
+  </application>
 
 </manifest>
