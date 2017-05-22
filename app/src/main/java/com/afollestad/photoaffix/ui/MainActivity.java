@@ -231,8 +231,6 @@ public class MainActivity extends AppCompatActivity
       return;
     }
 
-    adapter.clearSelected();
-
     //noinspection VisibleForTests
     Inquiry.get(this)
         .selectFrom(Uri.parse("content://media/external/images/media"), Photo.class)
@@ -248,6 +246,7 @@ public class MainActivity extends AppCompatActivity
                 empty.setVisibility(
                     photos == null || photos.length == 0 ? View.VISIBLE : View.GONE);
                 if (photos != null && photos.length > 0 && autoSelectFirst) {
+                  adapter.shiftSelections();
                   adapter.setSelected(1, true);
                   autoSelectFirst = false;
                 }
@@ -920,7 +919,9 @@ public class MainActivity extends AppCompatActivity
 
   @Override
   public void onBackPressed() {
-    if (adapter.getSelectedCount() > 0) clearSelection();
+    if (adapter.getSelectedCount() > 0) {
+      clearSelection();
+    }
     else super.onBackPressed();
   }
 

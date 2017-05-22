@@ -50,6 +50,17 @@ public class PhotoGridAdapter
     }
   }
 
+  public void shiftSelections() {
+    for (int i = 1; i < getItemCount() - 1; i++) {
+      boolean currentSelected = isIndexSelected(i);
+      if (currentSelected) {
+        setSelected(i + 1, true);
+        setSelected(i, false);
+        i++;
+      }
+    }
+  }
+
   public void setPhotos(Photo[] photos) {
     this.photos = photos;
     notifyDataSetChanged();
