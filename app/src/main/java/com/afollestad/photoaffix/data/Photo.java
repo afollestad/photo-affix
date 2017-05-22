@@ -13,7 +13,9 @@ public class Photo implements Serializable {
   @Column public long _id;
   @Column public String _data;
   @Column public long datetaken;
+
   public Photo() {}
+
   public Photo(Uri uri) {
     _data = uri.toString();
   }

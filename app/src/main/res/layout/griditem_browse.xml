@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:foreground="?selectableItemBackground"
+  android:padding="@dimen/grid_padding_small">
+
+  <com.afollestad.photoaffix.views.SquareFrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/colorPrimaryTranslucent"
+    android:src="@drawable/ic_browse_images">
+
+    <ImageView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:src="@drawable/ic_browse_images"
+      tools:ignore="ContentDescription"/>
+
+  </com.afollestad.photoaffix.views.SquareFrameLayout>
+
+</FrameLayout>

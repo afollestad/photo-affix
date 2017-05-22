@@ -1,87 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical">
+
+  <android.support.v7.widget.Toolbar
+    android:id="@+id/appbar_toolbar"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="?actionBarSize"
+    android:background="?colorPrimary"
+    android:elevation="@dimen/toolbar_elevation"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    app:contentInsetStart="@dimen/content_inset"
+    app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+    app:title="@string/app_name"
+    app:titleTextColor="@android:color/white"
+    tools:ignore="UnusedAttribute"/>
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/appbar_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:background="?colorPrimary"
-        android:elevation="@dimen/toolbar_elevation"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:contentInsetStart="@dimen/content_inset"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-        app:title="@string/app_name"
-        app:titleTextColor="@android:color/white"
-        tools:ignore="UnusedAttribute" />
+  <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?colorPrimary"
+    android:elevation="@dimen/toolbar_elevation"
+    android:paddingBottom="@dimen/grid_padding_large"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorPrimary"
-        android:elevation="@dimen/toolbar_elevation"
-        android:paddingBottom="@dimen/grid_padding_large"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+    <Button
+      android:id="@+id/affixButton"
+      style="@style/AccentButton"
+      android:layout_marginBottom="@dimen/grid_padding_large"
+      android:layout_marginStart="@dimen/content_inset_less"
+      android:layout_toStartOf="@+id/expandButton"
+      android:enabled="false"
+      android:text="@string/affix_zero"/>
 
-        <Button
-            android:id="@+id/affixButton"
-            style="@style/AccentButton"
-            android:layout_marginBottom="@dimen/grid_padding_large"
-            android:layout_marginStart="@dimen/content_inset_less"
-            android:layout_toStartOf="@+id/expandButton"
-            android:enabled="false"
-            android:text="@string/affix_zero" />
+    <ImageView
+      android:id="@+id/expandButton"
+      android:layout_width="@dimen/button_height"
+      android:layout_height="@dimen/button_height"
+      android:layout_alignBottom="@+id/affixButton"
+      android:layout_alignParentEnd="true"
+      android:layout_alignTop="@+id/affixButton"
+      android:layout_marginEnd="@dimen/content_inset"
+      android:background="?selectableItemBackground"
+      android:scaleType="centerInside"
+      android:src="@drawable/ic_expand"
+      tools:ignore="ContentDescription"/>
 
-        <ImageView
-            android:id="@+id/expandButton"
-            android:layout_width="@dimen/button_height"
-            android:layout_height="@dimen/button_height"
-            android:layout_alignBottom="@+id/affixButton"
-            android:layout_alignParentEnd="true"
-            android:layout_alignTop="@+id/affixButton"
-            android:layout_marginEnd="@dimen/content_inset"
-            android:background="?selectableItemBackground"
-            android:scaleType="centerInside"
-            android:src="@drawable/ic_expand"
-            tools:ignore="ContentDescription" />
+    <include
+      layout="@layout/include_settings"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/affixButton"
+      android:visibility="gone"/>
 
-        <include
-            layout="@layout/include_settings"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/affixButton"
-            android:visibility="gone" />
+  </RelativeLayout>
 
-    </RelativeLayout>
+  <FrameLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+    <com.afollestad.dragselectrecyclerview.DragSelectRecyclerView
+      android:id="@+id/list"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:clipToPadding="false"
+      android:padding="@dimen/grid_padding_small"
+      android:scrollbars="vertical"
+      tools:background="#40000000"/>
 
-        <com.afollestad.dragselectrecyclerview.DragSelectRecyclerView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:padding="@dimen/grid_padding_small"
-            android:scrollbars="vertical"
-            tools:background="#40000000" />
+    <TextView
+      android:id="@+id/empty"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:fontFamily="sans-serif-light"
+      android:text="@string/no_photos_found"
+      android:textColor="?android:textColorPrimary"
+      android:textSize="@dimen/header_textsize"
+      android:textStyle="italic"/>
 
-        <TextView
-            android:id="@+id/empty"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:fontFamily="sans-serif-light"
-            android:text="@string/no_photos_found"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="@dimen/header_textsize"
-            android:textStyle="italic" />
-
-    </FrameLayout>
+  </FrameLayout>
 
 </LinearLayout>

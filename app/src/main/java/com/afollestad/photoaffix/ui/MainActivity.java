@@ -72,6 +72,7 @@ public class MainActivity extends AppCompatActivity
         DragSelectRecyclerViewAdapter.SelectionListener {
 
   private static final int PERMISSION_RC = 69;
+  private static final int BROWSE_RC = 21;
 
   @BindView(R.id.list)
   public DragSelectRecyclerView list;
@@ -115,6 +116,7 @@ public class MainActivity extends AppCompatActivity
   private PhotoGridAdapter adapter;
   private Photo[] selectedPhotos;
   private int traverseIndex;
+  private boolean autoSelectFirst;
 
   private int originalSettingsFrameHeight = -1;
   private ValueAnimator settingsFrameAnimator;
@@ -229,17 +231,26 @@ public class MainActivity extends AppCompatActivity
       return;
     }
 
+    adapter.clearSelected();
+
+    //noinspection VisibleForTests
     Inquiry.get(this)
         .selectFrom(Uri.parse("content://media/external/images/media"), Photo.class)
         .sort("datetaken DESC")
         .where("_data IS NOT NULL")
         .all(
             photos -> {
-              if (isFinishing()) return;
+              if (isFinishing()) {
+                return;
+              }
               if (empty != null) {
                 adapter.setPhotos(photos);
                 empty.setVisibility(
                     photos == null || photos.length == 0 ? View.VISIBLE : View.GONE);
+                if (photos != null && photos.length > 0 && autoSelectFirst) {
+                  adapter.setSelected(1, true);
+                  autoSelectFirst = false;
+                }
               }
             });
   }
@@ -248,7 +259,9 @@ public class MainActivity extends AppCompatActivity
   public void onRequestPermissionsResult(
       int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    if (requestCode == PERMISSION_RC) refresh();
+    if (requestCode == PERMISSION_RC) {
+      refresh();
+    }
   }
 
   @Override
@@ -919,5 +932,58 @@ public class MainActivity extends AppCompatActivity
         .getMenu()
         .findItem(R.id.clear)
         .setVisible(adapter != null && adapter.getSelectedCount() > 0);
+  }
+
+  public void browseExternalPhotos() {
+    Intent intent =
+        new Intent(Intent.ACTION_OPEN_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("image/*");
+    startActivityForResult(intent, BROWSE_RC);
+  }
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == BROWSE_RC && resultCode == RESULT_OK) {
+      final MaterialDialog progress =
+          new MaterialDialog.Builder(this)
+              .content(R.string.retrieving_photo)
+              .progress(true, -1)
+              .cancelable(false)
+              .show();
+      new Thread(
+              () -> {
+                InputStream input = null;
+                FileOutputStream output = null;
+                final File targetFile = Util.makeTempFile(MainActivity.this, ".png");
+                try {
+                  input = Util.openStream(this, data.getData());
+                  output = new FileOutputStream(targetFile);
+                  Util.copyStream(input, output);
+                  output.close();
+                  MediaScannerConnection.scanFile(
+                      this,
+                      new String[] {targetFile.toString()},
+                      null,
+                      (path, uri) -> {
+                        log(
+                            "Scanned %s, uri = %s",
+                            path, uri != null ? uri.toString().replace("%", "%%") : null);
+                        autoSelectFirst = true;
+                        refresh();
+                      });
+                } catch (Exception e) {
+                  Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+                } finally {
+                  if (progress != null) {
+                    progress.dismiss();
+                  }
+                  Util.closeQuietely(input);
+                  Util.closeQuietely(output);
+                }
+              })
+          .start();
+    }
   }
 }

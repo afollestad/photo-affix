@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -107,10 +108,20 @@ public class Util {
     }
   }
 
-  //    public static int lighten(int color, float factor) {
-  //        float[] hsv = new float[3];
-  //        Color.colorToHSV(color, hsv);
-  //        hsv[2] *= factor; // value component
-  //        return Color.HSVToColor(hsv);
-  //    }
+  public static boolean copyStream(InputStream from, OutputStream to) {
+    byte[] buffer = new byte[2048];
+    int read;
+    try {
+      while ((read = from.read(buffer)) != -1) {
+        to.write(buffer, 0, read);
+      }
+      return true;
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    } finally {
+      closeQuietely(from);
+      closeQuietely(to);
+    }
+  }
 }

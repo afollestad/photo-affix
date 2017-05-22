@@ -1,35 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/root"
+<FrameLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent">
+
+  <android.support.v7.widget.Toolbar
+    android:id="@+id/appbar_toolbar"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="?actionBarSize"
+    android:background="#BF000000"
+    android:elevation="@dimen/toolbar_elevation"
+    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+    app:contentInsetStart="@dimen/content_inset"
+    app:popupTheme="@style/ThemeOverlay.AppCompat"
+    app:title="@string/app_name"
+    app:titleTextColor="@android:color/white"
+    tools:ignore="UnusedAttribute"/>
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/appbar_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        android:background="#BF000000"
-        android:elevation="@dimen/toolbar_elevation"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        app:contentInsetStart="@dimen/content_inset"
-        app:popupTheme="@style/ThemeOverlay.AppCompat"
-        app:title="@string/app_name"
-        app:titleTextColor="@android:color/white"
-        tools:ignore="UnusedAttribute" />
+  <ImageView
+    android:id="@+id/image"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:ignore="ContentDescription"/>
 
-    <ImageView
-        android:id="@+id/image"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:ignore="ContentDescription" />
-
-    <ProgressBar
-        android:id="@+id/progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:indeterminate="true" />
+  <ProgressBar
+    android:id="@+id/progress"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:indeterminate="true"/>
 
 </FrameLayout>

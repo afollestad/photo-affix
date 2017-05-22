@@ -1,164 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/md_title_frame_margin_bottom"
-    android:paddingEnd="@dimen/md_title_frame_margin_bottom"
-    android:paddingStart="@dimen/md_title_frame_margin_bottom"
-    android:paddingTop="@dimen/md_title_frame_margin_bottom">
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  android:paddingBottom="@dimen/md_title_frame_margin_bottom"
+  android:paddingEnd="@dimen/md_title_frame_margin_bottom"
+  android:paddingStart="@dimen/md_title_frame_margin_bottom"
+  android:paddingTop="@dimen/md_title_frame_margin_bottom">
 
-    <LinearLayout
-        android:id="@+id/dimensionFrame"
+  <LinearLayout
+    android:id="@+id/dimensionFrame"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingTop="4dp">
+
+    <TextView
+      android:id="@+id/inputWidth"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:fontFamily="sans-serif-medium"
+      android:gravity="center"
+      android:maxLength="10"
+      android:minWidth="56dp"
+      android:textColor="?android:textColorPrimary"
+      android:textSize="@dimen/header_textsize"
+      tools:text="1234"/>
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="4dp"
+      android:layout_marginRight="4dp"
+      android:text="x"
+      android:textColor="?android:textColorSecondary"
+      android:textSize="@dimen/header_textsize"
+      tools:ignore="HardcodedText"/>
+
+    <TextView
+      android:id="@+id/inputHeight"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:fontFamily="sans-serif-medium"
+      android:gravity="center"
+      android:maxLength="10"
+      android:minWidth="56dp"
+      android:textColor="?android:textColorPrimary"
+      android:textSize="@dimen/header_textsize"
+      tools:text="1234"/>
+
+  </LinearLayout>
+
+  <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <SeekBar
+      android:id="@+id/inputScaleSeek"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_alignParentStart="true"
+      android:layout_centerVertical="true"
+      android:layout_marginTop="@dimen/md_dialog_frame_margin"
+      android:layout_toStartOf="@+id/inputScaleLabel"
+      android:max="1000"
+      tools:progress="1000"/>
+
+    <TextView
+      android:id="@+id/inputScaleLabel"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentEnd="true"
+      android:layout_centerVertical="true"
+      android:gravity="center"
+      android:minWidth="36dp"
+      android:text="1.00"
+      tools:ignore="HardcodedText"/>
+
+  </RelativeLayout>
+
+  <View
+    android:layout_width="match_parent"
+    android:layout_height="1dp"
+    android:layout_marginBottom="@dimen/md_title_frame_margin_bottom"
+    android:layout_marginEnd="@dimen/md_title_frame_margin_bottom"
+    android:layout_marginStart="@dimen/md_title_frame_margin_bottom"
+    android:layout_marginTop="@dimen/md_title_frame_margin_bottom"
+    android:background="#eee"/>
+
+  <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_horizontal"
+    android:paddingBottom="4dp"
+    android:paddingEnd="@dimen/md_title_frame_margin_bottom"
+    android:paddingStart="@dimen/md_title_frame_margin_bottom">
+
+    <TextView
+      android:id="@+id/formatLabel"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignBottom="@+id/formatSpinner"
+      android:layout_alignTop="@+id/formatSpinner"
+      android:fontFamily="sans-serif-medium"
+      android:gravity="center_vertical"
+      android:text="@string/format"
+      android:textSize="@dimen/content_textsize"/>
+
+    <Spinner
+      android:id="@+id/formatSpinner"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginBottom="@dimen/md_title_frame_margin_bottom"
+      android:layout_marginStart="@dimen/md_dialog_frame_margin"
+      android:layout_toEndOf="@+id/formatLabel"/>
+
+    <RelativeLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/formatSpinner">
+
+      <TextView
+        android:id="@+id/qualityTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:gravity="center"
-        android:orientation="horizontal"
-        android:paddingTop="4dp">
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center_vertical"
+        android:text="@string/quality"
+        android:textSize="@dimen/content_textsize"/>
 
-        <TextView
-            android:id="@+id/inputWidth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:maxLength="10"
-            android:minWidth="56dp"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="@dimen/header_textsize"
-            tools:text="1234" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_marginRight="4dp"
-            android:text="x"
-            android:textColor="?android:textColorSecondary"
-            android:textSize="@dimen/header_textsize"
-            tools:ignore="HardcodedText" />
-
-        <TextView
-            android:id="@+id/inputHeight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center"
-            android:maxLength="10"
-            android:minWidth="56dp"
-            android:textColor="?android:textColorPrimary"
-            android:textSize="@dimen/header_textsize"
-            tools:text="1234" />
-
-    </LinearLayout>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-        <SeekBar
-            android:id="@+id/inputScaleSeek"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginTop="@dimen/md_dialog_frame_margin"
-            android:layout_toStartOf="@+id/inputScaleLabel"
-            android:max="1000"
-            tools:progress="1000" />
-
-        <TextView
-            android:id="@+id/inputScaleLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:gravity="center"
-            android:minWidth="36dp"
-            android:text="1.00"
-            tools:ignore="HardcodedText" />
-
-    </RelativeLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginBottom="@dimen/md_title_frame_margin_bottom"
-        android:layout_marginEnd="@dimen/md_title_frame_margin_bottom"
-        android:layout_marginStart="@dimen/md_title_frame_margin_bottom"
-        android:layout_marginTop="@dimen/md_title_frame_margin_bottom"
-        android:background="#eee" />
-
-    <RelativeLayout
+      <SeekBar
+        android:id="@+id/qualitySeeker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:paddingBottom="4dp"
-        android:paddingEnd="@dimen/md_title_frame_margin_bottom"
-        android:paddingStart="@dimen/md_title_frame_margin_bottom">
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/md_title_frame_margin_bottom"
+        android:layout_toEndOf="@+id/qualityTitle"
+        android:layout_toStartOf="@+id/qualityLabel"/>
 
-        <TextView
-            android:id="@+id/formatLabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/formatSpinner"
-            android:layout_alignTop="@+id/formatSpinner"
-            android:fontFamily="sans-serif-medium"
-            android:gravity="center_vertical"
-            android:text="@string/format"
-            android:textSize="@dimen/content_textsize" />
-
-        <Spinner
-            android:id="@+id/formatSpinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/md_title_frame_margin_bottom"
-            android:layout_marginStart="@dimen/md_dialog_frame_margin"
-            android:layout_toEndOf="@+id/formatLabel" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/formatSpinner">
-
-            <TextView
-                android:id="@+id/qualityTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:fontFamily="sans-serif-medium"
-                android:gravity="center_vertical"
-                android:text="@string/quality"
-                android:textSize="@dimen/content_textsize" />
-
-            <SeekBar
-                android:id="@+id/qualitySeeker"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/md_title_frame_margin_bottom"
-                android:layout_toEndOf="@+id/qualityTitle"
-                android:layout_toStartOf="@+id/qualityLabel" />
-
-            <TextView
-                android:id="@+id/qualityLabel"
-                android:layout_width="32dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:fontFamily="sans-serif-light"
-                android:gravity="center"
-                android:maxLength="3"
-                android:text="100"
-                android:textSize="@dimen/content_textsize"
-                android:textStyle="bold"
-                tools:ignore="HardcodedText" />
-
-        </RelativeLayout>
+      <TextView
+        android:id="@+id/qualityLabel"
+        android:layout_width="32dp"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center"
+        android:maxLength="3"
+        android:text="100"
+        android:textSize="@dimen/content_textsize"
+        android:textStyle="bold"
+        tools:ignore="HardcodedText"/>
 
     </RelativeLayout>
+
+  </RelativeLayout>
 
 </LinearLayout>

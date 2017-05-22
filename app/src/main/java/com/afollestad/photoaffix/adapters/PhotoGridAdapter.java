@@ -1,6 +1,7 @@
 package com.afollestad.photoaffix.adapters;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,7 @@ public class PhotoGridAdapter
 
   private final MainActivity context;
   private Photo[] photos;
+
   public PhotoGridAdapter(MainActivity context) {
     this.context = context;
   }
@@ -57,25 +59,40 @@ public class PhotoGridAdapter
     Integer[] indices = getSelectedIndices();
     ArrayList<Photo> selected = new ArrayList<>();
     for (Integer index : indices) {
-      if (index < 0) continue;
+      if (index < 0) {
+        continue;
+      }
       selected.add(photos[index]);
     }
     return selected.toArray(new Photo[selected.size()]);
   }
 
   @Override
-  public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-    View v =
-        LayoutInflater.from(parent.getContext()).inflate(R.layout.griditem_photo, parent, false);
-    return new PhotoViewHolder(v);
+  public int getItemViewType(int position) {
+    return position == 0 ? 0 : 1;
   }
 
   @Override
+  public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    View v =
+        LayoutInflater.from(parent.getContext())
+            .inflate(
+                viewType == 0 ? R.layout.griditem_browse : R.layout.griditem_photo, parent, false);
+    return new PhotoViewHolder(v);
+  }
+
+  @SuppressWarnings("ConstantConditions")
+  @Override
   public void onBindViewHolder(PhotoViewHolder holder, int position) {
     super.onBindViewHolder(holder, position);
-    if (context == null || context.isFinishing()) return;
+    if (context == null || context.isFinishing()) {
+      return;
+    }
+    if (position == 0) {
+      return;
+    }
 
-    Glide.with(context).load(photos[position].getUri()).into(holder.image);
+    Glide.with(context).load(photos[position - 1].getUri()).into(holder.image);
 
     if (isIndexSelected(position)) {
       holder.check.setVisibility(View.VISIBLE);
@@ -89,18 +106,26 @@ public class PhotoGridAdapter
   }
 
   @Override
+  protected boolean isIndexSelectable(int index) {
+    return index > 0;
+  }
+
+  @Override
   public int getItemCount() {
-    return photos != null ? photos.length : 0;
+    return photos != null ? photos.length + 1 : 0;
   }
 
   class PhotoViewHolder extends RecyclerView.ViewHolder {
 
+    @Nullable
     @BindView(R.id.image)
     ImageView image;
 
+    @Nullable
     @BindView(R.id.check)
     View check;
 
+    @Nullable
     @BindView(R.id.circle)
     View circle;
 
@@ -108,13 +133,23 @@ public class PhotoGridAdapter
       super(itemView);
       ButterKnife.bind(this, itemView);
 
-      itemView.setOnClickListener(v -> toggleSelected(getAdapterPosition()));
-      itemView.setOnLongClickListener(
+      itemView.setOnClickListener(
           v -> {
+            if (getAdapterPosition() == 0) {
+              context.browseExternalPhotos();
+              return;
+            }
             toggleSelected(getAdapterPosition());
-            context.list.setDragSelectActive(true, getAdapterPosition());
-            return false;
           });
+
+      if (image != null) {
+        itemView.setOnLongClickListener(
+            v -> {
+              toggleSelected(getAdapterPosition());
+              context.list.setDragSelectActive(true, getAdapterPosition());
+              return false;
+            });
+      }
     }
   }
 }
