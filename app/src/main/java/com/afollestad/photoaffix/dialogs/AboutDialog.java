@@ -10,25 +10,22 @@ import android.text.Html;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.afollestad.photoaffix.R;
 
-/**
- * @author Aidan Follestad (afollestad)
- */
+/** @author Aidan Follestad (afollestad) */
 public class AboutDialog extends DialogFragment {
 
-    public static void show(AppCompatActivity context) {
-        AboutDialog dialog = new AboutDialog();
-        dialog.show(context.getSupportFragmentManager(), "[ABOUT_DIALOG]");
-    }
+  public static void show(AppCompatActivity context) {
+    AboutDialog dialog = new AboutDialog();
+    dialog.show(context.getSupportFragmentManager(), "[ABOUT_DIALOG]");
+  }
 
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return new MaterialDialog.Builder(getActivity())
-                .title(R.string.about)
-                .positiveText(R.string.dismiss)
-                .content(Html.fromHtml(getString(R.string.about_body)))
-                .contentLineSpacing(1.6f)
-                .build();
-    }
+  @NonNull
+  @Override
+  public Dialog onCreateDialog(Bundle savedInstanceState) {
+    return new MaterialDialog.Builder(getActivity())
+        .title(R.string.about)
+        .positiveText(R.string.dismiss)
+        .content(Html.fromHtml(getString(R.string.about_body)))
+        .contentLineSpacing(1.6f)
+        .build();
+  }
 }
-

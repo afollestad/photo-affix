@@ -19,92 +19,102 @@ import java.util.ArrayList;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-/**
- * @author Aidan Follestad (afollestad)
- */
-public class PhotoGridAdapter extends DragSelectRecyclerViewAdapter<PhotoGridAdapter.PhotoViewHolder> {
+/** @author Aidan Follestad (afollestad) */
+public class PhotoGridAdapter
+    extends DragSelectRecyclerViewAdapter<PhotoGridAdapter.PhotoViewHolder> {
 
-    public PhotoGridAdapter(MainActivity context) {
-        this.context = context;
+  private final MainActivity context;
+  private Photo[] photos;
+  public PhotoGridAdapter(MainActivity context) {
+    this.context = context;
+  }
+
+  @Override
+  public void saveInstanceState(Bundle out) {
+    super.saveInstanceState(out);
+    if (photos != null) {
+      out.putSerializable("photos", new PhotoHolder(photos));
     }
+  }
 
-    private final MainActivity context;
-    private Photo[] photos;
-
-    @Override public void saveInstanceState(Bundle out) {
-        super.saveInstanceState(out);
-        if (photos != null)
-            out.putSerializable("photos", new PhotoHolder(photos));
+  @Override
+  public void restoreInstanceState(Bundle in) {
+    super.restoreInstanceState(in);
+    if (in != null && in.containsKey("photos")) {
+      PhotoHolder ph = (PhotoHolder) in.getSerializable("photos");
+      if (ph != null) {
+        setPhotos(ph.photos);
+      }
     }
+  }
 
-    @Override public void restoreInstanceState(Bundle in) {
-        super.restoreInstanceState(in);
-        if (in != null && in.containsKey("photos")) {
-            PhotoHolder ph = (PhotoHolder) in.getSerializable("photos");
-            if (ph != null) setPhotos(ph.photos);
-        }
+  public void setPhotos(Photo[] photos) {
+    this.photos = photos;
+    notifyDataSetChanged();
+  }
+
+  public Photo[] getSelectedPhotos() {
+    Integer[] indices = getSelectedIndices();
+    ArrayList<Photo> selected = new ArrayList<>();
+    for (Integer index : indices) {
+      if (index < 0) continue;
+      selected.add(photos[index]);
     }
+    return selected.toArray(new Photo[selected.size()]);
+  }
 
-    public void setPhotos(Photo[] photos) {
-        this.photos = photos;
-        notifyDataSetChanged();
+  @Override
+  public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    View v =
+        LayoutInflater.from(parent.getContext()).inflate(R.layout.griditem_photo, parent, false);
+    return new PhotoViewHolder(v);
+  }
+
+  @Override
+  public void onBindViewHolder(PhotoViewHolder holder, int position) {
+    super.onBindViewHolder(holder, position);
+    if (context == null || context.isFinishing()) return;
+
+    Glide.with(context).load(photos[position].getUri()).into(holder.image);
+
+    if (isIndexSelected(position)) {
+      holder.check.setVisibility(View.VISIBLE);
+      holder.circle.setActivated(true);
+      holder.image.setActivated(true);
+    } else {
+      holder.check.setVisibility(View.GONE);
+      holder.circle.setActivated(false);
+      holder.image.setActivated(false);
     }
+  }
 
-    public Photo[] getSelectedPhotos() {
-        Integer[] indices = getSelectedIndices();
-        ArrayList<Photo> selected = new ArrayList<>();
-        for (Integer index : indices) {
-            if (index < 0) continue;
-            selected.add(photos[index]);
-        }
-        return selected.toArray(new Photo[selected.size()]);
+  @Override
+  public int getItemCount() {
+    return photos != null ? photos.length : 0;
+  }
+
+  class PhotoViewHolder extends RecyclerView.ViewHolder {
+
+    @BindView(R.id.image)
+    ImageView image;
+
+    @BindView(R.id.check)
+    View check;
+
+    @BindView(R.id.circle)
+    View circle;
+
+    PhotoViewHolder(View itemView) {
+      super(itemView);
+      ButterKnife.bind(this, itemView);
+
+      itemView.setOnClickListener(v -> toggleSelected(getAdapterPosition()));
+      itemView.setOnLongClickListener(
+          v -> {
+            toggleSelected(getAdapterPosition());
+            context.list.setDragSelectActive(true, getAdapterPosition());
+            return false;
+          });
     }
-
-    @Override public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.griditem_photo, parent, false);
-        return new PhotoViewHolder(v);
-    }
-
-    @Override public void onBindViewHolder(PhotoViewHolder holder, int position) {
-        super.onBindViewHolder(holder, position);
-        if (context == null || context.isFinishing()) return;
-
-        Glide.with(context)
-                .load(photos[position].getUri())
-                .into(holder.image);
-
-        if (isIndexSelected(position)) {
-            holder.check.setVisibility(View.VISIBLE);
-            holder.circle.setActivated(true);
-            holder.image.setActivated(true);
-        } else {
-            holder.check.setVisibility(View.GONE);
-            holder.circle.setActivated(false);
-            holder.image.setActivated(false);
-        }
-    }
-
-    @Override public int getItemCount() {
-        return photos != null ? photos.length : 0;
-    }
-
-    class PhotoViewHolder extends RecyclerView.ViewHolder {
-
-        @BindView(R.id.image) ImageView image;
-        @BindView(R.id.check) View check;
-        @BindView(R.id.circle) View circle;
-
-        PhotoViewHolder(View itemView) {
-            super(itemView);
-            ButterKnife.bind(this, itemView);
-
-            itemView.setOnClickListener(v -> toggleSelected(getAdapterPosition()));
-            itemView.setOnLongClickListener(v -> {
-                toggleSelected(getAdapterPosition());
-                context.list.setDragSelectActive(true, getAdapterPosition());
-                return false;
-            });
-        }
-    }
+  }
 }
