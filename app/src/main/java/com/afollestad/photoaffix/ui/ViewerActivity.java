@@ -97,11 +97,12 @@ public class ViewerActivity extends AppCompatActivity
 
   @Override
   public boolean onMenuItemClick(MenuItem item) {
+    final Uri uri = FileProvider.getUriForFile(this,
+        BuildConfig.APPLICATION_ID + ".provider",
+        new File(getIntent().getData().getPath()));
+
     switch (item.getItemId()) {
       case R.id.share: {
-        Uri uri = FileProvider.getUriForFile(this,
-            BuildConfig.APPLICATION_ID + ".provider",
-            new File(getIntent().getData().getPath()));
         Intent target =
             new Intent(Intent.ACTION_SEND)
                 .putExtra(Intent.EXTRA_STREAM, uri)
@@ -112,14 +113,14 @@ public class ViewerActivity extends AppCompatActivity
       }
       case R.id.edit: {
         Intent target =
-            new Intent(Intent.ACTION_EDIT).setDataAndType(getIntent().getData(), "image/*");
+            new Intent(Intent.ACTION_EDIT).setDataAndType(uri, "image/*");
         Intent chooser = Intent.createChooser(target, getString(R.string.edit_with));
         startActivity(chooser);
         break;
       }
       case R.id.openExternal: {
         Intent target =
-            new Intent(Intent.ACTION_VIEW).setDataAndType(getIntent().getData(), "image/*");
+            new Intent(Intent.ACTION_VIEW).setDataAndType(uri, "image/*");
         Intent chooser = Intent.createChooser(target, getString(R.string.open_with));
         startActivity(chooser);
         break;
