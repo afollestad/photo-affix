@@ -64,12 +64,14 @@ import butterknife.Unbinder;
 
 import static com.afollestad.photoaffix.utils.Util.log;
 
-/** @author Aidan Follestad (afollestad) */
+/**
+ * @author Aidan Follestad (afollestad)
+ */
 public class MainActivity extends AppCompatActivity
     implements ColorChooserDialog.ColorCallback,
-        ImageSpacingDialog.SpacingCallback,
-        ImageSizingDialog.SizingCallback,
-        DragSelectRecyclerViewAdapter.SelectionListener {
+    ImageSpacingDialog.SpacingCallback,
+    ImageSizingDialog.SizingCallback,
+    DragSelectRecyclerViewAdapter.SelectionListener {
 
   private static final int PERMISSION_RC = 69;
   private static final int BROWSE_RC = 21;
@@ -227,7 +229,7 @@ public class MainActivity extends AppCompatActivity
         ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
     if (permission != PackageManager.PERMISSION_GRANTED) {
       ActivityCompat.requestPermissions(
-          this, new String[] {Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_RC);
+          this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, PERMISSION_RC);
       return;
     }
 
@@ -336,10 +338,10 @@ public class MainActivity extends AppCompatActivity
   }
 
   @OnClick({
-    R.id.settingStackHorizontally,
-    R.id.settingBgFillColor,
-    R.id.settingImagePadding,
-    R.id.settingScalePriority
+      R.id.settingStackHorizontally,
+      R.id.settingBgFillColor,
+      R.id.settingImagePadding,
+      R.id.settingScalePriority
   })
   public void onClickSetting(View view) {
     switch (view.getId()) {
@@ -387,7 +389,8 @@ public class MainActivity extends AppCompatActivity
   }
 
   @Override
-  public void onColorChooserDismissed(@NonNull ColorChooserDialog colorChooserDialog) {}
+  public void onColorChooserDismissed(@NonNull ColorChooserDialog colorChooserDialog) {
+  }
 
   @Override
   public void onSpacingChanged(int horizontal, int vertical) {
@@ -400,7 +403,7 @@ public class MainActivity extends AppCompatActivity
     if (selectedPhotos == null || selectedPhotos.length == 0) {
       selectedPhotos = adapter.getSelectedPhotos();
       if (selectedPhotos == null || selectedPhotos.length == 0)
-        return new int[] {10, 10}; // crash workaround
+        return new int[]{10, 10}; // crash workaround
     }
     traverseIndex++;
     if (traverseIndex > selectedPhotos.length - 1) return null;
@@ -413,11 +416,11 @@ public class MainActivity extends AppCompatActivity
       BitmapFactory.decodeStream(is, null, options);
     } catch (Exception e) {
       Util.showError(this, e);
-      return new int[] {0, 0};
+      return new int[]{0, 0};
     } finally {
       Util.closeQuietely(is);
     }
-    return new int[] {options.outWidth, options.outHeight};
+    return new int[]{options.outWidth, options.outHeight};
   }
 
   @Nullable
@@ -710,185 +713,185 @@ public class MainActivity extends AppCompatActivity
             .show();
 
     new Thread(
-            () -> {
-              // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
-              final Rect dstRect = new Rect(0, 0, 10, 10);
-              int processedCount = 0;
-              final boolean scalingPriority = Prefs.scalePriority(MainActivity.this);
+        () -> {
+          // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
+          final Rect dstRect = new Rect(0, 0, 10, 10);
+          int processedCount = 0;
+          final boolean scalingPriority = Prefs.scalePriority(MainActivity.this);
 
-              if (horizontal) {
-                int currentX = 0;
-                traverseIndex = -1;
-                BitmapFactory.Options bitmapOptions;
-                while ((bitmapOptions = getNextBitmapOptions()) != null) {
-                  log("--------------------------------");
-                  processedCount++;
+          if (horizontal) {
+            int currentX = 0;
+            traverseIndex = -1;
+            BitmapFactory.Options bitmapOptions;
+            while ((bitmapOptions = getNextBitmapOptions()) != null) {
+              log("--------------------------------");
+              processedCount++;
 
-                  final int width = bitmapOptions.outWidth;
-                  final int height = bitmapOptions.outHeight;
-                  final float ratio = (float) width / (float) height;
+              final int width = bitmapOptions.outWidth;
+              final int height = bitmapOptions.outHeight;
+              final float ratio = (float) width / (float) height;
 
-                  int scaledWidth = (int) (width * SCALE);
-                  int scaledHeight = (int) (height * SCALE);
+              int scaledWidth = (int) (width * SCALE);
+              int scaledHeight = (int) (height * SCALE);
 
-                  if (scalingPriority) {
-                    // Scale up to largest height, fill total height
-                    if (scaledHeight < resultHeight) {
-                      scaledHeight = resultHeight;
-                      scaledWidth = (int) ((float) scaledHeight * ratio);
-                    }
-                  } else {
-                    // Scale down to smallest height, fill total height
-                    if (scaledHeight > resultHeight) {
-                      scaledHeight = resultHeight;
-                      scaledWidth = (int) ((float) scaledHeight * ratio);
-                    }
-                  }
-
-                  log(
-                      "CURRENT IMAGE width = %d, height = %d, w/h = %s",
-                      width, height, (float) width / (float) height);
-                  log(
-                      "SCALED IMAGE width = %d, height = %d, w/h = %s",
-                      scaledWidth, scaledHeight, (float) scaledWidth / (float) scaledHeight);
-
-                  // Left is right of last image plus horizontal spacing
-                  dstRect.left = currentX + SPACING_HORIZONTAL;
-                  // Right is left plus width of the current image
-                  dstRect.right = dstRect.left + scaledWidth;
-                  dstRect.top = SPACING_VERTICAL;
-                  dstRect.bottom = scaledHeight + SPACING_VERTICAL;
-
-                  log(
-                      "LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d, TOTAL SCALED HEIGHT = %d, TOTAL SCALED WIDTH = %d",
-                      dstRect.left,
-                      dstRect.right,
-                      dstRect.top,
-                      dstRect.bottom,
-                      resultHeight,
-                      resultWidth);
-
-                  bitmapOptions.inJustDecodeBounds = false;
-                  bitmapOptions.inSampleSize =
-                      (dstRect.bottom - dstRect.top) / bitmapOptions.outHeight;
-
-                  final Bitmap bm = getNextBitmap(bitmapOptions);
-                  if (bm == null) break;
-                  try {
-                    bm.setDensity(Bitmap.DENSITY_NONE);
-                    resultCanvas.drawBitmap(bm, null, dstRect, paint);
-                  } catch (RuntimeException e) {
-                    Util.showMemoryError(MainActivity.this);
-                  } finally {
-                    bm.recycle();
-                  }
-
-                  currentX = dstRect.right;
+              if (scalingPriority) {
+                // Scale up to largest height, fill total height
+                if (scaledHeight < resultHeight) {
+                  scaledHeight = resultHeight;
+                  scaledWidth = (int) ((float) scaledHeight * ratio);
                 }
               } else {
-                int currentY = 0;
-                traverseIndex = -1;
-                BitmapFactory.Options bitmapOptions;
-                while ((bitmapOptions = getNextBitmapOptions()) != null) {
-                  log("--------------------------------");
-                  processedCount++;
-
-                  final int width = bitmapOptions.outWidth;
-                  final int height = bitmapOptions.outHeight;
-                  final float ratio = (float) height / (float) width;
-
-                  int scaledWidth = (int) (width * SCALE);
-                  int scaledHeight = (int) (height * SCALE);
-
-                  if (scalingPriority) {
-                    // Scale up to largest width, fill total width
-                    if (scaledWidth < resultWidth) {
-                      scaledWidth = resultWidth;
-                      scaledHeight = (int) ((float) scaledWidth * ratio);
-                    }
-                  } else {
-                    // Scale down to smallest width, fill total width
-                    if (scaledWidth > resultWidth) {
-                      scaledWidth = resultWidth;
-                      scaledHeight = (int) ((float) scaledWidth * ratio);
-                    }
-                  }
-
-                  log(
-                      "CURRENT IMAGE width = %d, height = %d, w/h = %s",
-                      width, height, (float) width / (float) height);
-                  log(
-                      "SCALED IMAGE width = %d, height = %d, w/h = %s",
-                      scaledWidth, scaledHeight, (float) width / (float) height);
-
-                  // Top is bottom of the last image plus vertical spacing
-                  dstRect.top = currentY + SPACING_VERTICAL;
-                  // Bottom is top plus height of the current image
-                  dstRect.bottom = dstRect.top + scaledHeight;
-                  dstRect.left = SPACING_HORIZONTAL;
-                  dstRect.right = scaledWidth + SPACING_HORIZONTAL;
-
-                  log(
-                      "LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d, TOTAL SCALED WIDTH: %d, TOTAL SCALED HEIGHT: %d",
-                      dstRect.left,
-                      dstRect.right,
-                      dstRect.top,
-                      dstRect.bottom,
-                      resultWidth,
-                      resultHeight);
-
-                  bitmapOptions.inJustDecodeBounds = false;
-                  bitmapOptions.inSampleSize =
-                      (dstRect.right - dstRect.left) / bitmapOptions.outWidth;
-
-                  final Bitmap bm = getNextBitmap(bitmapOptions);
-                  if (bm == null) break;
-                  try {
-                    bm.setDensity(Bitmap.DENSITY_NONE);
-                    resultCanvas.drawBitmap(bm, null, dstRect, paint);
-                  } catch (RuntimeException e) {
-                    Util.showMemoryError(MainActivity.this);
-                  } finally {
-                    bm.recycle();
-                  }
-
-                  currentY = dstRect.bottom;
+                // Scale down to smallest height, fill total height
+                if (scaledHeight > resultHeight) {
+                  scaledHeight = resultHeight;
+                  scaledWidth = (int) ((float) scaledHeight * ratio);
                 }
               }
 
-              if (processedCount == 0) {
-                try {
-                  result.recycle();
-                } catch (Throwable ignored) {
-                }
-                dismissDialog(progress);
-                return;
-              }
+              log(
+                  "CURRENT IMAGE width = %d, height = %d, w/h = %s",
+                  width, height, (float) width / (float) height);
+              log(
+                  "SCALED IMAGE width = %d, height = %d, w/h = %s",
+                  scaledWidth, scaledHeight, (float) scaledWidth / (float) scaledHeight);
 
-              log("--------------------------------");
+              // Left is right of last image plus horizontal spacing
+              dstRect.left = currentX + SPACING_HORIZONTAL;
+              // Right is left plus width of the current image
+              dstRect.right = dstRect.left + scaledWidth;
+              dstRect.top = SPACING_VERTICAL;
+              dstRect.bottom = scaledHeight + SPACING_VERTICAL;
 
-              // Save results to file
-              File cacheFile = Util.makeTempFile(MainActivity.this, ".png");
-              log("Saving result to %s", cacheFile.getAbsolutePath().replace("%", "%%"));
-              FileOutputStream os = null;
+              log(
+                  "LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d, TOTAL SCALED HEIGHT = %d, TOTAL SCALED WIDTH = %d",
+                  dstRect.left,
+                  dstRect.right,
+                  dstRect.top,
+                  dstRect.bottom,
+                  resultHeight,
+                  resultWidth);
+
+              bitmapOptions.inJustDecodeBounds = false;
+              bitmapOptions.inSampleSize =
+                  (dstRect.bottom - dstRect.top) / bitmapOptions.outHeight;
+
+              final Bitmap bm = getNextBitmap(bitmapOptions);
+              if (bm == null) break;
               try {
-                os = new FileOutputStream(cacheFile);
-                result.compress(format, quality, os);
-              } catch (Exception e) {
-                log("Error: %s", e.getMessage());
-                e.printStackTrace();
-                Util.showError(MainActivity.this, e);
-                cacheFile = null;
+                bm.setDensity(Bitmap.DENSITY_NONE);
+                resultCanvas.drawBitmap(bm, null, dstRect, paint);
+              } catch (RuntimeException e) {
+                Util.showMemoryError(MainActivity.this);
               } finally {
-                Util.closeQuietely(os);
+                bm.recycle();
               }
 
-              // Recycle the large final image
+              currentX = dstRect.right;
+            }
+          } else {
+            int currentY = 0;
+            traverseIndex = -1;
+            BitmapFactory.Options bitmapOptions;
+            while ((bitmapOptions = getNextBitmapOptions()) != null) {
+              log("--------------------------------");
+              processedCount++;
+
+              final int width = bitmapOptions.outWidth;
+              final int height = bitmapOptions.outHeight;
+              final float ratio = (float) height / (float) width;
+
+              int scaledWidth = (int) (width * SCALE);
+              int scaledHeight = (int) (height * SCALE);
+
+              if (scalingPriority) {
+                // Scale up to largest width, fill total width
+                if (scaledWidth < resultWidth) {
+                  scaledWidth = resultWidth;
+                  scaledHeight = (int) ((float) scaledWidth * ratio);
+                }
+              } else {
+                // Scale down to smallest width, fill total width
+                if (scaledWidth > resultWidth) {
+                  scaledWidth = resultWidth;
+                  scaledHeight = (int) ((float) scaledWidth * ratio);
+                }
+              }
+
+              log(
+                  "CURRENT IMAGE width = %d, height = %d, w/h = %s",
+                  width, height, (float) width / (float) height);
+              log(
+                  "SCALED IMAGE width = %d, height = %d, w/h = %s",
+                  scaledWidth, scaledHeight, (float) width / (float) height);
+
+              // Top is bottom of the last image plus vertical spacing
+              dstRect.top = currentY + SPACING_VERTICAL;
+              // Bottom is top plus height of the current image
+              dstRect.bottom = dstRect.top + scaledHeight;
+              dstRect.left = SPACING_HORIZONTAL;
+              dstRect.right = scaledWidth + SPACING_HORIZONTAL;
+
+              log(
+                  "LEFT = %d, RIGHT = %d, TOP = %d, BOTTOM = %d, TOTAL SCALED WIDTH: %d, TOTAL SCALED HEIGHT: %d",
+                  dstRect.left,
+                  dstRect.right,
+                  dstRect.top,
+                  dstRect.bottom,
+                  resultWidth,
+                  resultHeight);
+
+              bitmapOptions.inJustDecodeBounds = false;
+              bitmapOptions.inSampleSize =
+                  (dstRect.right - dstRect.left) / bitmapOptions.outWidth;
+
+              final Bitmap bm = getNextBitmap(bitmapOptions);
+              if (bm == null) break;
+              try {
+                bm.setDensity(Bitmap.DENSITY_NONE);
+                resultCanvas.drawBitmap(bm, null, dstRect, paint);
+              } catch (RuntimeException e) {
+                Util.showMemoryError(MainActivity.this);
+              } finally {
+                bm.recycle();
+              }
+
+              currentY = dstRect.bottom;
+            }
+          }
+
+          if (processedCount == 0) {
+            try {
               result.recycle();
-              // Close progress dialog and move on to the done phase
-              dismissDialog(progress);
-              done(cacheFile);
-            })
+            } catch (Throwable ignored) {
+            }
+            dismissDialog(progress);
+            return;
+          }
+
+          log("--------------------------------");
+
+          // Save results to file
+          File cacheFile = Util.makeTempFile(MainActivity.this, ".png");
+          log("Saving result to %s", cacheFile.getAbsolutePath().replace("%", "%%"));
+          FileOutputStream os = null;
+          try {
+            os = new FileOutputStream(cacheFile);
+            result.compress(format, quality, os);
+          } catch (Exception e) {
+            log("Error: %s", e.getMessage());
+            e.printStackTrace();
+            Util.showError(MainActivity.this, e);
+            cacheFile = null;
+          } finally {
+            Util.closeQuietely(os);
+          }
+
+          // Recycle the large final image
+          result.recycle();
+          // Close progress dialog and move on to the done phase
+          dismissDialog(progress);
+          done(cacheFile);
+        })
         .start();
   }
 
@@ -901,7 +904,7 @@ public class MainActivity extends AppCompatActivity
     // Add the affixed file to the media store so gallery apps can see it
     MediaScannerConnection.scanFile(
         this,
-        new String[] {file.toString()},
+        new String[]{file.toString()},
         null,
         (path, uri) ->
             log(
@@ -921,8 +924,7 @@ public class MainActivity extends AppCompatActivity
   public void onBackPressed() {
     if (adapter.getSelectedCount() > 0) {
       clearSelection();
-    }
-    else super.onBackPressed();
+    } else super.onBackPressed();
   }
 
   @Override
@@ -937,8 +939,7 @@ public class MainActivity extends AppCompatActivity
 
   public void browseExternalPhotos() {
     Intent intent =
-        new Intent(Intent.ACTION_OPEN_DOCUMENT)
-            .addCategory(Intent.CATEGORY_OPENABLE)
+        new Intent(Intent.ACTION_GET_CONTENT)
             .setType("image/*");
     startActivityForResult(intent, BROWSE_RC);
   }
@@ -954,36 +955,36 @@ public class MainActivity extends AppCompatActivity
               .cancelable(false)
               .show();
       new Thread(
-              () -> {
-                InputStream input = null;
-                FileOutputStream output = null;
-                final File targetFile = Util.makeTempFile(MainActivity.this, ".png");
-                try {
-                  input = Util.openStream(this, data.getData());
-                  output = new FileOutputStream(targetFile);
-                  Util.copyStream(input, output);
-                  output.close();
-                  MediaScannerConnection.scanFile(
-                      this,
-                      new String[] {targetFile.toString()},
-                      null,
-                      (path, uri) -> {
-                        log(
-                            "Scanned %s, uri = %s",
-                            path, uri != null ? uri.toString().replace("%", "%%") : null);
-                        autoSelectFirst = true;
-                        refresh();
-                      });
-                } catch (Exception e) {
-                  Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
-                } finally {
-                  if (progress != null) {
-                    progress.dismiss();
-                  }
-                  Util.closeQuietely(input);
-                  Util.closeQuietely(output);
-                }
-              })
+          () -> {
+            InputStream input = null;
+            FileOutputStream output = null;
+            final File targetFile = Util.makeTempFile(MainActivity.this, ".png");
+            try {
+              input = Util.openStream(this, data.getData());
+              output = new FileOutputStream(targetFile);
+              Util.copyStream(input, output);
+              output.close();
+              MediaScannerConnection.scanFile(
+                  this,
+                  new String[]{targetFile.toString()},
+                  null,
+                  (path, uri) -> {
+                    log(
+                        "Scanned %s, uri = %s",
+                        path, uri != null ? uri.toString().replace("%", "%%") : null);
+                    autoSelectFirst = true;
+                    refresh();
+                  });
+            } catch (Exception e) {
+              Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+            } finally {
+              if (progress != null) {
+                progress.dismiss();
+              }
+              Util.closeQuietely(input);
+              Util.closeQuietely(output);
+            }
+          })
           .start();
     }
   }
