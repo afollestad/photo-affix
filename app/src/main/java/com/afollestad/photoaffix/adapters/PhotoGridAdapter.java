@@ -73,7 +73,7 @@ public class PhotoGridAdapter
       if (index < 0) {
         continue;
       }
-      selected.add(photos[index]);
+      selected.add(photos[index - 1]);
     }
     return selected.toArray(new Photo[selected.size()]);
   }
