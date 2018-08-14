@@ -5,6 +5,8 @@
 
 ![Showcase](https://raw.githubusercontent.com/afollestad/photo-affix/master/art/pashowcase1.png)
 
+[Libraries Used](#libraries-used)
+
 This app is still in beta! You can [download the APK](https://github.com/afollestad/photo-affix/raw/master/apk/PhotoAffix.apk) 
 to try it out. 
 
