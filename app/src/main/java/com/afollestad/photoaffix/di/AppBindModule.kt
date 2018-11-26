@@ -7,8 +7,8 @@ package com.afollestad.photoaffix.di
 
 import com.afollestad.photoaffix.data.PhotoLoader
 import com.afollestad.photoaffix.data.RealPhotoLoader
-import com.afollestad.photoaffix.presenters.AffixPresenter
-import com.afollestad.photoaffix.presenters.RealAffixPresenter
+import com.afollestad.photoaffix.presenters.MainPresenter
+import com.afollestad.photoaffix.presenters.RealMainPresenter
 import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.RealIoManager
 import dagger.Binds
@@ -25,7 +25,7 @@ abstract class AppBindModule {
 
   @Binds
   @Singleton
-  abstract fun provideAffixPresenter(affixer: RealAffixPresenter): AffixPresenter
+  abstract fun provideMainPresenter(presenter: RealMainPresenter): MainPresenter
 
   @Binds
   @Singleton

@@ -38,7 +38,8 @@ import java.io.FileOutputStream
 import java.io.InputStream
 import javax.inject.Inject
 
-interface AffixPresenter {
+/** @author Aidan Follestad (afollestad) */
+interface MainPresenter {
 
   fun attachView(mainView: MainView)
 
@@ -60,7 +61,8 @@ interface AffixPresenter {
   fun detachView()
 }
 
-class RealAffixPresenter @Inject constructor(
+/** @author Aidan Follestad (afollestad) */
+class RealMainPresenter @Inject constructor(
   private val application: Application,
   @ImageSpacingVertical private val spacingVerticalPref: Pref<Int>,
   @ImageSpacingHorizontal private val spacingHorizontalPref: Pref<Int>,
@@ -68,7 +70,7 @@ class RealAffixPresenter @Inject constructor(
   @BgFillColor private val bgFillColorPref: Pref<Int>,
   @StackHorizontally private val stackHorizontallyPref: Pref<Boolean>,
   private val ioManager: IoManager
-) : AffixPresenter {
+) : MainPresenter {
 
   private var mainView: MainView? = null
   private var traverseIndex: Int = 0

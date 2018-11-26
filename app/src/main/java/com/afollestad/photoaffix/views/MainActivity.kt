@@ -47,7 +47,7 @@ import com.afollestad.photoaffix.dialogs.ImageSizingDialog
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
 import com.afollestad.photoaffix.dialogs.SizingCallback
 import com.afollestad.photoaffix.dialogs.SpacingCallback
-import com.afollestad.photoaffix.presenters.AffixPresenter
+import com.afollestad.photoaffix.presenters.MainPresenter
 import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.closeQuietely
 import com.afollestad.photoaffix.utilities.toast
@@ -80,7 +80,7 @@ class MainActivity : AppCompatActivity(),
   }
 
   @Inject lateinit var photoLoader: PhotoLoader
-  @Inject lateinit var affixPresenter: AffixPresenter
+  @Inject lateinit var mainPresenter: MainPresenter
   @Inject lateinit var ioManager: IoManager
 
   private lateinit var adapter: PhotoGridAdapter
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity(),
 
     affixButton.setOnClickListener {
       runWithPermissions(WRITE_EXTERNAL_STORAGE) {
-        affixPresenter.process(adapter.selectedPhotos)
+        mainPresenter.process(adapter.selectedPhotos)
       }
     }
     expandButton.setOnClickListener { toggleSettingsExpansion() }
@@ -145,7 +145,7 @@ class MainActivity : AppCompatActivity(),
   }
 
   override fun clearSelection() = runOnUiThread {
-    affixPresenter.clearPhotos()
+    mainPresenter.clearPhotos()
     adapter.clearSelected()
     appbar_toolbar.menu
         .findItem(R.id.clear)
@@ -222,12 +222,12 @@ class MainActivity : AppCompatActivity(),
 
   override fun onStart() {
     super.onStart()
-    affixPresenter.attachView(this)
+    mainPresenter.attachView(this)
     refresh()
   }
 
   override fun onStop() {
-    affixPresenter.detachView()
+    mainPresenter.detachView()
     super.onStop()
   }
 
@@ -243,7 +243,7 @@ class MainActivity : AppCompatActivity(),
     format: CompressFormat,
     quality: Int,
     cancelled: Boolean
-  ) = affixPresenter.sizeDetermined(scale, resultWidth, resultHeight, format, quality, cancelled)
+  ) = mainPresenter.sizeDetermined(scale, resultWidth, resultHeight, format, quality, cancelled)
 
   override fun onBackPressed() {
     if (adapter.hasSelection()) {
@@ -291,7 +291,7 @@ class MainActivity : AppCompatActivity(),
     if (intent != null && Intent.ACTION_SEND_MULTIPLE == intent.action) {
       val uris = intent.getParcelableArrayListExtra<Uri>(EXTRA_STREAM)
       if (uris != null && uris.size > 1) {
-        affixPresenter.process(
+        mainPresenter.process(
             uris.map { Photo(0, it.toString(), 0) }
         )
       } else {
