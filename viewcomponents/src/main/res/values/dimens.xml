@@ -3,5 +3,11 @@
 
   <dimen name="circle_border_radius">3dp</dimen>
   <dimen name="default_square_border_radius">1dp</dimen>
+  <dimen name="settings_control_text_margin">8dp</dimen>
+  <dimen name="settings_control_height">48dp</dimen>
+  <dimen name="content_textsize">16sp</dimen>
+  <dimen name="content_inset_less">12dp</dimen>
+  <dimen name="content_inset">16dp</dimen>
+  <dimen name="color_circle_view">32dp</dimen>
 
 </resources>

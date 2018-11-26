@@ -9,7 +9,5 @@
   <string name="error">Error</string>
   <string name="no_photos_found">No local photos were found!</string>
   <string name="need_two_or_more">You need two or more images!</string>
-  <string name="horizontal">Horizontal</string>
-  <string name="vertical">Vertical</string>
 
 </resources>
