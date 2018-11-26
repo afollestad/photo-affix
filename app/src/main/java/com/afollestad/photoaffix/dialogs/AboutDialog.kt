@@ -30,7 +30,7 @@ class AboutDialog : DialogFragment() {
         .message(
             res = R.string.about_body,
             html = true,
-            lineHeightMultiplier = 1.6f
+            lineHeightMultiplier = 1.4f
         )
         .positiveButton(R.string.dismiss)
   }
