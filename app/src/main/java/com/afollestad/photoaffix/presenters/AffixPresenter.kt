@@ -18,14 +18,14 @@ import android.graphics.Rect
 import android.media.MediaScannerConnection.scanFile
 import androidx.annotation.Size
 import com.afollestad.photoaffix.data.Photo
-import com.afollestad.photoaffix.di.BgFillColor
-import com.afollestad.photoaffix.di.ImageSpacingHorizontal
-import com.afollestad.photoaffix.di.ImageSpacingVertical
-import com.afollestad.photoaffix.di.ScalePriority
-import com.afollestad.photoaffix.di.StackHorizontally
-import com.afollestad.photoaffix.utils.Util
-import com.afollestad.photoaffix.utils.closeQuietely
-import com.afollestad.photoaffix.utils.safeRecycle
+import com.afollestad.photoaffix.prefs.BgFillColor
+import com.afollestad.photoaffix.prefs.ImageSpacingHorizontal
+import com.afollestad.photoaffix.prefs.ImageSpacingVertical
+import com.afollestad.photoaffix.prefs.ScalePriority
+import com.afollestad.photoaffix.prefs.StackHorizontally
+import com.afollestad.photoaffix.utilities.IoManager
+import com.afollestad.photoaffix.utilities.closeQuietely
+import com.afollestad.photoaffix.utilities.safeRecycle
 import com.afollestad.photoaffix.views.MainView
 import com.afollestad.rxkprefs.Pref
 import kotlinx.coroutines.Dispatchers.IO
@@ -66,7 +66,8 @@ class RealAffixPresenter @Inject constructor(
   @ImageSpacingHorizontal private val spacingHorizontalPref: Pref<Int>,
   @ScalePriority private val scalePriorityPref: Pref<Boolean>,
   @BgFillColor private val bgFillColorPref: Pref<Int>,
-  @StackHorizontally private val stackHorizontallyPref: Pref<Boolean>
+  @StackHorizontally private val stackHorizontallyPref: Pref<Boolean>,
+  private val ioManager: IoManager
 ) : AffixPresenter {
 
   private var mainView: MainView? = null
@@ -272,7 +273,7 @@ class RealAffixPresenter @Inject constructor(
     var inputStream: InputStream? = null
 
     try {
-      inputStream = Util.openStream(application, nextPhoto.uri)
+      inputStream = ioManager.openStream(nextPhoto.uri)
       BitmapFactory.decodeStream(inputStream, null, options)
     } catch (e: Exception) {
       mainView?.showErrorDialog(e)
@@ -298,7 +299,7 @@ class RealAffixPresenter @Inject constructor(
     val options: BitmapFactory.Options?
 
     try {
-      inputStream = Util.openStream(application, nextPhoto.uri)
+      inputStream = ioManager.openStream(nextPhoto.uri)
       options = BitmapFactory.Options()
           .apply {
             inJustDecodeBounds = true
@@ -322,7 +323,7 @@ class RealAffixPresenter @Inject constructor(
     var inputStream: InputStream? = null
 
     return try {
-      inputStream = Util.openStream(application, nextPhoto.uri)
+      inputStream = ioManager.openStream(nextPhoto.uri)
       BitmapFactory.decodeStream(inputStream, null, options)
     } catch (e: Exception) {
       mainView?.showErrorDialog(e)
@@ -480,7 +481,7 @@ class RealAffixPresenter @Inject constructor(
 
       // Save results to file
       val extension = if (format == CompressFormat.PNG) ".png" else ".jpg"
-      val cacheFile = Util.makeTempFile(application, extension)
+      val cacheFile = ioManager.makeTempFile(extension)
       var os: FileOutputStream? = null
 
       try {

@@ -22,32 +22,25 @@ android {
       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
   }
-
-  compileOptions {
-    sourceCompatibility JavaVersion.VERSION_1_8
-    targetCompatibility JavaVersion.VERSION_1_8
-  }
 }
 
 dependencies {
+  implementation project(':prefs')
+  implementation project(':viewcomponents')
+  implementation project(':dialogs')
+  implementation project(':utilities')
+
   implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + versions.kotlin
   implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:' + versions.coroutines
   implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + versions.coroutines
 
-  implementation 'androidx.appcompat:appcompat:' + versions.androidx
-
-  implementation 'com.jakewharton.rxbinding3:rxbinding:' + versions.rxBinding
-
   implementation 'com.google.dagger:dagger:' + versions.dagger
   kapt 'com.google.dagger:dagger-compiler:' + versions.dagger
-
-  implementation 'com.github.bumptech.glide:glide:' + versions.glide
 
   implementation 'com.afollestad.material-dialogs:core:' + versions.materialDialogs
   implementation 'com.afollestad.material-dialogs:color:' + versions.materialDialogs
   implementation 'com.afollestad:drag-select-recyclerview:' + versions.dragSelectRv
   implementation 'com.afollestad:assent:' + versions.assent
-  implementation 'com.afollestad:rxkprefs:' + versions.rxkPrefs
 }
 
 apply from: '../spotless.gradle'

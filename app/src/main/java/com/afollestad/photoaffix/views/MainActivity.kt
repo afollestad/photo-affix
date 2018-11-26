@@ -35,6 +35,7 @@ import com.afollestad.assent.Permission.WRITE_EXTERNAL_STORAGE
 import com.afollestad.assent.runWithPermissions
 import com.afollestad.dragselectrecyclerview.DragSelectTouchListener
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.photoaffix.App
 import com.afollestad.photoaffix.R
 import com.afollestad.photoaffix.adapters.PhotoGridAdapter
 import com.afollestad.photoaffix.animation.HeightEvaluator
@@ -43,13 +44,14 @@ import com.afollestad.photoaffix.data.Photo
 import com.afollestad.photoaffix.data.PhotoLoader
 import com.afollestad.photoaffix.dialogs.AboutDialog
 import com.afollestad.photoaffix.dialogs.ImageSizingDialog
+import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
 import com.afollestad.photoaffix.dialogs.SizingCallback
 import com.afollestad.photoaffix.dialogs.SpacingCallback
 import com.afollestad.photoaffix.presenters.AffixPresenter
-import com.afollestad.photoaffix.utils.Util
-import com.afollestad.photoaffix.utils.closeQuietely
-import com.afollestad.photoaffix.utils.inject
-import com.afollestad.photoaffix.utils.toast
+import com.afollestad.photoaffix.utilities.IoManager
+import com.afollestad.photoaffix.utilities.closeQuietely
+import com.afollestad.photoaffix.utilities.toast
+import com.afollestad.photoaffix.viewcomponents.ImageSpacingDialogShower
 import kotlinx.android.synthetic.main.activity_main.affixButton
 import kotlinx.android.synthetic.main.activity_main.appbar_toolbar
 import kotlinx.android.synthetic.main.activity_main.content_loading_progress_frame
@@ -57,7 +59,6 @@ import kotlinx.android.synthetic.main.activity_main.empty
 import kotlinx.android.synthetic.main.activity_main.expandButton
 import kotlinx.android.synthetic.main.activity_main.list
 import kotlinx.android.synthetic.main.activity_main.settingsLayout
-import kotlinx.android.synthetic.main.settings_layout.imagePaddingLabel
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
@@ -68,7 +69,11 @@ import java.io.InputStream
 import javax.inject.Inject
 
 /** @author Aidan Follestad (afollestad) */
-class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback, MainView {
+class MainActivity : AppCompatActivity(),
+    SpacingCallback,
+    SizingCallback,
+    MainView,
+    ImageSpacingDialogShower {
 
   companion object {
     private const val BROWSE_RC = 21
@@ -76,6 +81,7 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback, MainV
 
   @Inject lateinit var photoLoader: PhotoLoader
   @Inject lateinit var affixPresenter: AffixPresenter
+  @Inject lateinit var ioManager: IoManager
 
   private lateinit var adapter: PhotoGridAdapter
 
@@ -85,7 +91,7 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback, MainV
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    inject()
+    (application as App).appComponent.inject(this)
     setContentView(R.layout.activity_main)
 
     appbar_toolbar.inflateMenu(R.menu.menu_main)
@@ -191,6 +197,8 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback, MainV
     height: Int
   ) = ImageSizingDialog.show(this, width, height)
 
+  override fun showImageSpacingDialog() = ImageSpacingDialog.show(this)
+
   fun browseExternalPhotos() {
     val intent = Intent(Intent.ACTION_GET_CONTENT).setType("image/*")
     startActivityForResult(intent, BROWSE_RC)
@@ -223,10 +231,7 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback, MainV
   override fun onSpacingChanged(
     horizontal: Int,
     vertical: Int
-  ) {
-    // Prefs are updated from dialog itself
-    imagePaddingLabel.text = getString(R.string.image_spacing_x, horizontal, vertical)
-  }
+  ) = settingsLayout.imageSpacingUpdated(horizontal, vertical)
 
   override fun onSizeChanged(
     scale: Double,
@@ -254,10 +259,10 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback, MainV
       GlobalScope.launch(IO) {
         var input: InputStream? = null
         var output: FileOutputStream? = null
-        val targetFile = Util.makeTempFile(this@MainActivity, ".png")
+        val targetFile = ioManager.makeTempFile(".png")
 
         try {
-          input = Util.openStream(this@MainActivity, data.data!!)
+          input = ioManager.openStream(data.data!!)
           output = FileOutputStream(targetFile)
           input!!.copyTo(output)
           output.close()

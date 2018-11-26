@@ -6,8 +6,9 @@
 package com.afollestad.photoaffix.di
 
 import android.app.Application
-import com.afollestad.photoaffix.components.SettingsLayout
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
+import com.afollestad.photoaffix.prefs.PrefsModule
+import com.afollestad.photoaffix.viewcomponents.SettingsLayout
 import com.afollestad.photoaffix.views.MainActivity
 import dagger.BindsInstance
 import dagger.Component
@@ -15,7 +16,7 @@ import javax.inject.Singleton
 
 /** @author Aidan Follestad (afollestad) */
 @Singleton
-@Component(modules = [AppModule::class, PrefsModule::class])
+@Component(modules = [AppBindModule::class, AppProvideModule::class, PrefsModule::class])
 interface AppComponent {
 
   fun inject(mainActivity: MainActivity)

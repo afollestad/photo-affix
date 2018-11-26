@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <dimen name="circle_border_radius">3dp</dimen>
+  <dimen name="default_square_border_radius">1dp</dimen>
+
+</resources>

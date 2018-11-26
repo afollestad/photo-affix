@@ -7,7 +7,7 @@ package com.afollestad.photoaffix.data
 
 import android.database.Cursor
 import android.net.Uri
-import com.afollestad.photoaffix.utils.toUri
+import com.afollestad.photoaffix.utilities.toUri
 import java.io.Serializable
 
 /** @author Aidan Follestad (afollestad) */

@@ -1,0 +1,33 @@
+apply from: '../dependencies.gradle'
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
+
+android {
+  compileSdkVersion versions.compileSdk
+
+  defaultConfig {
+    minSdkVersion versions.minSdk
+    targetSdkVersion versions.compileSdk
+    versionCode versions.publishVersionCode
+    versionName versions.publishVersion
+  }
+}
+
+dependencies {
+  implementation project(':prefs')
+  implementation project(':utilities')
+  implementation project(':viewcomponents')
+
+  implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + versions.kotlin
+
+  implementation 'com.google.dagger:dagger:' + versions.dagger
+  kapt 'com.google.dagger:dagger-compiler:' + versions.dagger
+
+  api 'androidx.appcompat:appcompat:' + versions.androidx
+  api 'com.afollestad.material-dialogs:core:' + versions.materialDialogs
+  api 'com.afollestad:rxkprefs:' + versions.rxkPrefs
+}
+
+apply from: '../spotless.gradle'

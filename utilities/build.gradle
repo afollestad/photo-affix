@@ -1,0 +1,27 @@
+apply from: '../dependencies.gradle'
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+  compileSdkVersion versions.compileSdk
+
+  defaultConfig {
+    minSdkVersion versions.minSdk
+    targetSdkVersion versions.compileSdk
+    versionCode versions.publishVersionCode
+    versionName versions.publishVersion
+  }
+}
+
+dependencies {
+  implementation project(':prefs')
+
+  api 'com.github.bumptech.glide:glide:' + versions.glide
+
+  implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + versions.kotlin
+
+  implementation 'com.google.dagger:dagger:' + versions.dagger
+  kapt 'com.google.dagger:dagger-compiler:' + versions.dagger
+}
+
+apply from: '../spotless.gradle'

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <dimen name="content_inset_less">12dp</dimen>
+  <dimen name="content_inset">16dp</dimen>
+
+  <dimen name="content_textsize">16sp</dimen>
+  <dimen name="header_textsize">20sp</dimen>
+
+</resources>

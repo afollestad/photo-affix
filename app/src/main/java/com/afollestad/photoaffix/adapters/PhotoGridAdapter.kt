@@ -18,7 +18,7 @@ import com.afollestad.photoaffix.R
 import com.afollestad.photoaffix.views.MainActivity
 import com.afollestad.photoaffix.data.Photo
 import com.afollestad.photoaffix.data.PhotoHolder
-import com.afollestad.photoaffix.utils.loadImage
+import com.afollestad.photoaffix.utilities.loadImage
 import kotlinx.android.synthetic.main.griditem_photo.view.check
 import kotlinx.android.synthetic.main.griditem_photo.view.circle
 import kotlinx.android.synthetic.main.griditem_photo.view.image
