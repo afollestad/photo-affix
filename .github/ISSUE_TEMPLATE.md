@@ -1,22 +1,28 @@
-- [ ] I have verified there are no duplicate active or recent bugs, questions, or requests
-- [ ] I have verified that I am using the latest version of this app.
+(`[x]` becomes a filled in checkbox, `[ ]` is an empty one)
+
+- [ ] I have verified there are [no duplicate active or recent bugs, questions, or requests](https://github.com/afollestad/photo-affix/issues?q=is%3Aissue+is%3Aclosed)
 - [ ] I have given my issue a non-generic title.
 
+---
+
+If this is a improvement or feature request, you can remove everything below. 
+Also, please consider making a pull request if you are capable of contributing.
+
 ###### Include the following:
- - App version: `x.x.x.x`
- - Device OS version: `6.0.1`
- - Device Manufacturer: `Huawei`
- - Device Name: `Nexus 6P`
+
+ - Photo Affix version: `0.x.x`
+ - Affected device: Google Pixel 3 XL with Android 9.0
+ 
+---
  
 ###### Reproduction Steps
 
-1. 
-2. 
-3. 
+1.
+
+---
 
 ###### Expected Result
 
-
+---
 
 ###### Actual Result
-
