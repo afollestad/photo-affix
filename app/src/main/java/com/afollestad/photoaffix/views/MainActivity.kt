@@ -116,6 +116,11 @@ class MainActivity : AppCompatActivity(),
     }
     expandButton.setOnClickListener { toggleSettingsExpansion() }
 
+    setupMainGrid(savedInstanceState)
+    processIntent(intent)
+  }
+
+  private fun setupMainGrid(savedInstanceState: Bundle?) {
     adapter = PhotoGridAdapter(this)
     adapter.restoreInstanceState(savedInstanceState)
     adapter.onSelection { _, count ->
@@ -137,8 +142,6 @@ class MainActivity : AppCompatActivity(),
     val dragListener = DragSelectTouchListener.create(this, adapter)
     adapter.dragListener = dragListener
     list.addOnItemTouchListener(dragListener)
-
-    processIntent(intent)
   }
 
   override fun clearSelection() = runOnUiThread {
