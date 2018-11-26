@@ -6,6 +6,8 @@
 package com.afollestad.photoaffix
 
 import android.app.Application
+import com.afollestad.photoaffix.di.AppComponent
+import com.afollestad.photoaffix.di.DaggerAppComponent
 
 /** @author Aidan Follestad (afollestad) */
 class App : Application() {

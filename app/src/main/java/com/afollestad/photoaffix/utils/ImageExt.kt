@@ -5,6 +5,7 @@
  */
 package com.afollestad.photoaffix.utils
 
+import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
@@ -39,4 +40,9 @@ fun ImageView.loadImage(
         ): Boolean = cb?.invoke(null) ?: false
       })
       .into(this)
+}
+
+fun Bitmap?.safeRecycle() = try {
+  this?.recycle()
+} catch (_: Throwable) {
 }

@@ -15,7 +15,7 @@
       tools:ignore="UselessParent"
       >
 
-    <com.afollestad.photoaffix.views.SquareImageView
+    <com.afollestad.photoaffix.components.SquareImageView
         android:id="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,7 +31,7 @@
         android:layout_marginTop="@dimen/grid_circle_margin"
         >
 
-      <com.afollestad.photoaffix.views.CircleView
+      <com.afollestad.photoaffix.components.CircleView
           android:id="@+id/circle"
           android:layout_width="32dp"
           android:layout_height="32dp"

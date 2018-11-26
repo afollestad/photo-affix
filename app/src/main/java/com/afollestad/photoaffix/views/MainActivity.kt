@@ -3,27 +3,38 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.activities
+package com.afollestad.photoaffix.views
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.ofObject
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.content.Intent.EXTRA_STREAM
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.graphics.Bitmap.CompressFormat
 import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
 import android.os.Bundle
-import android.os.Looper
 import android.os.PersistableBundle
+import android.view.Surface.ROTATION_0
+import android.view.Surface.ROTATION_180
+import android.view.Surface.ROTATION_90
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import com.afollestad.assent.Permission.READ_EXTERNAL_STORAGE
+import com.afollestad.assent.Permission.WRITE_EXTERNAL_STORAGE
 import com.afollestad.assent.runWithPermissions
 import com.afollestad.dragselectrecyclerview.DragSelectTouchListener
+import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.photoaffix.R
 import com.afollestad.photoaffix.adapters.PhotoGridAdapter
 import com.afollestad.photoaffix.animation.HeightEvaluator
@@ -31,15 +42,14 @@ import com.afollestad.photoaffix.animation.ViewHideAnimationListener
 import com.afollestad.photoaffix.data.Photo
 import com.afollestad.photoaffix.data.PhotoLoader
 import com.afollestad.photoaffix.dialogs.AboutDialog
+import com.afollestad.photoaffix.dialogs.ImageSizingDialog
 import com.afollestad.photoaffix.dialogs.SizingCallback
 import com.afollestad.photoaffix.dialogs.SpacingCallback
 import com.afollestad.photoaffix.presenters.AffixPresenter
-import com.afollestad.photoaffix.utils.Prefs
 import com.afollestad.photoaffix.utils.Util
-import com.afollestad.photoaffix.utils.Util.closeQuietely
-import com.afollestad.photoaffix.utils.Util.openStream
-import com.afollestad.photoaffix.utils.Util.toast
+import com.afollestad.photoaffix.utils.closeQuietely
 import com.afollestad.photoaffix.utils.inject
+import com.afollestad.photoaffix.utils.toast
 import kotlinx.android.synthetic.main.activity_main.affixButton
 import kotlinx.android.synthetic.main.activity_main.appbar_toolbar
 import kotlinx.android.synthetic.main.activity_main.content_loading_progress_frame
@@ -58,7 +68,7 @@ import java.io.InputStream
 import javax.inject.Inject
 
 /** @author Aidan Follestad (afollestad) */
-class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback {
+class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback, MainView {
 
   companion object {
     private const val BROWSE_RC = 21
@@ -93,7 +103,11 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback {
       }
     }
 
-    affixButton.setOnClickListener { affixPresenter.process(adapter.selectedPhotos) }
+    affixButton.setOnClickListener {
+      runWithPermissions(WRITE_EXTERNAL_STORAGE) {
+        affixPresenter.process(adapter.selectedPhotos)
+      }
+    }
     expandButton.setOnClickListener { toggleSettingsExpansion() }
 
     adapter = PhotoGridAdapter(this)
@@ -121,11 +135,7 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback {
     processIntent(intent)
   }
 
-  fun clearSelection() {
-    if (Looper.myLooper() != Looper.getMainLooper()) {
-      runOnUiThread { this.clearSelection() }
-      return
-    }
+  override fun clearSelection() = runOnUiThread {
     affixPresenter.clearPhotos()
     adapter.clearSelected()
     appbar_toolbar.menu
@@ -133,10 +143,53 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback {
         .isVisible = false
   }
 
-  fun setContentLoading(loading: Boolean) {
+  override fun showContentLoading(loading: Boolean) = runOnUiThread {
     content_loading_progress_frame.visibility =
         if (loading) VISIBLE else GONE
   }
+
+  override fun launchViewer(uri: Uri) = runOnUiThread {
+    try {
+      startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "image/*"))
+    } catch (_: ActivityNotFoundException) {
+    }
+  }
+
+  override fun lockOrientation() {
+    val orientation: Int
+    val rotation = (getSystemService(WINDOW_SERVICE) as WindowManager)
+        .defaultDisplay
+        .rotation
+    orientation = when (rotation) {
+      ROTATION_0 -> SCREEN_ORIENTATION_PORTRAIT
+      ROTATION_90 -> SCREEN_ORIENTATION_LANDSCAPE
+      ROTATION_180 -> SCREEN_ORIENTATION_REVERSE_PORTRAIT
+      else -> SCREEN_ORIENTATION_REVERSE_LANDSCAPE
+    }
+    requestedOrientation = orientation
+  }
+
+  override fun unlockOrientation() {
+    requestedOrientation = SCREEN_ORIENTATION_UNSPECIFIED
+  }
+
+  override fun showErrorDialog(e: Exception) {
+    e.printStackTrace()
+    MaterialDialog(this).show {
+      title(R.string.error)
+      message(text = e.message)
+      positiveButton(android.R.string.ok)
+    }
+  }
+
+  override fun showMemoryError() = showErrorDialog(
+      Exception("Your device is low on RAM!")
+  )
+
+  override fun showImageSizingDialog(
+    width: Int,
+    height: Int
+  ) = ImageSizingDialog.show(this, width, height)
 
   fun browseExternalPhotos() {
     val intent = Intent(Intent.ACTION_GET_CONTENT).setType("image/*")
@@ -171,7 +224,7 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback {
     horizontal: Int,
     vertical: Int
   ) {
-    Prefs.imageSpacing(this, horizontal, vertical)
+    // Prefs are updated from dialog itself
     imagePaddingLabel.text = getString(R.string.image_spacing_x, horizontal, vertical)
   }
 
@@ -204,7 +257,7 @@ class MainActivity : AppCompatActivity(), SpacingCallback, SizingCallback {
         val targetFile = Util.makeTempFile(this@MainActivity, ".png")
 
         try {
-          input = data.data.openStream(this@MainActivity)
+          input = Util.openStream(this@MainActivity, data.data!!)
           output = FileOutputStream(targetFile)
           input!!.copyTo(output)
           output.close()

@@ -66,7 +66,7 @@
           tools:ignore="ContentDescription"
           />
 
-      <com.afollestad.photoaffix.views.SettingsLayout
+      <com.afollestad.photoaffix.components.SettingsLayout
           android:id="@+id/settingsLayout"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"

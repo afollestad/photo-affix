@@ -56,7 +56,7 @@
       tools:ignore="RtlSymmetry"
       >
 
-    <com.afollestad.photoaffix.views.ColorCircleView
+    <com.afollestad.photoaffix.components.ColorCircleView
         android:id="@+id/bgFillColorCircle"
         android:layout_width="@dimen/color_circle_view"
         android:layout_height="@dimen/color_circle_view"

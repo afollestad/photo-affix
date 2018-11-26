@@ -8,7 +8,7 @@
     android:padding="@dimen/grid_padding_small"
     >
 
-  <com.afollestad.photoaffix.views.SquareFrameLayout
+  <com.afollestad.photoaffix.components.SquareFrameLayout
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:background="@color/colorPrimaryTranslucent"
@@ -23,6 +23,6 @@
         tools:ignore="ContentDescription"
         />
 
-  </com.afollestad.photoaffix.views.SquareFrameLayout>
+  </com.afollestad.photoaffix.components.SquareFrameLayout>
 
 </FrameLayout>

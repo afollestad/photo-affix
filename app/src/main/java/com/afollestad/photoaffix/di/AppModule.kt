@@ -3,7 +3,7 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix
+package com.afollestad.photoaffix.di
 
 import com.afollestad.photoaffix.data.PhotoLoader
 import com.afollestad.photoaffix.data.RealPhotoLoader

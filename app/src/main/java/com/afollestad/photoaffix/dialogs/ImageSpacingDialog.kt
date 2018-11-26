@@ -15,15 +15,20 @@ import androidx.fragment.app.DialogFragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
+import com.afollestad.photoaffix.App
 import com.afollestad.photoaffix.R
-import com.afollestad.photoaffix.utils.Prefs
+import com.afollestad.photoaffix.di.BgFillColor
+import com.afollestad.photoaffix.di.ImageSpacingHorizontal
+import com.afollestad.photoaffix.di.ImageSpacingVertical
 import com.afollestad.photoaffix.utils.onProgressChanged
+import com.afollestad.rxkprefs.Pref
 import kotlinx.android.synthetic.main.dialog_imagespacing.view.horizontalLine
 import kotlinx.android.synthetic.main.dialog_imagespacing.view.spacingHorizontalLabel
 import kotlinx.android.synthetic.main.dialog_imagespacing.view.spacingHorizontalSeek
 import kotlinx.android.synthetic.main.dialog_imagespacing.view.spacingVerticalLabel
 import kotlinx.android.synthetic.main.dialog_imagespacing.view.spacingVerticalSeek
 import kotlinx.android.synthetic.main.dialog_imagespacing.view.verticalLine
+import javax.inject.Inject
 
 interface SpacingCallback {
 
@@ -46,11 +51,25 @@ class ImageSpacingDialog : DialogFragment() {
 
   private var context: SpacingCallback? = null
 
+  @Inject
+  @field:BgFillColor
+  lateinit var bgFillColorPref: Pref<Int>
+  @Inject
+  @field:ImageSpacingVertical
+  lateinit var verticalSpacingPref: Pref<Int>
+  @Inject
+  @field:ImageSpacingHorizontal
+  lateinit var horizontalSpacingPref: Pref<Int>
+
   override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
     val myActivity = activity
     requireNotNull(myActivity)
 
-    var fillColor = Prefs.bgFillColor(myActivity)
+    (myActivity.applicationContext as App)
+        .appComponent
+        .inject(this)
+
+    var fillColor = bgFillColorPref.get()
     if (fillColor == TRANSPARENT) {
       fillColor = getColor(myActivity, R.color.colorAccent)
     }
@@ -75,9 +94,8 @@ class ImageSpacingDialog : DialogFragment() {
     }
     customView.verticalLine.setColor(fillColor)
 
-    val spacing = Prefs.imageSpacing(activity)
-    customView.spacingHorizontalSeek.progress = spacing[0]
-    customView.spacingVerticalSeek.progress = spacing[1]
+    customView.spacingHorizontalSeek.progress = horizontalSpacingPref.get()
+    customView.spacingVerticalSeek.progress = verticalSpacingPref.get()
 
     return dialog
   }
@@ -85,9 +103,15 @@ class ImageSpacingDialog : DialogFragment() {
   private fun notifyActivity() {
     val materialDialog = dialog as? MaterialDialog ?: return
     val customView = materialDialog.getCustomView() ?: return
+
+    val horizontal = customView.spacingHorizontalSeek.progress
+    horizontalSpacingPref.set(horizontal)
+    val vertical = customView.spacingVerticalSeek.progress
+    verticalSpacingPref.set(vertical)
+
     context?.onSpacingChanged(
-        horizontal = customView.spacingHorizontalSeek.progress,
-        vertical = customView.spacingVerticalSeek.progress
+        horizontal = horizontal,
+        vertical = vertical
     )
   }
 

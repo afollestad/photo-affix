@@ -3,7 +3,7 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.views
+package com.afollestad.photoaffix.components
 
 import android.content.Context
 import android.graphics.Color.TRANSPARENT
@@ -13,12 +13,20 @@ import android.widget.LinearLayout
 import androidx.annotation.ColorInt
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.color.colorChooser
+import com.afollestad.photoaffix.App
 import com.afollestad.photoaffix.R
-import com.afollestad.photoaffix.activities.MainActivity
 import com.afollestad.photoaffix.constants.PRIMARY_COLORS
 import com.afollestad.photoaffix.constants.PRIMARY_COLORS_SUB
+import com.afollestad.photoaffix.di.BgFillColor
+import com.afollestad.photoaffix.di.ImageSpacingHorizontal
+import com.afollestad.photoaffix.di.ImageSpacingVertical
+import com.afollestad.photoaffix.di.ScalePriority
+import com.afollestad.photoaffix.di.StackHorizontally
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
-import com.afollestad.photoaffix.utils.Prefs
+import com.afollestad.photoaffix.utils.unsubscribeOnDetach
+import com.afollestad.photoaffix.views.MainActivity
+import com.afollestad.rxkprefs.Pref
+import com.jakewharton.rxbinding3.widget.checkedChanges
 import kotlinx.android.synthetic.main.settings_layout.view.bgFillColorCircle
 import kotlinx.android.synthetic.main.settings_layout.view.bgFillColorLabel
 import kotlinx.android.synthetic.main.settings_layout.view.imagePaddingLabel
@@ -31,12 +39,29 @@ import kotlinx.android.synthetic.main.settings_layout.view.settingScalePriority
 import kotlinx.android.synthetic.main.settings_layout.view.settingStackHorizontally
 import kotlinx.android.synthetic.main.settings_layout.view.stackHorizontallyLabel
 import kotlinx.android.synthetic.main.settings_layout.view.stackHorizontallySwitch
+import javax.inject.Inject
 
 /** @author Aidan Follestad (afollestad) */
 class SettingsLayout(
   context: Context,
   attrs: AttributeSet? = null
 ) : LinearLayout(context, attrs) {
+
+  @Inject
+  @field:StackHorizontally
+  lateinit var stackHorizontallyPref: Pref<Boolean>
+  @Inject
+  @field:ScalePriority
+  lateinit var scalePriorityPref: Pref<Boolean>
+  @Inject
+  @field:BgFillColor
+  lateinit var bgFillColorPref: Pref<Int>
+  @Inject
+  @field:ImageSpacingVertical
+  lateinit var verticalSpacingPref: Pref<Int>
+  @Inject
+  @field:ImageSpacingHorizontal
+  lateinit var horizontalSpacingPref: Pref<Int>
 
   init {
     inflate(context, R.layout.settings_layout, this)
@@ -45,6 +70,11 @@ class SettingsLayout(
 
   override fun onFinishInflate() {
     super.onFinishInflate()
+
+    (context.applicationContext as App)
+        .appComponent
+        .inject(this)
+
     settingStackHorizontally.setOnClickListener { onClickStackHorizontally() }
     settingBgFillColor.setOnClickListener { onClickBackgroundFillColor() }
     settingImagePadding.setOnClickListener { onClickImagePadding() }
@@ -52,26 +82,37 @@ class SettingsLayout(
     removeBgButton.setOnClickListener { onClickRemoveBackground() }
 
     // Stack orientation
-    val stackHorizontally = Prefs.stackHorizontally(context)
+    val stackHorizontally = stackHorizontallyPref.get()
     stackHorizontallySwitch.isChecked = stackHorizontally
     stackHorizontallyLabel.setText(
         if (stackHorizontally) R.string.stack_horizontally
         else R.string.stack_vertically
     )
+    stackHorizontallySwitch.checkedChanges()
+        .subscribe(stackHorizontallyPref)
+        .unsubscribeOnDetach(this)
 
     // Scale priority
-    val scalePriority = Prefs.scalePriority(context)
+    val scalePriority = scalePriorityPref.get()
     scalePrioritySwitch.isChecked = scalePriority
     scalePriorityLabel.setText(
         if (scalePriority) R.string.scale_priority_on
         else R.string.scale_priority_off
     )
+    scalePrioritySwitch.checkedChanges()
+        .subscribe(scalePriorityPref)
+        .unsubscribeOnDetach(this)
 
     // Background fill
-    val bgFillColor = Prefs.bgFillColor(context)
+    val bgFillColor = bgFillColorPref.get()
     bgFillColorCircle.setColor(bgFillColor)
-    val padding = Prefs.imageSpacing(context)
-    imagePaddingLabel.text = context.getString(R.string.image_spacing_x, padding[0], padding[1])
+    val verticalSpacing = verticalSpacingPref.get()
+    val horizontalSpacing = horizontalSpacingPref.get()
+    imagePaddingLabel.text = context.getString(
+        R.string.image_spacing_x,
+        horizontalSpacing,
+        verticalSpacing
+    )
 
     if (bgFillColor != TRANSPARENT) {
       removeBgButton.visibility = View.VISIBLE
@@ -84,13 +125,12 @@ class SettingsLayout(
   private fun onClickStackHorizontally() {
     stackHorizontallySwitch.isChecked = !stackHorizontallySwitch.isChecked
     stackHorizontallyLabel.setText(
-        if (stackHorizontallySwitch!!.isChecked) {
+        if (stackHorizontallySwitch.isChecked) {
           R.string.stack_horizontally
         } else {
           R.string.stack_vertically
         }
     )
-    Prefs.stackHorizontally(context, stackHorizontallySwitch.isChecked)
   }
 
   private fun onClickBackgroundFillColor() {
@@ -99,7 +139,7 @@ class SettingsLayout(
       colorChooser(
           colors = PRIMARY_COLORS,
           subColors = PRIMARY_COLORS_SUB,
-          initialSelection = Prefs.bgFillColor(context),
+          initialSelection = bgFillColorPref.get(),
           allowCustomArgb = true,
           showAlphaSelector = true
       ) { _, color ->
@@ -110,20 +150,18 @@ class SettingsLayout(
     }
   }
 
-  private fun onClickImagePadding() {
+  private fun onClickImagePadding() =
     ImageSpacingDialog.show(context as MainActivity)
-  }
 
   private fun onClickScalePriority() {
-    stackHorizontallySwitch.isChecked = !stackHorizontallySwitch.isChecked
-    stackHorizontallyLabel.setText(
-        if (stackHorizontallySwitch.isChecked) {
+    scalePrioritySwitch.isChecked = !scalePrioritySwitch.isChecked
+    scalePrioritySwitch.setText(
+        if (scalePrioritySwitch.isChecked) {
           R.string.scale_priority_on
         } else {
           R.string.scale_priority_off
         }
     )
-    Prefs.scalePriority(context, stackHorizontallySwitch.isChecked)
   }
 
   private fun onClickRemoveBackground() {
@@ -135,10 +173,11 @@ class SettingsLayout(
     if (selectedColor != TRANSPARENT) {
       removeBgButton.visibility = View.VISIBLE
       bgFillColorLabel.setText(R.string.background_fill_color)
+      bgFillColorPref.set(selectedColor)
     } else {
       bgFillColorLabel.setText(R.string.background_fill_color_transparent)
+      bgFillColorPref.delete()
     }
-    Prefs.bgFillColor(context, selectedColor)
     bgFillColorCircle.setColor(selectedColor)
   }
 }

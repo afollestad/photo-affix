@@ -3,7 +3,7 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.views
+package com.afollestad.photoaffix.components
 
 import android.content.Context
 import android.graphics.Canvas

@@ -5,9 +5,7 @@
  */
 package com.afollestad.photoaffix.presenters
 
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.content.Intent.ACTION_VIEW
+import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.Bitmap.CompressFormat
 import android.graphics.Bitmap.DENSITY_NONE
@@ -19,21 +17,17 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.media.MediaScannerConnection.scanFile
 import androidx.annotation.Size
-import com.afollestad.assent.Permission.WRITE_EXTERNAL_STORAGE
-import com.afollestad.assent.runWithPermissions
-import com.afollestad.photoaffix.activities.MainActivity
 import com.afollestad.photoaffix.data.Photo
-import com.afollestad.photoaffix.dialogs.ImageSizingDialog
-import com.afollestad.photoaffix.utils.Prefs
-import com.afollestad.photoaffix.utils.Util.closeQuietely
-import com.afollestad.photoaffix.utils.Util.lockOrientation
-import com.afollestad.photoaffix.utils.Util.makeTempFile
-import com.afollestad.photoaffix.utils.Util.openStream
-import com.afollestad.photoaffix.utils.Util.safeRecycle
-import com.afollestad.photoaffix.utils.Util.showInDialog
-import com.afollestad.photoaffix.utils.Util.showMemoryError
-import com.afollestad.photoaffix.utils.Util.unlockOrientation
-import kotlinx.android.synthetic.main.settings_layout.stackHorizontallySwitch
+import com.afollestad.photoaffix.di.BgFillColor
+import com.afollestad.photoaffix.di.ImageSpacingHorizontal
+import com.afollestad.photoaffix.di.ImageSpacingVertical
+import com.afollestad.photoaffix.di.ScalePriority
+import com.afollestad.photoaffix.di.StackHorizontally
+import com.afollestad.photoaffix.utils.Util
+import com.afollestad.photoaffix.utils.closeQuietely
+import com.afollestad.photoaffix.utils.safeRecycle
+import com.afollestad.photoaffix.views.MainView
+import com.afollestad.rxkprefs.Pref
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
@@ -46,7 +40,7 @@ import javax.inject.Inject
 
 interface AffixPresenter {
 
-  fun attachView(context: MainActivity)
+  fun attachView(mainView: MainView)
 
   fun process(photos: List<Photo>)
 
@@ -66,164 +60,168 @@ interface AffixPresenter {
   fun detachView()
 }
 
-class RealAffixPresenter @Inject constructor() : AffixPresenter {
+class RealAffixPresenter @Inject constructor(
+  private val application: Application,
+  @ImageSpacingVertical private val spacingVerticalPref: Pref<Int>,
+  @ImageSpacingHorizontal private val spacingHorizontalPref: Pref<Int>,
+  @ScalePriority private val scalePriorityPref: Pref<Boolean>,
+  @BgFillColor private val bgFillColorPref: Pref<Int>,
+  @StackHorizontally private val stackHorizontallyPref: Pref<Boolean>
+) : AffixPresenter {
 
-  private var context: MainActivity? = null
+  private var mainView: MainView? = null
   private var traverseIndex: Int = 0
   private var selectedPhotos: List<Photo>? = null
 
-  override fun attachView(context: MainActivity) {
-    this.context = context
+  override fun attachView(mainView: MainView) {
+    this.mainView = mainView
   }
 
   override fun process(photos: List<Photo>) {
-    context?.runWithPermissions(WRITE_EXTERNAL_STORAGE) {
-      // Lock orientation so the Activity won't change configuration during processing
-      context.lockOrientation()
-      this.selectedPhotos = photos
+    // Lock orientation so the Activity won't change configuration during processing
+    mainView?.lockOrientation() ?: return
+    this.selectedPhotos = photos
 
-      val imageSpacing = Prefs.imageSpacing(context)
-      val spacingHorizontal = imageSpacing[0]
-      val spacingVertical = imageSpacing[1]
+    val spacingHorizontal = spacingHorizontalPref.get()
+    val spacingVertical = spacingVerticalPref.get()
+    val horizontal = stackHorizontallyPref.get()
 
-      val horizontal = context?.stackHorizontallySwitch?.isChecked ?: return@runWithPermissions
-      val resultWidth: Int
-      val resultHeight: Int
+    val resultWidth: Int
+    val resultHeight: Int
 
-      if (horizontal) {
-        // The width of the resulting image will be the largest width of the selected images
-        // The height of the resulting image will be the sum of all the selected images' heights
-        var maxHeight = -1
-        var minHeight = -1
-        // Traverse all selected images to find largest and smallest heights
-        reset()
+    if (horizontal) {
+      // The width of the resulting image will be the largest width of the selected images
+      // The height of the resulting image will be the sum of all the selected images' heights
+      var maxHeight = -1
+      var minHeight = -1
+      // Traverse all selected images to find largest and smallest heights
+      reset()
 
-        while (true) {
-          val size = nextBitmapSize()
-          if (size == null ||
-              (size[0] == 0 && size[1] == 0)
-          ) {
-            break
-          }
-          if (maxHeight == -1) {
-            maxHeight = size[1]
-          } else if (size[1] > maxHeight) {
-            maxHeight = size[1]
-          }
-          if (minHeight == -1) {
-            minHeight = size[1]
-          } else if (size[1] < minHeight) {
-            minHeight = size[1]
-          }
+      while (true) {
+        val size = nextBitmapSize()
+        if (size == null ||
+            (size[0] == 0 && size[1] == 0)
+        ) {
+          break
         }
-
-        // Traverse images again now that we know the min/max height, scale widths accordingly
-        reset()
-        var totalWidth = 0
-        val scalePriority = Prefs.scalePriority(context)
-
-        while (true) {
-          val size = nextBitmapSize()
-          if (size == null ||
-              (size[0] == 0 && size[1] == 0)
-          ) {
-            break
-          }
-          var w = size[0]
-          var h = size[1]
-          val ratio = w.toFloat() / h.toFloat()
-          if (scalePriority) {
-            // Scale to largest
-            if (h < maxHeight) {
-              h = maxHeight
-              w = (h.toFloat() * ratio).toInt()
-            }
-          } else {
-            // Scale to smallest
-            if (h > minHeight) {
-              h = minHeight
-              w = (h.toFloat() * ratio).toInt()
-            }
-          }
-          totalWidth += w
+        if (maxHeight == -1) {
+          maxHeight = size[1]
+        } else if (size[1] > maxHeight) {
+          maxHeight = size[1]
         }
-
-        // Compensate for spacing
-        totalWidth += spacingHorizontal * (selectedPhotos!!.size + 1)
-        minHeight += spacingVertical * 2
-        maxHeight += spacingVertical * 2
-
-        // Print data and create large Bitmap
-        resultWidth = totalWidth
-        resultHeight = if (scalePriority) maxHeight else minHeight
-      } else {
-        // The height of the resulting image will be the largest height of the selected images
-        // The width of the resulting image will be the sum of all the selected images' widths
-        var maxWidth = -1
-        var minWidth = -1
-        // Traverse all selected images and load min/max width, scale height accordingly
-        reset()
-
-        while (true) {
-          val size = nextBitmapSize()
-          if (size == null ||
-              (size[0] == 0 && size[1] == 0)
-          ) {
-            break
-          }
-          if (maxWidth == -1) {
-            maxWidth = size[0]
-          } else if (size[0] > maxWidth) {
-            maxWidth = size[0]
-          }
-          if (minWidth == -1) {
-            minWidth = size[0]
-          } else if (size[0] < minWidth) {
-            minWidth = size[0]
-          }
+        if (minHeight == -1) {
+          minHeight = size[1]
+        } else if (size[1] < minHeight) {
+          minHeight = size[1]
         }
-
-        // Traverse images again now that we know the min/max height, scale widths accordingly
-        reset()
-        var totalHeight = 0
-        val scalePriority = Prefs.scalePriority(context)
-
-        while (true) {
-          val size = nextBitmapSize()
-          if (size == null || size[0] == 0 && size[1] == 0) {
-            break
-          }
-          var w = size[0]
-          var h = size[1]
-          val ratio = h.toFloat() / w.toFloat()
-          if (scalePriority) {
-            // Scale to largest
-            if (w < maxWidth) {
-              w = maxWidth
-              h = (w.toFloat() * ratio).toInt()
-            }
-          } else {
-            // Scale to smallest
-            if (w > minWidth) {
-              w = minWidth
-              h = (w.toFloat() * ratio).toInt()
-            }
-          }
-          totalHeight += h
-        }
-
-        // Compensate for spacing
-        totalHeight += spacingVertical * (selectedPhotos!!.size + 1)
-        minWidth += spacingHorizontal * 2
-        maxWidth += spacingHorizontal * 2
-
-        // Print data and create large Bitmap
-        resultWidth = if (scalePriority) maxWidth else minWidth
-        resultHeight = totalHeight
       }
 
-      ImageSizingDialog.show(context!!, resultWidth, resultHeight)
+      // Traverse images again now that we know the min/max height, scale widths accordingly
+      reset()
+      var totalWidth = 0
+      val scalePriority = scalePriorityPref.get()
+
+      while (true) {
+        val size = nextBitmapSize()
+        if (size == null ||
+            (size[0] == 0 && size[1] == 0)
+        ) {
+          break
+        }
+        var w = size[0]
+        var h = size[1]
+        val ratio = w.toFloat() / h.toFloat()
+        if (scalePriority) {
+          // Scale to largest
+          if (h < maxHeight) {
+            h = maxHeight
+            w = (h.toFloat() * ratio).toInt()
+          }
+        } else {
+          // Scale to smallest
+          if (h > minHeight) {
+            h = minHeight
+            w = (h.toFloat() * ratio).toInt()
+          }
+        }
+        totalWidth += w
+      }
+
+      // Compensate for spacing
+      totalWidth += spacingHorizontal * (selectedPhotos!!.size + 1)
+      minHeight += spacingVertical * 2
+      maxHeight += spacingVertical * 2
+
+      // Print data and create large Bitmap
+      resultWidth = totalWidth
+      resultHeight = if (scalePriority) maxHeight else minHeight
+    } else {
+      // The height of the resulting image will be the largest height of the selected images
+      // The width of the resulting image will be the sum of all the selected images' widths
+      var maxWidth = -1
+      var minWidth = -1
+      // Traverse all selected images and load min/max width, scale height accordingly
+      reset()
+
+      while (true) {
+        val size = nextBitmapSize()
+        if (size == null ||
+            (size[0] == 0 && size[1] == 0)
+        ) {
+          break
+        }
+        if (maxWidth == -1) {
+          maxWidth = size[0]
+        } else if (size[0] > maxWidth) {
+          maxWidth = size[0]
+        }
+        if (minWidth == -1) {
+          minWidth = size[0]
+        } else if (size[0] < minWidth) {
+          minWidth = size[0]
+        }
+      }
+
+      // Traverse images again now that we know the min/max height, scale widths accordingly
+      reset()
+      var totalHeight = 0
+      val scalePriority = scalePriorityPref.get()
+
+      while (true) {
+        val size = nextBitmapSize()
+        if (size == null || size[0] == 0 && size[1] == 0) {
+          break
+        }
+        var w = size[0]
+        var h = size[1]
+        val ratio = h.toFloat() / w.toFloat()
+        if (scalePriority) {
+          // Scale to largest
+          if (w < maxWidth) {
+            w = maxWidth
+            h = (w.toFloat() * ratio).toInt()
+          }
+        } else {
+          // Scale to smallest
+          if (w > minWidth) {
+            w = minWidth
+            h = (w.toFloat() * ratio).toInt()
+          }
+        }
+        totalHeight += h
+      }
+
+      // Compensate for spacing
+      totalHeight += spacingVertical * (selectedPhotos!!.size + 1)
+      minWidth += spacingHorizontal * 2
+      maxWidth += spacingHorizontal * 2
+
+      // Print data and create large Bitmap
+      resultWidth = if (scalePriority) maxWidth else minWidth
+      resultHeight = totalHeight
     }
+
+    mainView?.showImageSizingDialog(resultWidth, resultHeight)
   }
 
   override fun sizeDetermined(
@@ -236,13 +234,13 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
   ) {
     if (cancelled) {
       reset()
-      context.unlockOrientation()
+      mainView?.unlockOrientation()
       return
     }
     try {
       finishProcessing(scale, resultWidth, resultHeight, format, quality)
     } catch (_: OutOfMemoryError) {
-      context.showMemoryError()
+      mainView?.showMemoryError()
     }
   }
 
@@ -255,7 +253,7 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
   }
 
   override fun detachView() {
-    this.context = null
+    this.mainView = null
   }
 
   @Size(2)
@@ -274,10 +272,10 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
     var inputStream: InputStream? = null
 
     try {
-      inputStream = nextPhoto.uri.openStream(context)
+      inputStream = Util.openStream(application, nextPhoto.uri)
       BitmapFactory.decodeStream(inputStream, null, options)
     } catch (e: Exception) {
-      e.showInDialog(context)
+      mainView?.showErrorDialog(e)
       return intArrayOf(0, 0)
     } finally {
       inputStream.closeQuietely()
@@ -300,17 +298,17 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
     val options: BitmapFactory.Options?
 
     try {
-      inputStream = nextPhoto.uri.openStream(context)
+      inputStream = Util.openStream(application, nextPhoto.uri)
       options = BitmapFactory.Options()
           .apply {
             inJustDecodeBounds = true
           }
       BitmapFactory.decodeStream(inputStream, null, options)
     } catch (e: Exception) {
-      e.showInDialog(context)
+      mainView?.showErrorDialog(e)
       return null
     } catch (e2: OutOfMemoryError) {
-      context.showMemoryError()
+      mainView?.showMemoryError()
       return null
     } finally {
       inputStream.closeQuietely()
@@ -324,13 +322,13 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
     var inputStream: InputStream? = null
 
     return try {
-      inputStream = nextPhoto.uri.openStream(context)
+      inputStream = Util.openStream(application, nextPhoto.uri)
       BitmapFactory.decodeStream(inputStream, null, options)
     } catch (e: Exception) {
-      e.showInDialog(context)
+      mainView?.showErrorDialog(e)
       null
     } catch (e2: OutOfMemoryError) {
-      context.showMemoryError()
+      mainView?.showMemoryError()
       null
     } finally {
       inputStream.closeQuietely()
@@ -345,11 +343,10 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
     quality: Int
   ) {
     val result = createBitmap(resultWidth, resultHeight, Bitmap.Config.ARGB_8888)
+    val horizontal = stackHorizontallyPref.get()
 
-    val horizontal = context?.stackHorizontallySwitch?.isChecked ?: return
-    val imageSpacing = Prefs.imageSpacing(context)
-    val spacingHorizontal = (imageSpacing[0] * SCALE).toInt()
-    val spacingVertical = (imageSpacing[1] * SCALE).toInt()
+    val spacingHorizontal = (spacingHorizontalPref.get() * SCALE).toInt()
+    val spacingVertical = (spacingVerticalPref.get() * SCALE).toInt()
 
     val resultCanvas = Canvas(result)
     val paint = Paint().apply {
@@ -358,18 +355,18 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
       isDither = true
     }
 
-    val bgFillColor = Prefs.bgFillColor(context)
+    val bgFillColor = bgFillColorPref.get()
     if (bgFillColor != TRANSPARENT) {
       // Fill the canvas (blank image) with the user's selected background fill color
       resultCanvas.drawColor(bgFillColor)
     }
 
-    context?.setContentLoading(true)
+    mainView?.showContentLoading(true)
     GlobalScope.launch(IO) {
       // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
       val dstRect = Rect(0, 0, 10, 10)
       var processedCount = 0
-      val scalingPriority = Prefs.scalePriority(context)
+      val scalingPriority = scalePriorityPref.get()
 
       if (horizontal) {
         var currentX = 0
@@ -415,9 +412,9 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
             bm.density = DENSITY_NONE
             resultCanvas.drawBitmap(bm, null, dstRect, paint)
           } catch (e: RuntimeException) {
-            context.showMemoryError()
+            mainView?.showMemoryError()
           } finally {
-            bm.recycle()
+            bm.safeRecycle()
           }
 
           currentX = dstRect.right
@@ -466,7 +463,7 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
             bm.density = Bitmap.DENSITY_NONE
             resultCanvas.drawBitmap(bm, null, dstRect, paint)
           } catch (e: RuntimeException) {
-            context.showMemoryError()
+            mainView?.showMemoryError()
           } finally {
             bm.safeRecycle()
           }
@@ -477,19 +474,20 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
 
       if (processedCount == 0) {
         result.safeRecycle()
-        withContext(Main) { context?.setContentLoading(false) }
+        withContext(Main) { mainView?.showContentLoading(false) }
         return@launch
       }
 
       // Save results to file
-      val cacheFile = makeTempFile(context!!, ".png")
+      val extension = if (format == CompressFormat.PNG) ".png" else ".jpg"
+      val cacheFile = Util.makeTempFile(application, extension)
       var os: FileOutputStream? = null
 
       try {
         os = FileOutputStream(cacheFile)
         result.compress(format, quality, os)
       } catch (e: Exception) {
-        e.showInDialog(context)
+        mainView?.showErrorDialog(e)
       } finally {
         os.closeQuietely()
       }
@@ -501,22 +499,19 @@ class RealAffixPresenter @Inject constructor() : AffixPresenter {
   }
 
   private fun done(file: File) {
-    context?.clearSelection()
-    context.unlockOrientation()
+    mainView?.run {
+      clearSelection()
+      unlockOrientation()
+    }
 
     // Add the affixed file to the media store so gallery apps can see it
     scanFile(
-        context,
+        application,
         arrayOf(file.toString()),
         null
     ) { _, uri ->
-      context?.runOnUiThread {
-        context?.setContentLoading(false)
-        try {
-          context?.startActivity(Intent(ACTION_VIEW).setDataAndType(uri, "image/*"))
-        } catch (_: ActivityNotFoundException) {
-        }
-      }
+      mainView?.showContentLoading(false)
+      mainView?.launchViewer(uri)
     }
   }
 }

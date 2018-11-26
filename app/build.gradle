@@ -36,6 +36,8 @@ dependencies {
 
   implementation 'androidx.appcompat:appcompat:' + versions.androidx
 
+  implementation 'com.jakewharton.rxbinding3:rxbinding:' + versions.rxBinding
+
   implementation 'com.google.dagger:dagger:' + versions.dagger
   kapt 'com.google.dagger:dagger-compiler:' + versions.dagger
 
@@ -45,6 +47,7 @@ dependencies {
   implementation 'com.afollestad.material-dialogs:color:' + versions.materialDialogs
   implementation 'com.afollestad:drag-select-recyclerview:' + versions.dragSelectRv
   implementation 'com.afollestad:assent:' + versions.assent
+  implementation 'com.afollestad:rxkprefs:' + versions.rxkPrefs
 }
 
 apply from: '../spotless.gradle'
