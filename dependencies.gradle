@@ -1,0 +1,21 @@
+ext.versions = [
+    minSdk            : 16,
+    compileSdk        : 28,
+    buildTools        : '28.0.3',
+    publishVersion    : '0.6.2 BETA',
+    publishVersionCode: 25,
+
+    gradlePlugin      : '3.2.1',
+    spotlessPlugin    : '3.16.0',
+    versionPlugin     : '0.20.0',
+
+    dagger            : '2.19',
+    kotlin            : '1.3.10',
+    coroutines        : '1.0.1',
+    androidx          : '1.0.0',
+
+    assent            : '2.2.0',
+    materialDialogs   : '2.0.0-rc1',
+    dragSelectRv      : '2.3.0',
+    glide             : '4.8.0'
+]

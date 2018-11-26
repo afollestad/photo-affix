@@ -1,22 +1,33 @@
+apply from: './dependencies.gradle'
+apply from: './versionsPlugin.gradle'
+
 buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:2.3.2'
-        classpath 'me.tatarka:gradle-retrolambda:3.6.1'
-    }
+  apply from: './dependencies.gradle'
+
+  repositories {
+    maven { url "https://dl.bintray.com/drummer-aidan/maven" }
+    google()
+    jcenter()
+  }
+
+  dependencies {
+    classpath 'com.android.tools.build:gradle:' + versions.gradlePlugin
+    classpath 'com.diffplug.spotless:spotless-plugin-gradle:' + versions.spotlessPlugin
+    classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:' + versions.kotlin
+    classpath 'com.github.ben-manes:gradle-versions-plugin:' + versions.versionPlugin
+  }
 }
 
 allprojects {
-    repositories {
-        maven { url 'https://maven.fabric.io/public' }
-        mavenCentral()
-        jcenter()
-        maven { url "https://jitpack.io" }
-    }
-}
+  repositories {
+    maven { url "https://dl.bintray.com/drummer-aidan/maven" }
+    google()
+    mavenCentral()
+    jcenter()
+    maven { url "https://jitpack.io" }
+  }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+  tasks.withType(Javadoc).all {
+    enabled = false
+  }
 }

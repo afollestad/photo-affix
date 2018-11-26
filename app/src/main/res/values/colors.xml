@@ -4,7 +4,6 @@
   <color name="colorPrimary">#00BCD4</color>
   <color name="colorPrimaryDark">#0097A7</color>
   <color name="colorAccent">#E91E63</color>
-  <color name="colorAccentPressed">#C2185B</color>
   <color name="disabledButton">#1f000000</color>
   <color name="colorPrimaryTranslucent">#4000BCD4</color>
   <color name="browseButtonBorder">#26000000</color>

@@ -5,8 +5,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.preference.PreferenceManager;
-import android.support.annotation.ColorInt;
-import android.support.annotation.Size;
+import androidx.annotation.ColorInt;
+import androidx.annotation.Size;
 
 /** @author Aidan Follestad (afollestad) */
 @SuppressLint({"CommitPrefEdits", "ApplySharedPref"})

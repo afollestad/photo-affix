@@ -1,104 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
-  android:layout_width="match_parent"
-  android:layout_height="wrap_content"
-  android:paddingBottom="@dimen/md_title_frame_margin_bottom"
-  android:paddingEnd="@dimen/md_title_frame_margin_bottom"
-  android:paddingStart="@dimen/md_title_frame_margin_bottom"
-  android:paddingTop="@dimen/md_title_frame_margin_bottom">
-
-  <TextView
-    android:id="@+id/horizontalLabel"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:fontFamily="sans-serif-light"
-    android:text="@string/horizontal"
-    android:textColor="?android:textColorPrimary"
-    android:textSize="@dimen/header_textsize"
-    android:textStyle="italic"/>
-
-  <SeekBar
-    android:id="@+id/spacingHorizontalSeek"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_below="@+id/horizontalLabel"
-    android:layout_marginTop="@dimen/md_title_frame_margin_bottom"
-    android:layout_toStartOf="@+id/spacingHorizontalLabel"
-    android:max="100"/>
+    android:paddingBottom="@dimen/content_inset"
+    android:paddingEnd="@dimen/content_inset"
+    android:paddingStart="@dimen/content_inset"
+    android:paddingTop="@dimen/content_inset"
+    >
 
   <TextView
-    android:id="@+id/spacingHorizontalLabel"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignBottom="@+id/spacingHorizontalSeek"
-    android:layout_alignParentEnd="true"
-    android:layout_alignTop="@+id/spacingHorizontalSeek"
-    android:fontFamily="sans-serif-light"
-    android:gravity="center"
-    android:minWidth="36dp"
-    android:text="0"
-    android:textColor="?android:textColorSecondary"
-    tools:ignore="HardcodedText"
-    tools:text="100"/>
-
-  <TextView
-    android:id="@+id/verticalLabel"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_below="@+id/spacingHorizontalSeek"
-    android:layout_marginTop="@dimen/md_title_frame_margin_bottom"
-    android:fontFamily="sans-serif-light"
-    android:text="@string/vertical"
-    android:textColor="?android:textColorPrimary"
-    android:textSize="@dimen/header_textsize"
-    android:textStyle="italic"/>
+      android:id="@+id/horizontalLabel"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:fontFamily="sans-serif-light"
+      android:text="@string/horizontal"
+      android:textColor="?android:textColorPrimary"
+      android:textSize="@dimen/header_textsize"
+      android:textStyle="italic"
+      />
 
   <SeekBar
-    android:id="@+id/spacingVerticalSeek"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_below="@+id/verticalLabel"
-    android:layout_marginTop="@dimen/md_title_frame_margin_bottom"
-    android:layout_toStartOf="@+id/spacingVerticalLabel"
-    android:max="100"/>
+      android:id="@+id/spacingHorizontalSeek"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/horizontalLabel"
+      android:layout_marginTop="@dimen/content_inset"
+      android:layout_toLeftOf="@+id/spacingHorizontalLabel"
+      android:layout_toStartOf="@+id/spacingHorizontalLabel"
+      android:max="100"
+      />
 
   <TextView
-    android:id="@+id/spacingVerticalLabel"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignBottom="@+id/spacingVerticalSeek"
-    android:layout_alignParentEnd="true"
-    android:layout_alignTop="@+id/spacingVerticalSeek"
-    android:fontFamily="sans-serif-light"
-    android:gravity="center"
-    android:minWidth="36dp"
-    android:text="0"
-    android:textColor="?android:textColorSecondary"
-    tools:ignore="HardcodedText"
-    tools:text="100"/>
+      android:id="@+id/spacingHorizontalLabel"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignBottom="@+id/spacingHorizontalSeek"
+      android:layout_alignParentEnd="true"
+      android:layout_alignParentRight="true"
+      android:layout_alignTop="@+id/spacingHorizontalSeek"
+      android:fontFamily="sans-serif-light"
+      android:gravity="center"
+      android:minWidth="36dp"
+      android:text="0"
+      android:textColor="?android:textColorSecondary"
+      tools:ignore="HardcodedText"
+      tools:text="100"
+      />
+
+  <TextView
+      android:id="@+id/verticalLabel"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/spacingHorizontalSeek"
+      android:layout_marginTop="@dimen/content_inset"
+      android:fontFamily="sans-serif-light"
+      android:text="@string/vertical"
+      android:textColor="?android:textColorPrimary"
+      android:textSize="@dimen/header_textsize"
+      android:textStyle="italic"
+      />
+
+  <SeekBar
+      android:id="@+id/spacingVerticalSeek"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_below="@+id/verticalLabel"
+      android:layout_marginTop="@dimen/content_inset"
+      android:layout_toLeftOf="@+id/spacingVerticalLabel"
+      android:layout_toStartOf="@+id/spacingVerticalLabel"
+      android:max="100"
+      />
+
+  <TextView
+      android:id="@+id/spacingVerticalLabel"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignBottom="@+id/spacingVerticalSeek"
+      android:layout_alignParentEnd="true"
+      android:layout_alignParentRight="true"
+      android:layout_alignTop="@+id/spacingVerticalSeek"
+      android:fontFamily="sans-serif-light"
+      android:gravity="center"
+      android:minWidth="36dp"
+      android:text="0"
+      android:textColor="?android:textColorSecondary"
+      tools:ignore="HardcodedText"
+      tools:text="100"
+      />
 
   <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="100dp"
-    android:layout_below="@+id/spacingVerticalSeek"
-    android:layout_marginTop="@dimen/md_dialog_frame_margin"
-    android:orientation="horizontal"
-    android:weightSum="2">
+      android:layout_width="match_parent"
+      android:layout_height="100dp"
+      android:layout_below="@+id/spacingVerticalSeek"
+      android:layout_marginTop="@dimen/content_inset"
+      android:orientation="horizontal"
+      android:weightSum="2"
+      >
 
     <com.afollestad.photoaffix.views.LineView
-      android:id="@+id/verticalLine"
-      android:layout_width="0dp"
-      android:layout_height="match_parent"
-      android:layout_weight="1"/>
+        android:id="@+id/verticalLine"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        />
 
     <com.afollestad.photoaffix.views.LineView
-      android:id="@+id/horizontalLine"
-      android:layout_width="0dp"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:tag="1"/>
+        android:id="@+id/horizontalLine"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:tag="1"
+        />
 
   </LinearLayout>
 

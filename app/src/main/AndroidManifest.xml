@@ -1,18 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.afollestad.photoaffix">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.afollestad.photoaffix">
 
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.INTERNET"/>
 
   <application
-    android:allowBackup="true"
-    android:fullBackupContent="false"
-    android:icon="@mipmap/ic_launcher"
-    android:label="@string/app_name"
-    android:supportsRtl="true"
-    android:theme="@style/AppTheme">
+      android:name=".App"
+      android:allowBackup="true"
+      android:fullBackupContent="false"
+      android:icon="@mipmap/ic_launcher"
+      android:label="@string/app_name"
+      android:supportsRtl="true"
+      android:theme="@style/AppTheme"
+      tools:ignore="GoogleAppIndexingWarning">
 
-    <activity android:name=".ui.MainActivity">
+    <activity android:name=".activities.MainActivity">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
 
@@ -25,23 +28,15 @@
       </intent-filter>
     </activity>
 
-    <activity
-      android:name=".ui.ViewerActivity"
-      android:theme="@style/AppTheme.Black"/>
-
     <provider
-      android:name="android.support.v4.content.FileProvider"
-      android:authorities="${applicationId}.provider"
-      android:exported="false"
-      android:grantUriPermissions="true">
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="${applicationId}.provider"
+        android:exported="false"
+        android:grantUriPermissions="true">
       <meta-data
-        android:name="android.support.FILE_PROVIDER_PATHS"
-        android:resource="@xml/provider_paths"/>
+          android:name="android.support.FILE_PROVIDER_PATHS"
+          android:resource="@xml/provider_paths"/>
     </provider>
-
-    <meta-data
-      android:name="io.fabric.ApiKey"
-      android:value="e9b2b6339277beb481a9c658b72cd0e4c714e0cb"/>
 
   </application>
 

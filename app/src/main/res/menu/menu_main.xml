@@ -2,15 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
-        android:id="@+id/clear"
-        android:icon="@drawable/ic_clear"
-        android:title="@string/clear"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
+  <item
+      android:id="@+id/clear"
+      android:icon="@drawable/ic_clear"
+      android:title="@string/clear"
+      android:visible="false"
+      app:showAsAction="ifRoom"/>
 
-    <item
-        android:id="@+id/about"
-        android:title="@string/about" />
+  <item
+      android:id="@+id/about"
+      android:title="@string/about"/>
 
 </menu>

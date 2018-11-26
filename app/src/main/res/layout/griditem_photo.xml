@@ -1,45 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout
-  xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
-  android:layout_width="match_parent"
-  android:layout_height="wrap_content"
-  android:foreground="?selectableItemBackground"
-  android:padding="@dimen/grid_padding_small">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?selectableItemBackground"
+    android:padding="@dimen/grid_padding_small"
+    >
 
   <FrameLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/black"
-    tools:ignore="UselessParent">
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:background="@android:color/black"
+      tools:ignore="UselessParent"
+      >
 
     <com.afollestad.photoaffix.views.SquareImageView
-      android:id="@+id/image"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      tools:background="#80000000"/>
+        android:id="@+id/image"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:background="#80000000"
+        />
 
     <FrameLayout
-      android:layout_width="32dp"
-      android:layout_height="32dp"
-      android:layout_gravity="end"
-      android:layout_marginEnd="@dimen/grid_circle_margin"
-      android:layout_marginTop="@dimen/grid_circle_margin">
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="end"
+        android:layout_marginEnd="@dimen/grid_circle_margin"
+        android:layout_marginRight="@dimen/grid_circle_margin"
+        android:layout_marginTop="@dimen/grid_circle_margin"
+        >
 
       <com.afollestad.photoaffix.views.CircleView
-        android:id="@+id/circle"
-        android:layout_width="32dp"
-        android:layout_height="32dp"/>
+          android:id="@+id/circle"
+          android:layout_width="32dp"
+          android:layout_height="32dp"
+          />
 
       <ImageView
-        android:id="@+id/check"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_check"
-        android:visibility="gone"
-        tools:ignore="ContentDescription"
-        tools:visibility="visible"/>
+          android:id="@+id/check"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:src="@drawable/ic_check"
+          android:visibility="gone"
+          tools:ignore="ContentDescription"
+          tools:visibility="visible"
+          />
 
     </FrameLayout>
 

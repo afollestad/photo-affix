@@ -1,43 +1,50 @@
+apply from: '../dependencies.gradle'
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+  compileSdkVersion versions.compileSdk
+  buildToolsVersion versions.buildTools
 
-    lintOptions {
-        abortOnError false
+  defaultConfig {
+    applicationId "com.afollestad.photoaffix"
+    minSdkVersion versions.minSdk
+    targetSdkVersion versions.compileSdk
+    versionCode versions.publishVersionCode
+    versionName versions.publishVersion
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
     }
-    defaultConfig {
-        applicationId "com.afollestad.photoaffix"
-        minSdkVersion 21
-        targetSdkVersion 25
-        versionCode 25
-        versionName "0.6.2 BETA"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+  }
+
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_1_8
+    targetCompatibility JavaVersion.VERSION_1_8
+  }
 }
 
 dependencies {
-    compile 'com.jakewharton:butterknife:8.6.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+  implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + versions.kotlin
+  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:' + versions.coroutines
+  implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + versions.coroutines
 
-    compile 'com.android.support:appcompat-v7:25.3.1'
+  implementation 'androidx.appcompat:appcompat:' + versions.androidx
 
-    compile 'com.github.bumptech.glide:glide:3.7.0'
-    compile 'com.github.chrisbanes:PhotoView:1.3.1'
+  implementation 'com.google.dagger:dagger:' + versions.dagger
+  kapt 'com.google.dagger:dagger-compiler:' + versions.dagger
 
-    compile 'com.afollestad.material-dialogs:core:0.9.4.5'
-    compile 'com.afollestad.material-dialogs:commons:0.9.4.5'
-    compile 'com.afollestad:inquiry:5.0.0'
-    compile 'com.afollestad:drag-select-recyclerview:0.3.6'
+  implementation 'com.github.bumptech.glide:glide:' + versions.glide
+
+  implementation 'com.afollestad.material-dialogs:core:' + versions.materialDialogs
+  implementation 'com.afollestad.material-dialogs:color:' + versions.materialDialogs
+  implementation 'com.afollestad:drag-select-recyclerview:' + versions.dragSelectRv
+  implementation 'com.afollestad:assent:' + versions.assent
 }
+
+apply from: '../spotless.gradle'

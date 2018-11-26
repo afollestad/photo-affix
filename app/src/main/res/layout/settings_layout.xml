@@ -1,0 +1,176 @@
+<merge
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/settingsFrame"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:background="?colorPrimary"
+    tools:parentTag="android.widget.LinearLayout"
+    >
+
+  <LinearLayout
+      android:id="@+id/settingStackHorizontally"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="?selectableItemBackground"
+      android:gravity="center_vertical|start"
+      android:minHeight="@dimen/settings_control_height"
+      android:paddingEnd="@dimen/content_inset"
+      android:paddingStart="@dimen/content_inset"
+      >
+
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/stackHorizontallySwitch"
+        android:layout_width="@dimen/color_circle_view"
+        android:layout_height="@dimen/color_circle_view"
+        android:checked="true"
+        android:clickable="false"
+        android:fontFamily="sans-serif-light"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/content_textsize"
+        />
+
+    <TextView
+        android:id="@+id/stackHorizontallyLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/settings_control_text_margin"
+        android:layout_marginStart="@dimen/settings_control_text_margin"
+        android:fontFamily="sans-serif-light"
+        android:text="@string/stack_horizontally"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/content_textsize"
+        />
+
+  </LinearLayout>
+
+  <RelativeLayout
+      android:id="@+id/settingBgFillColor"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="?selectableItemBackground"
+      android:minHeight="@dimen/settings_control_height"
+      android:paddingLeft="@dimen/content_inset"
+      android:paddingStart="@dimen/content_inset"
+      tools:ignore="RtlSymmetry"
+      >
+
+    <com.afollestad.photoaffix.views.ColorCircleView
+        android:id="@+id/bgFillColorCircle"
+        android:layout_width="@dimen/color_circle_view"
+        android:layout_height="@dimen/color_circle_view"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        />
+
+    <TextView
+        android:id="@+id/bgFillColorLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="@dimen/settings_control_text_margin"
+        android:layout_marginStart="@dimen/settings_control_text_margin"
+        android:layout_toEndOf="@+id/bgFillColorCircle"
+        android:layout_toLeftOf="@+id/removeBgButton"
+        android:layout_toRightOf="@+id/bgFillColorCircle"
+        android:layout_toStartOf="@+id/removeBgButton"
+        android:fontFamily="sans-serif-light"
+        android:text="@string/background_fill_color"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/content_textsize"
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/removeBgButton"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/settings_control_height"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:paddingEnd="@dimen/content_inset"
+        android:paddingStart="@dimen/content_inset"
+        android:text="@string/remove"
+        android:textColor="?android:textColorPrimary"
+        android:textSize="@dimen/content_textsize"
+        android:visibility="gone"
+        tools:visibility="visible"
+        style="?buttonBarButtonStyle"
+        />
+
+  </RelativeLayout>
+
+  <LinearLayout
+      android:id="@+id/settingImagePadding"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="?selectableItemBackground"
+      android:gravity="center_vertical|start"
+      android:minHeight="@dimen/settings_control_height"
+      android:orientation="horizontal"
+      android:paddingEnd="@dimen/content_inset"
+      android:paddingStart="@dimen/content_inset"
+      >
+
+    <ImageView
+        android:layout_width="@dimen/color_circle_view"
+        android:layout_height="@dimen/color_circle_view"
+        android:src="@drawable/ic_border"
+        tools:ignore="ContentDescription"
+        />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/imagePaddingLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/settings_control_text_margin"
+        android:layout_marginStart="@dimen/settings_control_text_margin"
+        android:fontFamily="sans-serif-light"
+        android:text="@string/image_spacing_x"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/content_textsize"
+        />
+
+  </LinearLayout>
+
+  <LinearLayout
+      android:id="@+id/settingScalePriority"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="?selectableItemBackground"
+      android:gravity="center_vertical|start"
+      android:minHeight="@dimen/settings_control_height"
+      android:orientation="horizontal"
+      android:paddingEnd="@dimen/content_inset"
+      android:paddingStart="@dimen/content_inset"
+      >
+
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/scalePrioritySwitch"
+        android:layout_width="@dimen/color_circle_view"
+        android:layout_height="@dimen/color_circle_view"
+        android:checked="true"
+        android:clickable="false"
+        android:fontFamily="sans-serif-light"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/content_textsize"
+        />
+
+    <TextView
+        android:id="@+id/scalePriorityLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/settings_control_text_margin"
+        android:layout_marginStart="@dimen/settings_control_text_margin"
+        android:fontFamily="sans-serif-light"
+        android:text="@string/scale_priority_on"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/content_textsize"
+        />
+
+  </LinearLayout>
+
+</merge>
