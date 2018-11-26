@@ -83,7 +83,7 @@ class ImageSizingDialog : DialogFragment() {
               quality = 100,
               cancelled = true
           )
-          dialog.dismiss()
+          dismiss()
         }
         .noAutoDismiss()
 
@@ -156,7 +156,7 @@ class ImageSizingDialog : DialogFragment() {
         quality = quality,
         cancelled = false
     )
-    materialDialog.dismiss()
+    dismiss()
   }
 
   override fun onAttach(context: Context?) {

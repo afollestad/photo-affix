@@ -5,6 +5,8 @@
  */
 package com.afollestad.photoaffix.utils
 
+import android.app.Activity
+import android.content.ContextWrapper
 import android.view.View
 import android.widget.AdapterView
 import android.widget.SeekBar
@@ -39,6 +41,17 @@ fun Spinner.onItemSelected(cb: (Int) -> Unit) {
 
     override fun onNothingSelected(parent: AdapterView<*>) = Unit
   }
+}
+
+fun View.getActivity(): Activity? {
+  var context = context
+  while (context is ContextWrapper) {
+    if (context is Activity) {
+      return context
+    }
+    context = context.baseContext
+  }
+  return null
 }
 
 val View.isAttachedToWindowCompat: Boolean get() = ViewCompat.isAttachedToWindow(this)

@@ -29,7 +29,6 @@
       android:layout_marginTop="@dimen/content_inset"
       android:layout_toLeftOf="@+id/spacingHorizontalLabel"
       android:layout_toStartOf="@+id/spacingHorizontalLabel"
-      android:max="100"
       />
 
   <TextView
@@ -70,7 +69,6 @@
       android:layout_marginTop="@dimen/content_inset"
       android:layout_toLeftOf="@+id/spacingVerticalLabel"
       android:layout_toStartOf="@+id/spacingVerticalLabel"
-      android:max="100"
       />
 
   <TextView

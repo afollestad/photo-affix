@@ -23,6 +23,7 @@ import com.afollestad.photoaffix.di.ImageSpacingVertical
 import com.afollestad.photoaffix.di.ScalePriority
 import com.afollestad.photoaffix.di.StackHorizontally
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
+import com.afollestad.photoaffix.utils.getActivity
 import com.afollestad.photoaffix.utils.unsubscribeOnDetach
 import com.afollestad.photoaffix.views.MainActivity
 import com.afollestad.rxkprefs.Pref
@@ -134,7 +135,7 @@ class SettingsLayout(
   }
 
   private fun onClickBackgroundFillColor() {
-    MaterialDialog(context).show {
+    MaterialDialog(getActivity() as MainActivity).show {
       title(R.string.background_fill_color_title)
       colorChooser(
           colors = PRIMARY_COLORS,
@@ -151,7 +152,7 @@ class SettingsLayout(
   }
 
   private fun onClickImagePadding() =
-    ImageSpacingDialog.show(context as MainActivity)
+    ImageSpacingDialog.show(getActivity() as MainActivity)
 
   private fun onClickScalePriority() {
     scalePrioritySwitch.isChecked = !scalePrioritySwitch.isChecked
@@ -165,13 +166,13 @@ class SettingsLayout(
   }
 
   private fun onClickRemoveBackground() {
-    removeBgButton.visibility = View.GONE
+    removeBgButton.visibility = GONE
     onColorSelection(TRANSPARENT)
   }
 
   private fun onColorSelection(@ColorInt selectedColor: Int) {
     if (selectedColor != TRANSPARENT) {
-      removeBgButton.visibility = View.VISIBLE
+      removeBgButton.visibility = VISIBLE
       bgFillColorLabel.setText(R.string.background_fill_color)
       bgFillColorPref.set(selectedColor)
     } else {

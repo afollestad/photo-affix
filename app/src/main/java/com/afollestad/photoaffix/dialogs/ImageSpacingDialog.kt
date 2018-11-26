@@ -42,10 +42,10 @@ interface SpacingCallback {
 class ImageSpacingDialog : DialogFragment() {
 
   companion object {
-    private const val TAG = "[IMAGE_PADDING_DIALOG]"
+    private const val TAG = "[IMAGE_SIZING_DIALOG]"
 
     fun show(context: AppCompatActivity) {
-      ImageSizingDialog().show(context.supportFragmentManager, TAG)
+      ImageSpacingDialog().show(context.supportFragmentManager, TAG)
     }
   }
 
@@ -78,16 +78,18 @@ class ImageSpacingDialog : DialogFragment() {
         .title(R.string.image_spacing)
         .customView(R.layout.dialog_imagespacing, scrollable = true)
         .positiveButton(android.R.string.ok) { notifyActivity() }
-        .negativeButton(android.R.string.cancel) { it.dismiss() }
+        .negativeButton(android.R.string.cancel) { dismiss() }
 
     val customView = dialog.getCustomView() ?: return dialog
 
+    customView.spacingHorizontalSeek.max = 100
     customView.spacingHorizontalSeek.onProgressChanged {
       customView.spacingHorizontalLabel.text = it.toString()
       customView.horizontalLine.width = it
     }
     customView.horizontalLine.setColor(fillColor)
 
+    customView.spacingVerticalSeek.max = 100
     customView.spacingVerticalSeek.onProgressChanged {
       customView.spacingVerticalLabel.text = it.toString()
       customView.verticalLine.width = it

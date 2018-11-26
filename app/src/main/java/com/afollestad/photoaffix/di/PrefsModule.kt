@@ -48,13 +48,13 @@ open class PrefsModule {
   @Singleton
   @ImageSpacingVertical
   fun provideImageSpacingVerticalPref(prefs: RxkPrefs): Pref<Int> {
-    return prefs.integer("image_spacing_vertical", TRANSPARENT)
+    return prefs.integer("image_spacing_vertical", 0)
   }
 
   @Provides
   @Singleton
   @ImageSpacingHorizontal
   fun provideImageSpacingHorizontalPref(prefs: RxkPrefs): Pref<Int> {
-    return prefs.integer("image_spacing_horizontal", TRANSPARENT)
+    return prefs.integer("image_spacing_horizontal", 0)
   }
 }
