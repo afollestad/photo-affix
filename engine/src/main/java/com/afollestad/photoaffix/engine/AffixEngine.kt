@@ -17,6 +17,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
+import androidx.annotation.VisibleForTesting
 import com.afollestad.photoaffix.prefs.BgFillColor
 import com.afollestad.photoaffix.prefs.ImageSpacingHorizontal
 import com.afollestad.photoaffix.prefs.ImageSpacingVertical
@@ -149,7 +150,7 @@ class RealAffixEngine @Inject constructor(
     bitmapIterator.reset()
   }
 
-  private fun calculateHorizontalWidthAndHeight(): Size {
+  @VisibleForTesting fun calculateHorizontalWidthAndHeight(): Size {
     val spacingHorizontal = spacingHorizontalPref.get()
         .dp(app)
         .toInt()
@@ -235,7 +236,7 @@ class RealAffixEngine @Inject constructor(
     return Size(totalWidth, if (scalePriority) maxHeight else minHeight)
   }
 
-  private fun calculateVerticalWidthAndHeight(): Size {
+  @VisibleForTesting fun calculateVerticalWidthAndHeight(): Size {
     val spacingHorizontal = spacingHorizontalPref.get()
         .dp(app)
         .toInt()
@@ -321,7 +322,7 @@ class RealAffixEngine @Inject constructor(
     return Size(if (scalePriority) maxWidth else minWidth, totalHeight)
   }
 
-  private fun performProcessing(
+  @VisibleForTesting fun performProcessing(
     selectedScale: Double,
     resultWidth: Int,
     resultHeight: Int,
@@ -348,7 +349,7 @@ class RealAffixEngine @Inject constructor(
     }
   }
 
-  private fun performHorizontalProcessing(
+  @VisibleForTesting fun performHorizontalProcessing(
     selectedScale: Double,
     resultWidth: Int,
     resultHeight: Int,
@@ -444,7 +445,7 @@ class RealAffixEngine @Inject constructor(
     }
   }
 
-  private fun performVerticalProcessing(
+  @VisibleForTesting fun performVerticalProcessing(
     selectedScale: Double,
     resultWidth: Int,
     resultHeight: Int,
@@ -540,7 +541,7 @@ class RealAffixEngine @Inject constructor(
     }
   }
 
-  private suspend fun finishProcessing(
+  @VisibleForTesting suspend fun finishProcessing(
     processedCount: Int,
     result: Bitmap,
     format: CompressFormat,
@@ -570,7 +571,7 @@ class RealAffixEngine @Inject constructor(
     done(cacheFile)
   }
 
-  private suspend fun done(file: File) = withContext(Main) {
+  @VisibleForTesting suspend fun done(file: File) = withContext(Main) {
     engineOwner.onDoneProcessing()
 
     // Add the affixed file to the media store so gallery apps can see it
@@ -584,7 +585,11 @@ class RealAffixEngine @Inject constructor(
     this.engineOwner = engineOwner
   }
 
+  @TestOnly fun getEngineOwner() = this.engineOwner
+
   @TestOnly fun setBitmapIterator(bitmapIterator: BitmapIterator) {
     this.bitmapIterator = bitmapIterator
   }
+
+  @TestOnly fun getBitmapIterator() = this.bitmapIterator
 }
