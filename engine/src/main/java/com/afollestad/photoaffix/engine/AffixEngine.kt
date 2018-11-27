@@ -126,6 +126,7 @@ class RealAffixEngine @Inject constructor(
       performProcessing(scale, width, height, format, quality)
     } catch (_: OutOfMemoryError) {
       engineOwner.showMemoryError()
+      reset()
     }
   }
 
@@ -315,9 +316,11 @@ class RealAffixEngine @Inject constructor(
       BitmapFactory.decodeStream(inputStream, null, options)
     } catch (e: Exception) {
       engineOwner.showErrorDialog(e)
+      reset()
       return null
     } catch (e2: OutOfMemoryError) {
       engineOwner.showMemoryError()
+      reset()
       return null
     } finally {
       inputStream.closeQuietely()
@@ -335,9 +338,11 @@ class RealAffixEngine @Inject constructor(
       BitmapFactory.decodeStream(inputStream, null, options)
     } catch (e: Exception) {
       engineOwner.showErrorDialog(e)
+      reset()
       null
     } catch (e2: OutOfMemoryError) {
       engineOwner.showMemoryError()
+      reset()
       null
     } finally {
       inputStream.closeQuietely()
@@ -447,6 +452,8 @@ class RealAffixEngine @Inject constructor(
           resultCanvas.drawBitmap(bm, null, dstRect, paint)
         } catch (e: RuntimeException) {
           engineOwner.showMemoryError()
+          reset()
+          return@launch
         } finally {
           bm.safeRecycle()
         }
@@ -534,6 +541,8 @@ class RealAffixEngine @Inject constructor(
           resultCanvas.drawBitmap(bm, null, dstRect, paint)
         } catch (e: RuntimeException) {
           engineOwner.showMemoryError()
+          reset()
+          return@launch
         } finally {
           bm.safeRecycle()
         }
