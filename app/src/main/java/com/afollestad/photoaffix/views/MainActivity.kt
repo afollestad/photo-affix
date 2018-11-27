@@ -161,6 +161,8 @@ class MainActivity : AppCompatActivity(),
     try {
       startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "image/*"))
     } catch (_: ActivityNotFoundException) {
+      // If there is no viewer to see the result with, refresh the grid.
+      refresh()
     }
   }
 
