@@ -3,7 +3,7 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.data
+package com.afollestad.photoaffix.engine
 
 import java.io.Serializable
 

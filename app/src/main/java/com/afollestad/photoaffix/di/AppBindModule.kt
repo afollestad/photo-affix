@@ -5,8 +5,10 @@
  */
 package com.afollestad.photoaffix.di
 
-import com.afollestad.photoaffix.data.PhotoLoader
-import com.afollestad.photoaffix.data.RealPhotoLoader
+import com.afollestad.photoaffix.engine.AffixEngine
+import com.afollestad.photoaffix.engine.PhotoLoader
+import com.afollestad.photoaffix.engine.RealAffixEngine
+import com.afollestad.photoaffix.engine.RealPhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
 import com.afollestad.photoaffix.presenters.RealMainPresenter
 import com.afollestad.photoaffix.utilities.IoManager
@@ -30,4 +32,8 @@ abstract class AppBindModule {
   @Binds
   @Singleton
   abstract fun provideIoManager(ioManager: RealIoManager): IoManager
+
+  @Binds
+  @Singleton
+  abstract fun provideAffixEngine(affixEngine: RealAffixEngine): AffixEngine
 }

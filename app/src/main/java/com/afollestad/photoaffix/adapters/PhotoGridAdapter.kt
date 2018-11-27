@@ -15,10 +15,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.dragselectrecyclerview.DragSelectReceiver
 import com.afollestad.dragselectrecyclerview.DragSelectTouchListener
 import com.afollestad.photoaffix.R
-import com.afollestad.photoaffix.views.MainActivity
-import com.afollestad.photoaffix.data.Photo
-import com.afollestad.photoaffix.data.PhotoHolder
+import com.afollestad.photoaffix.engine.Photo
+import com.afollestad.photoaffix.engine.PhotoHolder
 import com.afollestad.photoaffix.utilities.loadImage
+import com.afollestad.photoaffix.views.MainActivity
 import kotlinx.android.synthetic.main.griditem_photo.view.check
 import kotlinx.android.synthetic.main.griditem_photo.view.circle
 import kotlinx.android.synthetic.main.griditem_photo.view.image

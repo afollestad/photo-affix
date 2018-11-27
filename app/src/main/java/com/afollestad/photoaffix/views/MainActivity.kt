@@ -40,13 +40,13 @@ import com.afollestad.photoaffix.R
 import com.afollestad.photoaffix.adapters.PhotoGridAdapter
 import com.afollestad.photoaffix.animation.HeightEvaluator
 import com.afollestad.photoaffix.animation.ViewHideAnimationListener
-import com.afollestad.photoaffix.data.Photo
-import com.afollestad.photoaffix.data.PhotoLoader
 import com.afollestad.photoaffix.dialogs.AboutDialog
 import com.afollestad.photoaffix.dialogs.ImageSizingDialog
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
 import com.afollestad.photoaffix.dialogs.SizingCallback
 import com.afollestad.photoaffix.dialogs.SpacingCallback
+import com.afollestad.photoaffix.engine.Photo
+import com.afollestad.photoaffix.engine.PhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
 import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.closeQuietely
@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity(),
 
     affixButton.setOnClickListener {
       runWithPermissions(WRITE_EXTERNAL_STORAGE) {
-        mainPresenter.process(adapter.selectedPhotos)
+        mainPresenter.onClickAffix(adapter.selectedPhotos)
       }
     }
     expandButton.setOnClickListener { toggleSettingsExpansion() }
@@ -245,6 +245,11 @@ class MainActivity : AppCompatActivity(),
     cancelled: Boolean
   ) = mainPresenter.sizeDetermined(scale, resultWidth, resultHeight, format, quality, cancelled)
 
+  override fun onDoneProcessing() {
+    clearSelection()
+    unlockOrientation()
+  }
+
   override fun onBackPressed() {
     if (adapter.hasSelection()) {
       clearSelection()
@@ -291,7 +296,7 @@ class MainActivity : AppCompatActivity(),
     if (intent != null && Intent.ACTION_SEND_MULTIPLE == intent.action) {
       val uris = intent.getParcelableArrayListExtra<Uri>(EXTRA_STREAM)
       if (uris != null && uris.size > 1) {
-        mainPresenter.process(
+        mainPresenter.onClickAffix(
             uris.map { Photo(0, it.toString(), 0) }
         )
       } else {

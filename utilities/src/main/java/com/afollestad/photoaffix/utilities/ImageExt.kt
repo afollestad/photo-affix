@@ -6,6 +6,8 @@
 package com.afollestad.photoaffix.utilities
 
 import android.graphics.Bitmap
+import android.graphics.Bitmap.CompressFormat
+import android.graphics.Bitmap.CompressFormat.PNG
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.widget.ImageView
@@ -45,4 +47,10 @@ fun ImageView.loadImage(
 fun Bitmap?.safeRecycle() = try {
   this?.recycle()
 } catch (_: Throwable) {
+}
+
+fun CompressFormat.extension() = if (this == PNG) {
+  ".png"
+} else {
+  ".jpg"
 }
