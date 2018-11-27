@@ -24,6 +24,7 @@ import com.afollestad.photoaffix.prefs.ScalePriority
 import com.afollestad.photoaffix.prefs.StackHorizontally
 import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.closeQuietely
+import com.afollestad.photoaffix.utilities.extension
 import com.afollestad.photoaffix.utilities.safeRecycle
 import com.afollestad.rxkprefs.Pref
 import kotlinx.coroutines.Dispatchers
@@ -557,8 +558,7 @@ class RealAffixEngine @Inject constructor(
     }
 
     // Save results to file
-    val extension = if (format == CompressFormat.PNG) ".png" else ".jpg"
-    val cacheFile = ioManager.makeTempFile(extension)
+    val cacheFile = ioManager.makeTempFile(format.extension())
     var os: FileOutputStream? = null
 
     try {
