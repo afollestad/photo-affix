@@ -16,7 +16,6 @@ import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.graphics.Bitmap.CompressFormat
-import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
 import android.os.Bundle
 import android.os.PersistableBundle
@@ -48,8 +47,6 @@ import com.afollestad.photoaffix.dialogs.SpacingCallback
 import com.afollestad.photoaffix.engine.Photo
 import com.afollestad.photoaffix.engine.PhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
-import com.afollestad.photoaffix.utilities.IoManager
-import com.afollestad.photoaffix.utilities.closeQuietely
 import com.afollestad.photoaffix.utilities.toast
 import com.afollestad.photoaffix.viewcomponents.ImageSpacingDialogShower
 import kotlinx.android.synthetic.main.activity_main.affixButton
@@ -64,8 +61,6 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.FileOutputStream
-import java.io.InputStream
 import javax.inject.Inject
 
 /** @author Aidan Follestad (afollestad) */
@@ -81,7 +76,6 @@ class MainActivity : AppCompatActivity(),
 
   @Inject lateinit var photoLoader: PhotoLoader
   @Inject lateinit var mainPresenter: MainPresenter
-  @Inject lateinit var ioManager: IoManager
 
   private lateinit var adapter: PhotoGridAdapter
 
@@ -266,31 +260,8 @@ class MainActivity : AppCompatActivity(),
   ) {
     super.onActivityResult(requestCode, resultCode, data)
     if (data != null && requestCode == BROWSE_RC && resultCode == RESULT_OK) {
-      GlobalScope.launch(IO) {
-        var input: InputStream? = null
-        var output: FileOutputStream? = null
-        val targetFile = ioManager.makeTempFile(".png")
-
-        try {
-          input = ioManager.openStream(data.data!!)
-          output = FileOutputStream(targetFile)
-          input!!.copyTo(output)
-          output.close()
-
-          scanFile(
-              this@MainActivity,
-              arrayOf(targetFile.toString()), null
-          ) { _, _ ->
-            autoSelectFirst = true
-            refresh()
-          }
-        } catch (e: Exception) {
-          toast(message = e.message)
-        } finally {
-          input.closeQuietely()
-          output.closeQuietely()
-        }
-      }
+      autoSelectFirst = true
+      mainPresenter.onExternalPhotoSelected(data.data!!)
     }
   }
 
@@ -308,7 +279,7 @@ class MainActivity : AppCompatActivity(),
     }
   }
 
-  private fun refresh() = runWithPermissions(READ_EXTERNAL_STORAGE) {
+  override fun refresh() = runWithPermissions(READ_EXTERNAL_STORAGE) {
     GlobalScope.launch(Main) {
       val photos = withContext(IO) { photoLoader.queryPhotos() }
       adapter.setPhotos(photos)

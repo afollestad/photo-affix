@@ -5,10 +5,20 @@
  */
 package com.afollestad.photoaffix.presenters
 
+import android.app.Application
 import android.graphics.Bitmap.CompressFormat
+import android.media.MediaScannerConnection.scanFile
+import android.net.Uri
 import com.afollestad.photoaffix.engine.AffixEngine
 import com.afollestad.photoaffix.engine.Photo
+import com.afollestad.photoaffix.utilities.IoManager
+import com.afollestad.photoaffix.utilities.closeQuietely
 import com.afollestad.photoaffix.views.MainView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.FileOutputStream
+import java.io.InputStream
 import javax.inject.Inject
 
 /** @author Aidan Follestad (afollestad) */
@@ -17,6 +27,8 @@ interface MainPresenter {
   fun attachView(mainView: MainView)
 
   fun onClickAffix(photos: List<Photo>)
+
+  fun onExternalPhotoSelected(uri: Uri)
 
   fun sizeDetermined(
     scale: Double,
@@ -34,7 +46,9 @@ interface MainPresenter {
 
 /** @author Aidan Follestad (afollestad) */
 class RealMainPresenter @Inject constructor(
-  private val affixEngine: AffixEngine
+  private val app: Application,
+  private val affixEngine: AffixEngine,
+  private val ioManager: IoManager
 ) : MainPresenter {
 
   private var mainView: MainView? = null
@@ -46,6 +60,30 @@ class RealMainPresenter @Inject constructor(
   override fun onClickAffix(photos: List<Photo>) {
     mainView?.lockOrientation() ?: return
     affixEngine.process(photos, mainView!!)
+  }
+
+  override fun onExternalPhotoSelected(uri: Uri) {
+    GlobalScope.launch(Dispatchers.IO) {
+      var input: InputStream? = null
+      var output: FileOutputStream? = null
+      val targetFile = ioManager.makeTempFile(".png")
+
+      try {
+        input = ioManager.openStream(uri)
+        output = FileOutputStream(targetFile)
+        input!!.copyTo(output)
+        output.close()
+
+        scanFile(app, arrayOf(targetFile.toString()), null) { _, _ ->
+          mainView?.refresh()
+        }
+      } catch (e: Exception) {
+        mainView?.showErrorDialog(e)
+      } finally {
+        input.closeQuietely()
+        output.closeQuietely()
+      }
+    }
   }
 
   override fun sizeDetermined(

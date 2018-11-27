@@ -15,7 +15,7 @@ import android.graphics.Canvas
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Paint
 import android.graphics.Rect
-import android.media.MediaScannerConnection
+import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
 import com.afollestad.photoaffix.prefs.BgFillColor
 import com.afollestad.photoaffix.prefs.ImageSpacingHorizontal
@@ -579,11 +579,7 @@ class RealAffixEngine @Inject constructor(
     engineOwner.onDoneProcessing()
 
     // Add the affixed file to the media store so gallery apps can see it
-    MediaScannerConnection.scanFile(
-        app,
-        arrayOf(file.toString()),
-        null
-    ) { _, uri ->
+    scanFile(app, arrayOf(file.toString()), null) { _, uri ->
       engineOwner.showContentLoading(false)
       engineOwner.launchViewer(uri)
     }

@@ -9,6 +9,8 @@ import com.afollestad.photoaffix.engine.EngineOwner
 
 interface MainView : EngineOwner {
 
+  fun refresh()
+
   fun lockOrientation()
 
   fun unlockOrientation()
