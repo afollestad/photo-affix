@@ -10,11 +10,24 @@ import android.net.Uri
 import com.afollestad.photoaffix.utilities.toUri
 import java.io.Serializable
 
+typealias UriParser = (String) -> Uri
+
+val defaultUriParser: UriParser = { data ->
+  var uri = data.toUri()
+  if (!uri.toString().startsWith("file://") &&
+      !uri.toString().startsWith("content://")
+  ) {
+    uri = "file://$uri".toUri()
+  }
+  uri
+}
+
 /** @author Aidan Follestad (afollestad) */
 data class Photo(
   var id: Long,
   var data: String,
-  var dateTaken: Long
+  var dateTaken: Long,
+  private var uriParser: UriParser = defaultUriParser
 ) : Serializable {
 
   companion object {
@@ -28,13 +41,5 @@ data class Photo(
   }
 
   val uri: Uri
-    get() {
-      var uri = data.toUri()
-      if (!uri.toString().startsWith("file://") &&
-          !uri.toString().startsWith("content://")
-      ) {
-        uri = "file://$uri".toUri()
-      }
-      return uri
-    }
+    get() = uriParser.invoke(data)
 }

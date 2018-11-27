@@ -6,16 +6,13 @@
 package com.afollestad.photoaffix.engine
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.BitmapFactory.Options
-import com.afollestad.photoaffix.utilities.IoManager
-import com.afollestad.photoaffix.utilities.closeQuietely
-import java.io.InputStream
+import org.jetbrains.annotations.TestOnly
 
 /** @author Aidan Follestad (afollestad) */
-internal class BitmapIterator(
+class BitmapIterator(
   private val photos: List<Photo>,
-  private val ioManager: IoManager
+  private val bitmapDecoder: BitmapDecoder
 ) : Iterator<Options> {
 
   private var traverseIndex: Int = -1
@@ -32,19 +29,11 @@ internal class BitmapIterator(
     }
 
     val nextPhoto = photos[traverseIndex]
-    val options = Options()
-        .apply {
-          inJustDecodeBounds = true
-        }
-    var inputStream: InputStream? = null
+    val options = bitmapDecoder.createOptions(true)
 
-    try {
-      inputStream = ioManager.openStream(nextPhoto.uri)
-      BitmapFactory.decodeStream(inputStream, null, options)
-      this.currentOptions = options
-    } finally {
-      inputStream.closeQuietely()
-    }
+    bitmapDecoder.decodePhoto(nextPhoto, options)
+    // Options' properties have now been populated
+    this.currentOptions = options
 
     return options
   }
@@ -53,16 +42,8 @@ internal class BitmapIterator(
     if (this.currentOptions == null) {
       throw IllegalStateException("Must call next() first.")
     }
-
     val nextPhoto = photos[traverseIndex]
-    var inputStream: InputStream? = null
-
-    return try {
-      inputStream = ioManager.openStream(nextPhoto.uri)
-      BitmapFactory.decodeStream(inputStream, null, this.currentOptions)
-    } finally {
-      inputStream.closeQuietely()
-    }
+    return bitmapDecoder.decodePhoto(nextPhoto, this.currentOptions!!)
   }
 
   fun size() = photos.size
@@ -70,4 +51,8 @@ internal class BitmapIterator(
   fun reset() {
     traverseIndex = -1
   }
+
+  @TestOnly fun currentOptions() = currentOptions
+
+  @TestOnly fun traverseIndex() = traverseIndex
 }

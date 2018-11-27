@@ -21,5 +21,10 @@ ext.versions = [
     dragSelectRv      : '2.3.0',
     rxkPrefs          : '1.2.0',
 
-    glide             : '4.8.0'
+    glide             : '4.8.0',
+
+    junit             : '4.12',
+    mockito           : '2.23.0',
+    mockitoKotlin     : '2.0.0-RC1',
+    truth             : '0.42'
 ]

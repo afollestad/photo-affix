@@ -6,8 +6,10 @@
 package com.afollestad.photoaffix.di
 
 import com.afollestad.photoaffix.engine.AffixEngine
+import com.afollestad.photoaffix.engine.BitmapDecoder
 import com.afollestad.photoaffix.engine.PhotoLoader
 import com.afollestad.photoaffix.engine.RealAffixEngine
+import com.afollestad.photoaffix.engine.RealBitmapDecoder
 import com.afollestad.photoaffix.engine.RealPhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
 import com.afollestad.photoaffix.presenters.RealMainPresenter
@@ -32,6 +34,10 @@ abstract class AppBindModule {
   @Binds
   @Singleton
   abstract fun provideIoManager(ioManager: RealIoManager): IoManager
+
+  @Binds
+  @Singleton
+  abstract fun provideBitmapDecoder(bitmapDecoder: RealBitmapDecoder): BitmapDecoder
 
   @Binds
   @Singleton

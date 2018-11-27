@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.jetbrains.annotations.TestOnly
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -97,7 +98,8 @@ class RealAffixEngine @Inject constructor(
   @ScalePriority private val scalePriorityPref: Pref<Boolean>,
   @StackHorizontally private val stackHorizontallyPref: Pref<Boolean>,
   @BgFillColor private val bgFillColorPref: Pref<Int>,
-  private val ioManager: IoManager
+  private val ioManager: IoManager,
+  private val bitmapDecoder: BitmapDecoder
 ) : AffixEngine {
 
   private lateinit var engineOwner: EngineOwner
@@ -109,7 +111,7 @@ class RealAffixEngine @Inject constructor(
   ) {
     this.bitmapIterator = BitmapIterator(
         photos = photos,
-        ioManager = ioManager
+        bitmapDecoder = bitmapDecoder
     )
     this.engineOwner = engineOwner
 
@@ -576,5 +578,13 @@ class RealAffixEngine @Inject constructor(
       engineOwner.showContentLoading(false)
       engineOwner.launchViewer(uri)
     }
+  }
+
+  @TestOnly fun setEngineOwner(engineOwner: EngineOwner) {
+    this.engineOwner = engineOwner
+  }
+
+  @TestOnly fun setBitmapIterator(bitmapIterator: BitmapIterator) {
+    this.bitmapIterator = bitmapIterator
   }
 }

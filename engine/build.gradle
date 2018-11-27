@@ -23,6 +23,11 @@ dependencies {
 
   implementation 'com.google.dagger:dagger:' + versions.dagger
   kapt 'com.google.dagger:dagger-compiler:' + versions.dagger
+
+  testImplementation 'junit:junit:' + versions.junit
+  testImplementation 'org.mockito:mockito-core:' + versions.mockito
+  testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:' + versions.mockitoKotlin
+  testImplementation 'com.google.truth:truth:' + versions.truth
 }
 
 apply from: '../spotless.gradle'
