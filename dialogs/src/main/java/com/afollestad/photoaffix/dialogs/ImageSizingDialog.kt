@@ -54,14 +54,12 @@ class ImageSizingDialog : DialogFragment() {
       height: Int
     ) {
       val dialog = ImageSizingDialog()
-      val args = Bundle()
-      args.putInt("width", width)
-      args.putInt("height", height)
+      val args = Bundle().apply {
+        putInt("width", width)
+        putInt("height", height)
+      }
       dialog.arguments = args
-      dialog.show(
-          context.supportFragmentManager,
-          TAG
-      )
+      dialog.show(context.supportFragmentManager, TAG)
     }
   }
 
@@ -163,9 +161,7 @@ class ImageSizingDialog : DialogFragment() {
 
   override fun onAttach(context: Context?) {
     super.onAttach(context)
-    if (context is SizingCallback) {
-      callback = context
-    }
+    callback = context as? SizingCallback
   }
 
   private fun selectedFormat(): CompressFormat = with(dialog as MaterialDialog) {

@@ -48,6 +48,7 @@ import com.afollestad.photoaffix.dialogs.SpacingCallback
 import com.afollestad.photoaffix.engine.Photo
 import com.afollestad.photoaffix.engine.PhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
+import com.afollestad.photoaffix.utilities.showOrHide
 import com.afollestad.photoaffix.utilities.toast
 import com.afollestad.photoaffix.viewcomponents.ImageSpacingDialogShower
 import kotlinx.android.synthetic.main.activity_main.affixButton
@@ -148,8 +149,7 @@ class MainActivity : AppCompatActivity(),
   }
 
   override fun showContentLoading(loading: Boolean) = runOnUiThread {
-    content_loading_progress_frame.visibility =
-        if (loading) VISIBLE else GONE
+    content_loading_progress_frame.showOrHide(loading)
   }
 
   override fun launchViewer(uri: Uri) = runOnUiThread {
@@ -181,16 +181,17 @@ class MainActivity : AppCompatActivity(),
 
   override fun showErrorDialog(e: Exception) = runOnUiThread {
     e.printStackTrace()
+    val message = if (e is OutOfMemoryError) {
+      "Your device is low on RAM!"
+    } else {
+      e.message
+    }
     MaterialDialog(this).show {
       title(R.string.error)
-      message(text = e.message)
+      message(text = message)
       positiveButton(android.R.string.ok)
     }
   }
-
-  override fun showMemoryError() = showErrorDialog(
-      Exception("Your device is low on RAM!")
-  )
 
   override fun showImageSizingDialog(
     width: Int,
@@ -250,8 +251,9 @@ class MainActivity : AppCompatActivity(),
   override fun onBackPressed() {
     if (adapter.hasSelection()) {
       clearSelection()
-    } else
+    } else {
       super.onBackPressed()
+    }
   }
 
   override fun onActivityResult(
@@ -284,7 +286,7 @@ class MainActivity : AppCompatActivity(),
     GlobalScope.launch(Main) {
       val photos = withContext(IO) { photoLoader.queryPhotos() }
       adapter.setPhotos(photos)
-      empty.visibility = if (photos.isEmpty()) VISIBLE else GONE
+      empty.showOrHide(photos.isEmpty())
 
       if (photos.isNotEmpty() && autoSelectFirst) {
         adapter.shiftSelections()

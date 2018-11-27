@@ -43,13 +43,8 @@ class ImageSpacingDialog : DialogFragment() {
   companion object {
     private const val TAG = "[IMAGE_SIZING_DIALOG]"
 
-    fun show(context: AppCompatActivity) {
-      ImageSpacingDialog()
-          .show(
-              context.supportFragmentManager,
-              TAG
-          )
-    }
+    fun show(context: AppCompatActivity) =
+      ImageSpacingDialog().show(context.supportFragmentManager, TAG)
   }
 
   private var context: SpacingCallback? = null

@@ -66,8 +66,6 @@ interface EngineOwner {
 
   fun showErrorDialog(e: Exception)
 
-  fun showMemoryError()
-
   fun onDoneProcessing()
 
   fun launchViewer(uri: Uri)
@@ -137,18 +135,9 @@ class RealAffixEngine @Inject constructor(
     height: Int,
     format: CompressFormat,
     quality: Int
-  ) {
-    try {
-      performProcessing(scale, width, height, format, quality)
-    } catch (_: OutOfMemoryError) {
-      engineOwner.showMemoryError()
-      reset()
-    }
-  }
+  ) = performProcessing(scale, width, height, format, quality)
 
-  override fun reset() {
-    bitmapIterator.reset()
-  }
+  override fun reset() = bitmapIterator.reset()
 
   @VisibleForTesting fun calculateHorizontalWidthAndHeight(): Size {
     val spacingHorizontal = spacingHorizontalPref.get()
@@ -181,10 +170,6 @@ class RealAffixEngine @Inject constructor(
           minHeight = size.height
         }
       }
-    } catch (e: OutOfMemoryError) {
-      engineOwner.showMemoryError()
-      reset()
-      return Size(0, 0)
     } catch (e: Exception) {
       engineOwner.showErrorDialog(e)
       reset()
@@ -218,10 +203,6 @@ class RealAffixEngine @Inject constructor(
 
         totalWidth += w
       }
-    } catch (e: OutOfMemoryError) {
-      engineOwner.showMemoryError()
-      reset()
-      return Size(0, 0)
     } catch (e: Exception) {
       engineOwner.showErrorDialog(e)
       reset()
@@ -267,10 +248,6 @@ class RealAffixEngine @Inject constructor(
           minWidth = size.width
         }
       }
-    } catch (e: OutOfMemoryError) {
-      engineOwner.showMemoryError()
-      reset()
-      return Size(0, 0)
     } catch (e: Exception) {
       engineOwner.showErrorDialog(e)
       reset()
@@ -304,10 +281,6 @@ class RealAffixEngine @Inject constructor(
 
         totalHeight += h
       }
-    } catch (e: OutOfMemoryError) {
-      engineOwner.showMemoryError()
-      reset()
-      return Size(0, 0)
     } catch (e: Exception) {
       engineOwner.showErrorDialog(e)
       reset()
@@ -431,10 +404,6 @@ class RealAffixEngine @Inject constructor(
 
           currentX = dstRect.right
         }
-      } catch (e: OutOfMemoryError) {
-        engineOwner.showMemoryError()
-        reset()
-        return@launch
       } catch (e: Exception) {
         engineOwner.showErrorDialog(e)
         reset()
@@ -527,10 +496,6 @@ class RealAffixEngine @Inject constructor(
 
           currentY = dstRect.bottom
         }
-      } catch (e: OutOfMemoryError) {
-        engineOwner.showMemoryError()
-        reset()
-        return@launch
       } catch (e: Exception) {
         engineOwner.showErrorDialog(e)
         reset()

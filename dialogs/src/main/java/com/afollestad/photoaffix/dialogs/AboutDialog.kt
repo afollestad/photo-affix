@@ -19,10 +19,7 @@ class AboutDialog : DialogFragment() {
 
     fun show(context: AppCompatActivity) {
       val dialog = AboutDialog()
-      dialog.show(
-          context.supportFragmentManager,
-          TAG
-      )
+      dialog.show(context.supportFragmentManager, TAG)
     }
   }
 

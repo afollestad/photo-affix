@@ -8,12 +8,24 @@ package com.afollestad.photoaffix.utilities
 import android.app.Activity
 import android.content.ContextWrapper
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.AdapterView
 import android.widget.SeekBar
 import android.widget.Spinner
 import androidx.core.view.ViewCompat
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+
+fun View.show() {
+  visibility = VISIBLE
+}
+
+fun View.hide() {
+  visibility = GONE
+}
+
+fun View.showOrHide(show: Boolean) = if (show) show() else hide()
 
 fun SeekBar.onProgressChanged(cb: (Int) -> Unit) {
   setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
