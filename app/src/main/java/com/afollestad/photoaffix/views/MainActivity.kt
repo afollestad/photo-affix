@@ -9,6 +9,7 @@ import android.animation.ValueAnimator
 import android.animation.ValueAnimator.ofObject
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.Intent.ACTION_SEND_MULTIPLE
 import android.content.Intent.EXTRA_STREAM
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -266,12 +267,12 @@ class MainActivity : AppCompatActivity(),
   }
 
   private fun processIntent(intent: Intent?) {
-    if (intent != null && Intent.ACTION_SEND_MULTIPLE == intent.action) {
+    if (intent != null && ACTION_SEND_MULTIPLE == intent.action) {
       val uris = intent.getParcelableArrayListExtra<Uri>(EXTRA_STREAM)
       if (uris != null && uris.size > 1) {
-        mainPresenter.onClickAffix(
-            uris.map { Photo(0, it.toString(), 0) }
-        )
+        val photos = uris.map { Photo(0, it.toString(), 0) }
+        mainPresenter.attachView(this)
+        mainPresenter.onClickAffix(photos)
       } else {
         toast(R.string.need_two_or_more)
         finish()
