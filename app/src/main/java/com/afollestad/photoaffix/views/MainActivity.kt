@@ -179,7 +179,7 @@ class MainActivity : AppCompatActivity(),
     requestedOrientation = SCREEN_ORIENTATION_UNSPECIFIED
   }
 
-  override fun showErrorDialog(e: Exception) {
+  override fun showErrorDialog(e: Exception) = runOnUiThread {
     e.printStackTrace()
     MaterialDialog(this).show {
       title(R.string.error)

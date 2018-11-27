@@ -15,8 +15,10 @@ import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.closeQuietely
 import com.afollestad.photoaffix.views.MainView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.FileOutputStream
 import java.io.InputStream
 import javax.inject.Inject
@@ -74,8 +76,10 @@ class RealMainPresenter @Inject constructor(
         input!!.copyTo(output)
         output.close()
 
-        scanFile(app, arrayOf(targetFile.toString()), null) { _, _ ->
-          mainView?.refresh()
+        withContext(Main) {
+          scanFile(app, arrayOf(targetFile.toString()), null) { _, _ ->
+            mainView?.refresh()
+          }
         }
       } catch (e: Exception) {
         mainView?.showErrorDialog(e)

@@ -9,11 +9,10 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import androidx.annotation.ColorInt
 import android.util.AttributeSet
-import android.util.TypedValue.COMPLEX_UNIT_DIP
-import android.util.TypedValue.applyDimension
 import android.view.View
+import androidx.annotation.ColorInt
+import com.afollestad.photoaffix.utilities.dp
 
 /** @author Aidan Follestad (afollestad) */
 class LineView(
@@ -36,9 +35,7 @@ class LineView(
   }
 
   fun setWidth(width: Int) {
-    val newWidth = applyDimension(COMPLEX_UNIT_DIP, width.toFloat(), resources.displayMetrics)
-        .toInt()
-    paint.strokeWidth = newWidth.toFloat()
+    paint.strokeWidth = width.dp(context)
     invalidate()
   }
 
