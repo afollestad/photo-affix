@@ -3,10 +3,10 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.di
+package com.afollestad.photoaffix.engine
 
-import com.afollestad.photoaffix.engine.AffixEngine
-import com.afollestad.photoaffix.engine.RealAffixEngine
+import com.afollestad.photoaffix.engine.bitmaps.BitmapManipulator
+import com.afollestad.photoaffix.engine.bitmaps.RealBitmapManipulator
 import com.afollestad.photoaffix.engine.subengines.DimensionsEngine
 import com.afollestad.photoaffix.engine.subengines.RealDimensionsEngine
 import com.afollestad.photoaffix.engine.subengines.RealStitchEngine
@@ -17,7 +17,7 @@ import javax.inject.Singleton
 
 /** @author Aidan Follestad (afollestad) */
 @Module
-abstract class AppEngineModule {
+abstract class EnginesModule {
 
   @Binds
   @Singleton
@@ -30,4 +30,8 @@ abstract class AppEngineModule {
   @Binds
   @Singleton
   abstract fun provideAffixEngine(affixEngine: RealAffixEngine): AffixEngine
+
+  @Binds
+  @Singleton
+  abstract fun provideBitmapManipuilator(bitmapManipulator: RealBitmapManipulator): BitmapManipulator
 }

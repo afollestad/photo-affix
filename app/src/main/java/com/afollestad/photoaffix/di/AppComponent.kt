@@ -7,7 +7,9 @@ package com.afollestad.photoaffix.di
 
 import android.app.Application
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
+import com.afollestad.photoaffix.engine.EnginesModule
 import com.afollestad.photoaffix.prefs.PrefsModule
+import com.afollestad.photoaffix.utilities.UtilityModule
 import com.afollestad.photoaffix.viewcomponents.SettingsLayout
 import com.afollestad.photoaffix.views.MainActivity
 import dagger.BindsInstance
@@ -20,8 +22,8 @@ import javax.inject.Singleton
     modules = [
       PrefsModule::class,
       AppBindModule::class,
-      AppUtilityModule::class,
-      AppEngineModule::class,
+      UtilityModule::class,
+      EnginesModule::class,
       AppProvideModule::class
     ]
 )
