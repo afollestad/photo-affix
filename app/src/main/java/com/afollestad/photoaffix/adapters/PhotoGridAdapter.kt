@@ -41,7 +41,7 @@ class PhotoViewHolder(
     }
 
     if (itemView.image != null) {
-      itemView.setOnLongClickListener { v ->
+      itemView.setOnLongClickListener {
         adapter.toggleSelected(adapterPosition)
         adapter.dragListener?.setIsActive(true, adapterPosition)
         false

@@ -12,15 +12,14 @@ import com.afollestad.photoaffix.engine.photos.Photo
 import com.afollestad.photoaffix.engine.photos.PhotoLoader
 import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.MediaScanner
-import com.afollestad.photoaffix.utilities.ext.closeQuietely
 import com.afollestad.photoaffix.utilities.qualifiers.IoDispatcher
 import com.afollestad.photoaffix.utilities.qualifiers.MainDispatcher
 import com.afollestad.photoaffix.views.MainView
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.FileOutputStream
-import java.io.InputStream
+import org.jetbrains.annotations.TestOnly
+import java.io.File
 import java.lang.System.currentTimeMillis
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
@@ -83,9 +82,15 @@ class RealMainPresenter @Inject constructor(
     }
 
     lastLoadTimestamp = currentTimeMillis()
-    GlobalScope.launch(mainContext) {
-      val photos = withContext(ioContext) { photoLoader.queryPhotos() }
-      mainView?.setPhotos(photos)
+    GlobalScope.launch(ioContext) {
+      try {
+        val photos = photoLoader.queryPhotos()
+        if (photos.isNotEmpty()) {
+          withContext(mainContext) { mainView?.setPhotos(photos) }
+        }
+      } catch (e: Exception) {
+        withContext(mainContext) { mainView?.showErrorDialog(e) }
+      }
     }
   }
 
@@ -94,33 +99,25 @@ class RealMainPresenter @Inject constructor(
   }
 
   override fun onClickAffix(photos: List<Photo>) {
-    mainView?.lockOrientation() ?: return
-    affixEngine.process(photos, mainView!!)
+    mainView?.let {
+      it.lockOrientation()
+      affixEngine.process(photos, it)
+    }
   }
 
   override fun onExternalPhotoSelected(uri: Uri) {
     GlobalScope.launch(ioContext) {
-      var input: InputStream? = null
-      var output: FileOutputStream? = null
-      val targetFile = ioManager.makeTempFile(".png")
-
+      var targetFile: File? = null
       try {
-        input = ioManager.openStream(uri)
-        output = FileOutputStream(targetFile)
-        input!!.copyTo(output)
-        output.close()
+        targetFile = ioManager.makeTempFile(".png")
+        ioManager.copyUriToFile(uri, targetFile)
 
-        withContext(mainContext) {
-          mediaScanner.scan(targetFile.toString()) { _, _ ->
-            mainView?.refresh(force = true)
-          }
+        mediaScanner.scan(targetFile.toString()) { _, _ ->
+          withContext(mainContext) { mainView?.refresh(force = true) }
         }
       } catch (e: Exception) {
-        targetFile.delete()
-        mainView?.showErrorDialog(e)
-      } finally {
-        input.closeQuietely()
-        output.closeQuietely()
+        targetFile?.delete()
+        withContext(mainContext) { mainView?.showErrorDialog(e) }
       }
     }
   }
@@ -152,4 +149,6 @@ class RealMainPresenter @Inject constructor(
   override fun detachView() {
     this.mainView = null
   }
+
+  @TestOnly fun getLastLoadTimestamp() = this.lastLoadTimestamp
 }

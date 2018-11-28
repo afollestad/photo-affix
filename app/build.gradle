@@ -40,6 +40,11 @@ dependencies {
   implementation 'com.afollestad.material-dialogs:color:' + versions.materialDialogs
   implementation 'com.afollestad:drag-select-recyclerview:' + versions.dragSelectRv
   implementation 'com.afollestad:assent:' + versions.assent
+
+  testImplementation 'junit:junit:' + versions.junit
+  testImplementation 'org.mockito:mockito-core:' + versions.mockito
+  testImplementation 'com.nhaarman.mockitokotlin2:mockito-kotlin:' + versions.mockitoKotlin
+  testImplementation 'com.google.truth:truth:' + versions.truth
 }
 
 apply from: '../spotless.gradle'

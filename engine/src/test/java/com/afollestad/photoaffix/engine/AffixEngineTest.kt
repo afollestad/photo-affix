@@ -134,9 +134,6 @@ class AffixEngineTest {
 
   @Test fun commitResult_error() = runBlocking {
     // Override since we don't call engine.process()
-    whenever(engineOwner.showErrorDialog(any())).doAnswer {
-      // Do nothing
-    }
     engine.setEngineOwner(engineOwner)
 
     val cacheFile = mock<File>()
@@ -145,6 +142,13 @@ class AffixEngineTest {
     val error = Exception("Oh no!")
     whenever(bitmapManipulator.encodeBitmap(any(), any(), any(), any()))
         .doAnswer { throw error }
+
+    whenever(engineOwner.showErrorDialog(any())).doAnswer { inv ->
+      val arg = inv.getArgument<Exception>(0)
+      if (arg != error) {
+        throw arg
+      }
+    }
 
     val bitmap = mock<Bitmap>()
     val processingResult = ProcessingResult(
