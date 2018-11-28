@@ -11,8 +11,11 @@ import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
 import com.afollestad.photoaffix.engine.AffixEngine
 import com.afollestad.photoaffix.engine.photos.Photo
+import com.afollestad.photoaffix.engine.photos.PhotoLoader
 import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.ext.closeQuietely
+import com.afollestad.photoaffix.utilities.qualifiers.IoDispatcher
+import com.afollestad.photoaffix.utilities.qualifiers.MainDispatcher
 import com.afollestad.photoaffix.views.MainView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Main
@@ -21,12 +24,16 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.lang.System.currentTimeMillis
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
 /** @author Aidan Follestad (afollestad) */
 interface MainPresenter {
 
   fun attachView(mainView: MainView)
+
+  fun loadPhotos()
 
   fun onClickAffix(photos: List<Photo>)
 
@@ -50,13 +57,37 @@ interface MainPresenter {
 class RealMainPresenter @Inject constructor(
   private val app: Application,
   private val affixEngine: AffixEngine,
-  private val ioManager: IoManager
+  private val ioManager: IoManager,
+  private val photoLoader: PhotoLoader,
+  @MainDispatcher private val mainContext: CoroutineContext,
+  @IoDispatcher private val ioContext: CoroutineContext
 ) : MainPresenter {
 
+  companion object {
+    const val LOAD_PHOTOS_DEBOUNCE_MS = 5000
+  }
+
   private var mainView: MainView? = null
+  private var lastLoadTimestamp: Long = -1
 
   override fun attachView(mainView: MainView) {
     this.mainView = mainView
+  }
+
+  override fun loadPhotos() {
+    if (lastLoadTimestamp > -1) {
+      val threshold = lastLoadTimestamp + LOAD_PHOTOS_DEBOUNCE_MS
+      if (currentTimeMillis() < threshold) {
+        // Not enough time has passed
+        return
+      }
+    }
+
+    lastLoadTimestamp = currentTimeMillis()
+    GlobalScope.launch(mainContext) {
+      val photos = withContext(ioContext) { photoLoader.queryPhotos() }
+      mainView?.setPhotos(photos)
+    }
   }
 
   override fun onClickAffix(photos: List<Photo>) {

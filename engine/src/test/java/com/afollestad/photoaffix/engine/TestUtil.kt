@@ -16,6 +16,10 @@ import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.whenever
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlin.coroutines.CoroutineContext
 
 val testUriParser: UriParser = { data ->
   val uri = mock<Uri> {
@@ -40,13 +44,15 @@ fun testDpConverter() = object : DpConverter {
   override fun toDp(pixels: Int) = pixels.toFloat()
 }
 
-fun testMediaScanner(): MediaScanner {
+suspend fun testMediaScanner(cbContext: CoroutineContext = Dispatchers.Default): MediaScanner {
   val mediaScanner = mock<MediaScanner>()
   val fakeUri = mock<Uri>()
   doAnswer { inv ->
     val path = inv.getArgument<String>(0)
     val callback = inv.getArgument<ScanResult?>(1)
-    callback?.invoke(path, fakeUri)
+    GlobalScope.launch(cbContext) {
+      callback?.invoke(path, fakeUri)
+    }
     null
   }.whenever(mediaScanner)
       .scan(any(), any())

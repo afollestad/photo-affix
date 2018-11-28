@@ -35,7 +35,7 @@ class AffixEngineTest {
       Photo(0, "file://idk/2", 0, testUriParser)
   )
 
-  private val mediaScanner = testMediaScanner()
+  private val mediaScanner = runBlocking { testMediaScanner() }
 
   private val ioManager = mock<IoManager>()
   private val bitmapManipulator = mock<BitmapManipulator>()

@@ -46,7 +46,6 @@ import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
 import com.afollestad.photoaffix.dialogs.SizingCallback
 import com.afollestad.photoaffix.dialogs.SpacingCallback
 import com.afollestad.photoaffix.engine.photos.Photo
-import com.afollestad.photoaffix.engine.photos.PhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
 import com.afollestad.photoaffix.utilities.ext.showOrHide
 import com.afollestad.photoaffix.utilities.ext.toast
@@ -58,11 +57,6 @@ import kotlinx.android.synthetic.main.activity_main.empty
 import kotlinx.android.synthetic.main.activity_main.expandButton
 import kotlinx.android.synthetic.main.activity_main.list
 import kotlinx.android.synthetic.main.activity_main.settingsLayout
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 /** @author Aidan Follestad (afollestad) */
@@ -76,7 +70,6 @@ class MainActivity : AppCompatActivity(),
     private const val BROWSE_RC = 21
   }
 
-  @Inject lateinit var photoLoader: PhotoLoader
   @Inject lateinit var mainPresenter: MainPresenter
 
   private lateinit var adapter: PhotoGridAdapter
@@ -223,6 +216,13 @@ class MainActivity : AppCompatActivity(),
     refresh()
   }
 
+  override fun onResume() {
+    super.onResume()
+    if (!adapter.hasPhotos()) {
+      refresh()
+    }
+  }
+
   override fun onStop() {
     mainPresenter.detachView()
     super.onStop()
@@ -282,16 +282,17 @@ class MainActivity : AppCompatActivity(),
   }
 
   override fun refresh() = runWithPermissions(READ_EXTERNAL_STORAGE) {
-    GlobalScope.launch(Main) {
-      val photos = withContext(IO) { photoLoader.queryPhotos() }
-      adapter.setPhotos(photos)
-      empty.showOrHide(photos.isEmpty())
+    mainPresenter.loadPhotos()
+  }
 
-      if (photos.isNotEmpty() && autoSelectFirst) {
-        adapter.shiftSelections()
-        adapter.setSelected(1, true)
-        autoSelectFirst = false
-      }
+  override fun setPhotos(photos: List<Photo>) {
+    adapter.setPhotos(photos)
+    empty.showOrHide(photos.isEmpty())
+
+    if (photos.isNotEmpty() && autoSelectFirst) {
+      adapter.shiftSelections()
+      adapter.setSelected(1, true)
+      autoSelectFirst = false
     }
   }
 

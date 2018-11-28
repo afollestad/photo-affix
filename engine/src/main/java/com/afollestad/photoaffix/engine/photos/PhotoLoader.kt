@@ -12,14 +12,18 @@ import javax.inject.Inject
 interface PhotoLoader {
 
   suspend fun queryPhotos(): List<Photo>
+
+  fun isQuerying(): Boolean
 }
 
 class RealPhotoLoader @Inject constructor(app: Application) : PhotoLoader {
 
+  private var isQuerying = false
   private val contentResolver = app.contentResolver
   private val photosUri = "content://media/external/images/media".toUri()
 
   override suspend fun queryPhotos(): List<Photo> {
+    isQuerying = true
     val cursor = contentResolver.query(
         photosUri, // uri
         null, // projection
@@ -34,7 +38,10 @@ class RealPhotoLoader @Inject constructor(app: Application) : PhotoLoader {
             list.add(Photo.pull(it))
           } while (cursor.moveToNext())
         }
+        isQuerying = false
       }
     }
   }
+
+  override fun isQuerying() = isQuerying
 }

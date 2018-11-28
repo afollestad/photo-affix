@@ -178,4 +178,6 @@ class PhotoGridAdapter(val context: MainActivity) : RecyclerView.Adapter<PhotoVi
   }
 
   override fun getItemCount() = photos.size + 1
+
+  fun hasPhotos() = photos.isNotEmpty()
 }
