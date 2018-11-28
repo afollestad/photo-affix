@@ -19,6 +19,8 @@ dependencies {
   api 'com.github.bumptech.glide:glide:' + versions.glide
 
   implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:' + versions.kotlin
+  api 'org.jetbrains.kotlinx:kotlinx-coroutines-core:' + versions.coroutines
+  api 'org.jetbrains.kotlinx:kotlinx-coroutines-android:' + versions.coroutines
 
   implementation 'com.google.dagger:dagger:' + versions.dagger
   kapt 'com.google.dagger:dagger-compiler:' + versions.dagger

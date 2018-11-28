@@ -8,13 +8,17 @@ package com.afollestad.photoaffix.utilities
 import android.app.Application
 import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
+import com.afollestad.photoaffix.utilities.qualifiers.MainDispatcher
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
-typealias ScanResult = (path: String, uri: Uri) -> Unit
+typealias ScanResult = suspend (path: String, uri: Uri) -> Unit
 
 interface MediaScanner {
 
-  fun scan(
+  suspend fun scan(
     path: String,
     cb: ScanResult? = null
   )
@@ -22,13 +26,16 @@ interface MediaScanner {
 
 /** @author Aidan Follestad (afollestad) */
 class RealMediaScanner @Inject constructor(
-  private val app: Application
+  private val app: Application,
+  @MainDispatcher private val mainContext: CoroutineContext
 ) : MediaScanner {
 
-  override fun scan(
+  override suspend fun scan(
     path: String,
     cb: ScanResult?
   ) = scanFile(app, arrayOf(path), null) { resultPath, uri ->
-    cb?.invoke(resultPath, uri)
+    GlobalScope.launch(mainContext) {
+      cb?.invoke(resultPath, uri)
+    }
   }
 }

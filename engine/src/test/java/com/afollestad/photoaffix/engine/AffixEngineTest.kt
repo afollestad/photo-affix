@@ -170,7 +170,7 @@ class AffixEngineTest {
 
   // Done
 
-  @Test fun done() {
+  @Test fun done() = runBlocking {
     engine.setEngineOwner(engineOwner)
 
     val path = "file://idk/hello.jpg"

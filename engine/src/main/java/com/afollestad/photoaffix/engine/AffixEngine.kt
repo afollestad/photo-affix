@@ -102,10 +102,8 @@ class RealAffixEngine @Inject constructor(
           quality = quality
       )
 
-      val outputFile = commitResult(result)
-      withContext(mainContext) {
-        outputFile?.let(this@RealAffixEngine::done)
-      }
+      val outputFile = commitResult(result) ?: return@launch
+      withContext(mainContext) { done(outputFile) }
     }
   }
 
@@ -140,7 +138,7 @@ class RealAffixEngine @Inject constructor(
     return cacheFile
   }
 
-  @VisibleForTesting fun done(file: File) {
+  @VisibleForTesting suspend fun done(file: File) {
     // Add the affixed file to the media store so gallery apps can see it
     mediaScanner.scan(file.toString()) { _, uri ->
       engineOwner.onDoneProcessing()
