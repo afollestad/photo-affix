@@ -10,7 +10,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
-import com.afollestad.photoaffix.utilities.colorAttr
+import com.afollestad.photoaffix.utilities.ext.colorAttr
 
 /** @author Aidan Follestad (afollestad) */
 class CircleView(

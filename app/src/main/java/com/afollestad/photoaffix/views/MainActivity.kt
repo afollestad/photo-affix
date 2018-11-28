@@ -48,8 +48,8 @@ import com.afollestad.photoaffix.dialogs.SpacingCallback
 import com.afollestad.photoaffix.engine.Photo
 import com.afollestad.photoaffix.engine.PhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
-import com.afollestad.photoaffix.utilities.showOrHide
-import com.afollestad.photoaffix.utilities.toast
+import com.afollestad.photoaffix.utilities.ext.showOrHide
+import com.afollestad.photoaffix.utilities.ext.toast
 import com.afollestad.photoaffix.viewcomponents.ImageSpacingDialogShower
 import kotlinx.android.synthetic.main.activity_main.affixButton
 import kotlinx.android.synthetic.main.activity_main.appbar_toolbar
@@ -140,7 +140,7 @@ class MainActivity : AppCompatActivity(),
     list.addOnItemTouchListener(dragListener)
   }
 
-  override fun clearSelection() = runOnUiThread {
+  override fun clearSelection() {
     mainPresenter.clearPhotos()
     adapter.clearSelected()
     appbar_toolbar.menu
@@ -148,11 +148,10 @@ class MainActivity : AppCompatActivity(),
         .isVisible = false
   }
 
-  override fun showContentLoading(loading: Boolean) = runOnUiThread {
+  override fun showContentLoading(loading: Boolean) =
     content_loading_progress_frame.showOrHide(loading)
-  }
 
-  override fun launchViewer(uri: Uri) = runOnUiThread {
+  override fun launchViewer(uri: Uri) {
     try {
       startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "image/*"))
     } catch (_: ActivityNotFoundException) {
@@ -179,7 +178,7 @@ class MainActivity : AppCompatActivity(),
     requestedOrientation = SCREEN_ORIENTATION_UNSPECIFIED
   }
 
-  override fun showErrorDialog(e: Exception) = runOnUiThread {
+  override fun showErrorDialog(e: Exception) {
     e.printStackTrace()
     val message = if (e is OutOfMemoryError) {
       "Your device is low on RAM!"

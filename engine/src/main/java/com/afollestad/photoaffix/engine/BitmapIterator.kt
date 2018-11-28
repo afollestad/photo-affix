@@ -12,7 +12,7 @@ import org.jetbrains.annotations.TestOnly
 /** @author Aidan Follestad (afollestad) */
 class BitmapIterator(
   private val photos: List<Photo>,
-  private val bitmapDecoder: BitmapDecoder
+  private val bitmapManipulator: BitmapManipulator
 ) : Iterator<Options> {
 
   private var traverseIndex: Int = -1
@@ -24,26 +24,31 @@ class BitmapIterator(
 
   override fun next(): Options {
     this.currentOptions = null
-    if (++traverseIndex > photos.size - 1) {
-      throw IllegalStateException("No more options.")
-    }
+    check(++traverseIndex < photos.size) { "No more options." }
 
     val nextPhoto = photos[traverseIndex]
-    val options = bitmapDecoder.createOptions(true)
+    val options = bitmapManipulator.createOptions(
+        onlyGetBounds = true
+    )
+    bitmapManipulator.decodePhoto(nextPhoto, options)
 
-    bitmapDecoder.decodePhoto(nextPhoto, options)
+    check(options.outWidth != 0 && options.outHeight != 0) {
+      "decodePhoto(Photo, Options) should retrieve non-zero Bitmap dimensions here."
+    }
+
     // Options' properties have now been populated
     this.currentOptions = options
-
     return options
   }
 
-  fun currentBitmap(): Bitmap? {
-    if (this.currentOptions == null) {
-      throw IllegalStateException("Must call next() first.")
-    }
-    val nextPhoto = photos[traverseIndex]
-    return bitmapDecoder.decodePhoto(nextPhoto, this.currentOptions!!)
+  fun currentBitmap(): Bitmap {
+    requireNotNull(this.currentOptions) { "Must call next() first." }
+    val currentPhoto = photos[traverseIndex]
+    return bitmapManipulator.decodePhoto(
+        currentPhoto,
+        this.currentOptions!!.apply {
+          inJustDecodeBounds = false
+        })!!
   }
 
   fun size() = photos.size

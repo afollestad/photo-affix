@@ -10,7 +10,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatImageView
-import com.afollestad.photoaffix.utilities.colorAttr
+import com.afollestad.photoaffix.utilities.ext.colorAttr
 
 /** @author Aidan Follestad (afollestad) */
 class SquareImageView(

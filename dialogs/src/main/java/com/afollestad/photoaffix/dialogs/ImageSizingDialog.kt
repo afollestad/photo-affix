@@ -19,9 +19,9 @@ import androidx.fragment.app.DialogFragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
-import com.afollestad.photoaffix.utilities.onItemSelected
-import com.afollestad.photoaffix.utilities.onProgressChanged
-import com.afollestad.photoaffix.utilities.round
+import com.afollestad.photoaffix.utilities.ext.onItemSelected
+import com.afollestad.photoaffix.utilities.ext.onProgressChanged
+import com.afollestad.photoaffix.utilities.ext.round
 import kotlinx.android.synthetic.main.dialog_imagesizing.view.formatSpinner
 import kotlinx.android.synthetic.main.dialog_imagesizing.view.inputHeight
 import kotlinx.android.synthetic.main.dialog_imagesizing.view.inputScaleLabel

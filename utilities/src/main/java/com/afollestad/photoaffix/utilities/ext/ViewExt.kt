@@ -3,7 +3,7 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.utilities
+package com.afollestad.photoaffix.utilities.ext
 
 import android.app.Activity
 import android.content.ContextWrapper
@@ -14,6 +14,7 @@ import android.widget.AdapterView
 import android.widget.SeekBar
 import android.widget.Spinner
 import androidx.core.view.ViewCompat
+import com.afollestad.photoaffix.utilities.R
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 
@@ -87,7 +88,9 @@ fun Disposable.unsubscribeOnDetach(view: View): Disposable {
 }
 
 private fun View.ensureAttachedDisposables(): AttachedDisposables {
-  var attachedDisposables = getTag(R.id.tag_attached_disposables) as AttachedDisposables?
+  var attachedDisposables = getTag(
+      R.id.tag_attached_disposables
+  ) as AttachedDisposables?
 
   if (attachedDisposables == null) {
     attachedDisposables = AttachedDisposables()

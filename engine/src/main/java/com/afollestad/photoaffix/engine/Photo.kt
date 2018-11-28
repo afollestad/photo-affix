@@ -7,7 +7,7 @@ package com.afollestad.photoaffix.engine
 
 import android.database.Cursor
 import android.net.Uri
-import com.afollestad.photoaffix.utilities.toUri
+import com.afollestad.photoaffix.utilities.ext.toUri
 import java.io.Serializable
 
 typealias UriParser = (String) -> Uri
@@ -40,6 +40,5 @@ data class Photo(
     }
   }
 
-  val uri: Uri
-    get() = uriParser.invoke(data)
+  val uri = uriParser.invoke(data)
 }

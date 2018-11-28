@@ -18,8 +18,8 @@ import com.afollestad.photoaffix.prefs.BgFillColor
 import com.afollestad.photoaffix.prefs.ImageSpacingHorizontal
 import com.afollestad.photoaffix.prefs.ImageSpacingVertical
 import com.afollestad.photoaffix.utilities.Injector
-import com.afollestad.photoaffix.utilities.colorAttr
-import com.afollestad.photoaffix.utilities.onProgressChanged
+import com.afollestad.photoaffix.utilities.ext.colorAttr
+import com.afollestad.photoaffix.utilities.ext.onProgressChanged
 import com.afollestad.rxkprefs.Pref
 import kotlinx.android.synthetic.main.dialog_imagespacing.view.horizontalLine
 import kotlinx.android.synthetic.main.dialog_imagespacing.view.spacingHorizontalLabel

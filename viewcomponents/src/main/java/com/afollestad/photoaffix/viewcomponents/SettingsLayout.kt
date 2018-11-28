@@ -19,8 +19,8 @@ import com.afollestad.photoaffix.prefs.ImageSpacingVertical
 import com.afollestad.photoaffix.prefs.ScalePriority
 import com.afollestad.photoaffix.prefs.StackHorizontally
 import com.afollestad.photoaffix.utilities.Injector
-import com.afollestad.photoaffix.utilities.getActivity
-import com.afollestad.photoaffix.utilities.unsubscribeOnDetach
+import com.afollestad.photoaffix.utilities.ext.getActivity
+import com.afollestad.photoaffix.utilities.ext.unsubscribeOnDetach
 import com.afollestad.rxkprefs.Pref
 import com.jakewharton.rxbinding3.widget.checkedChanges
 import kotlinx.android.synthetic.main.settings_layout.view.bgFillColorCircle

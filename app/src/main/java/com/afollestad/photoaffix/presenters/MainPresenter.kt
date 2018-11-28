@@ -12,7 +12,7 @@ import android.net.Uri
 import com.afollestad.photoaffix.engine.AffixEngine
 import com.afollestad.photoaffix.engine.Photo
 import com.afollestad.photoaffix.utilities.IoManager
-import com.afollestad.photoaffix.utilities.closeQuietely
+import com.afollestad.photoaffix.utilities.ext.closeQuietely
 import com.afollestad.photoaffix.views.MainView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Dispatchers.Main

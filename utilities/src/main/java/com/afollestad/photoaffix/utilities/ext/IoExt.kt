@@ -3,7 +3,7 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.utilities
+package com.afollestad.photoaffix.utilities.ext
 
 import java.io.Closeable
 

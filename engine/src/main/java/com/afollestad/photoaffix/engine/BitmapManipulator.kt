@@ -6,16 +6,20 @@
 package com.afollestad.photoaffix.engine
 
 import android.graphics.Bitmap
+import android.graphics.Bitmap.CompressFormat
+import android.graphics.Bitmap.Config.ARGB_8888
 import android.graphics.BitmapFactory.Options
 import android.graphics.BitmapFactory.decodeStream
 import android.net.Uri
 import com.afollestad.photoaffix.utilities.IoManager
-import com.afollestad.photoaffix.utilities.closeQuietely
+import com.afollestad.photoaffix.utilities.ext.closeQuietely
+import java.io.File
+import java.io.FileOutputStream
 import java.io.InputStream
 import javax.inject.Inject
 
 /** @author Aidan Follestad (afollestad) */
-interface BitmapDecoder {
+interface BitmapManipulator {
 
   fun decodePhoto(
     photo: Photo,
@@ -28,11 +32,23 @@ interface BitmapDecoder {
   ): Bitmap?
 
   fun createOptions(onlyGetBounds: Boolean = true): Options
+
+  fun createEmptyBitmap(
+    width: Int,
+    height: Int
+  ): Bitmap
+
+  fun encodeBitmap(
+    bitmap: Bitmap,
+    format: CompressFormat,
+    quality: Int,
+    file: File
+  )
 }
 
-class RealBitmapDecoder @Inject constructor(
+class RealBitmapManipulator @Inject constructor(
   private val ioManager: IoManager
-) : BitmapDecoder {
+) : BitmapManipulator {
 
   override fun decodePhoto(
     photo: Photo,
@@ -52,10 +68,28 @@ class RealBitmapDecoder @Inject constructor(
     }
   }
 
-  override fun createOptions(onlyGetBounds: Boolean): Options {
-    return Options()
-        .apply {
-          inJustDecodeBounds = onlyGetBounds
-        }
+  override fun createOptions(onlyGetBounds: Boolean) = Options()
+      .apply {
+        inJustDecodeBounds = onlyGetBounds
+      }
+
+  override fun createEmptyBitmap(
+    width: Int,
+    height: Int
+  ): Bitmap = Bitmap.createBitmap(width, height, ARGB_8888)
+
+  override fun encodeBitmap(
+    bitmap: Bitmap,
+    format: CompressFormat,
+    quality: Int,
+    file: File
+  ) {
+    var os: FileOutputStream? = null
+    try {
+      os = FileOutputStream(file)
+      bitmap.compress(format, quality, os)
+    } finally {
+      os.closeQuietely()
+    }
   }
 }

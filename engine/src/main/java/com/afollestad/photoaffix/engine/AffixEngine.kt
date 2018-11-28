@@ -8,15 +8,13 @@ package com.afollestad.photoaffix.engine
 import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.Bitmap.CompressFormat
-import android.graphics.Bitmap.Config.ARGB_8888
 import android.graphics.Bitmap.DENSITY_NONE
-import android.graphics.BitmapFactory.Options
 import android.graphics.Canvas
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Paint
 import android.graphics.Rect
-import android.media.MediaScannerConnection.scanFile
-import android.net.Uri
+import android.util.TypedValue
+import android.util.TypedValue.applyDimension
 import androidx.annotation.VisibleForTesting
 import com.afollestad.photoaffix.prefs.BgFillColor
 import com.afollestad.photoaffix.prefs.ImageSpacingHorizontal
@@ -24,52 +22,24 @@ import com.afollestad.photoaffix.prefs.ImageSpacingVertical
 import com.afollestad.photoaffix.prefs.ScalePriority
 import com.afollestad.photoaffix.prefs.StackHorizontally
 import com.afollestad.photoaffix.utilities.IoManager
-import com.afollestad.photoaffix.utilities.closeQuietely
-import com.afollestad.photoaffix.utilities.dp
-import com.afollestad.photoaffix.utilities.extension
-import com.afollestad.photoaffix.utilities.safeRecycle
+import com.afollestad.photoaffix.utilities.MediaScanner
+import com.afollestad.photoaffix.utilities.ext.extension
+import com.afollestad.photoaffix.utilities.ext.safeRecycle
+import com.afollestad.photoaffix.utilities.ext.toRoundedInt
 import com.afollestad.rxkprefs.Pref
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Dispatchers.IO
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.annotations.TestOnly
 import java.io.File
-import java.io.FileOutputStream
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 
-data class Size(
-  val width: Int,
-  val height: Int
-) {
-
-  fun isZero() = width == 0 || height == 0
-
-  companion object {
-    fun fromOptions(options: Options): Size {
-      return Size(options.outWidth, options.outHeight)
-    }
-  }
-}
-
-/** @author Aidan Follestad (afollestad) */
-interface EngineOwner {
-
-  fun showImageSizingDialog(
-    width: Int,
-    height: Int
-  )
-
-  fun showContentLoading(loading: Boolean)
-
-  fun showErrorDialog(e: Exception)
-
-  fun onDoneProcessing()
-
-  fun launchViewer(uri: Uri)
-}
+internal typealias DpConverter = (Int) -> Float
+internal typealias CanvasCreator = (Bitmap) -> Canvas
+internal typealias PaintCreator = () -> Paint
+internal typealias RectCreator = (left: Int, top: Int, right: Int, bottom: Int) -> Rect
 
 /** @author Aidan Follestad (afollestad) */
 interface AffixEngine {
@@ -92,17 +62,39 @@ interface AffixEngine {
 
 class RealAffixEngine @Inject constructor(
   private val app: Application,
+  private val mediaScanner: MediaScanner,
   @ImageSpacingVertical private val spacingVerticalPref: Pref<Int>,
   @ImageSpacingHorizontal private val spacingHorizontalPref: Pref<Int>,
   @ScalePriority private val scalePriorityPref: Pref<Boolean>,
   @StackHorizontally private val stackHorizontallyPref: Pref<Boolean>,
   @BgFillColor private val bgFillColorPref: Pref<Int>,
   private val ioManager: IoManager,
-  private val bitmapDecoder: BitmapDecoder
+  private val bitmapManipulator: BitmapManipulator,
+  private val mainContext: CoroutineContext = Dispatchers.Main,
+  private val ioContext: CoroutineContext = Dispatchers.IO
 ) : AffixEngine {
 
   private lateinit var engineOwner: EngineOwner
   private lateinit var bitmapIterator: BitmapIterator
+
+  private var canvasCreator: CanvasCreator = { Canvas(it) }
+  private var dpConverter: DpConverter = {
+    applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        it.toFloat(),
+        app.resources.displayMetrics
+    )
+  }
+  private var paintCreator: PaintCreator = {
+    Paint().apply {
+      isFilterBitmap = true
+      isAntiAlias = true
+      isDither = true
+    }
+  }
+  private var rectCreator: RectCreator = { l, t, r, b ->
+    Rect(l, t, r, b)
+  }
 
   override fun process(
     photos: List<Photo>,
@@ -110,7 +102,7 @@ class RealAffixEngine @Inject constructor(
   ) {
     this.bitmapIterator = BitmapIterator(
         photos = photos,
-        bitmapDecoder = bitmapDecoder
+        bitmapManipulator = bitmapManipulator
     )
     this.engineOwner = engineOwner
 
@@ -135,17 +127,17 @@ class RealAffixEngine @Inject constructor(
     height: Int,
     format: CompressFormat,
     quality: Int
-  ) = performProcessing(scale, width, height, format, quality)
+  ) {
+    GlobalScope.launch(mainContext) {
+      performProcessing(scale, width, height, format, quality)
+    }
+  }
 
   override fun reset() = bitmapIterator.reset()
 
   @VisibleForTesting fun calculateHorizontalWidthAndHeight(): Size {
     val spacingHorizontal = spacingHorizontalPref.get()
-        .dp(app)
-        .toInt()
-    val spacingVertical = spacingVerticalPref.get()
-        .dp(app)
-        .toInt()
+        .dp()
 
     // The width of the resulting image will be the largest width of the selected images
     // The height of the resulting image will be the sum of all the selected images' heights
@@ -193,12 +185,12 @@ class RealAffixEngine @Inject constructor(
           // Scale to largest
           if (h < maxHeight) {
             h = maxHeight
-            w = (h.toFloat() * ratio).toInt()
+            w = (h.toFloat() * ratio).toRoundedInt()
           }
         } else if (h > minHeight) {
           // Scale to smallest
           h = minHeight
-          w = (h.toFloat() * ratio).toInt()
+          w = (h.toFloat() * ratio).toRoundedInt()
         }
 
         totalWidth += w
@@ -209,21 +201,15 @@ class RealAffixEngine @Inject constructor(
       return Size(0, 0)
     }
 
-    // Compensate for spacing
-    totalWidth += spacingHorizontal * (bitmapIterator.size() + 1)
-    minHeight += spacingVertical * 2
-    maxHeight += spacingVertical * 2
+    // Compensate for horizontal spacing
+    totalWidth += spacingHorizontal * (bitmapIterator.size() - 1)
 
     return Size(totalWidth, if (scalePriority) maxHeight else minHeight)
   }
 
   @VisibleForTesting fun calculateVerticalWidthAndHeight(): Size {
-    val spacingHorizontal = spacingHorizontalPref.get()
-        .dp(app)
-        .toInt()
     val spacingVertical = spacingVerticalPref.get()
-        .dp(app)
-        .toInt()
+        .dp()
 
     // The height of the resulting image will be the largest height of the selected images
     // The width of the resulting image will be the sum of all the selected images' widths
@@ -271,12 +257,12 @@ class RealAffixEngine @Inject constructor(
           // Scale to largest
           if (w < maxWidth) {
             w = maxWidth
-            h = (w.toFloat() * ratio).toInt()
+            h = (w.toFloat() * ratio).toRoundedInt()
           }
         } else if (w > minWidth) {
           // Scale to smallest
           w = minWidth
-          h = (w.toFloat() * ratio).toInt()
+          h = (w.toFloat() * ratio).toRoundedInt()
         }
 
         totalHeight += h
@@ -288,14 +274,12 @@ class RealAffixEngine @Inject constructor(
     }
 
     // Compensate for spacing
-    totalHeight += spacingVertical * (bitmapIterator.size() + 1)
-    minWidth += spacingHorizontal * 2
-    maxWidth += spacingHorizontal * 2
+    totalHeight += spacingVertical * (bitmapIterator.size() - 1)
 
     return Size(if (scalePriority) maxWidth else minWidth, totalHeight)
   }
 
-  @VisibleForTesting fun performProcessing(
+  private suspend fun performProcessing(
     selectedScale: Double,
     resultWidth: Int,
     resultHeight: Int,
@@ -322,25 +306,19 @@ class RealAffixEngine @Inject constructor(
     }
   }
 
-  @VisibleForTesting fun performHorizontalProcessing(
+  @VisibleForTesting suspend fun performHorizontalProcessing(
     selectedScale: Double,
     resultWidth: Int,
     resultHeight: Int,
     format: Bitmap.CompressFormat,
     quality: Int
   ) {
-    val result = Bitmap.createBitmap(resultWidth, resultHeight, ARGB_8888)
-    val spacingHorizontal = (spacingHorizontalPref.get().dp(app)
-        .toInt() * selectedScale).toInt()
-    val spacingVertical = (spacingVerticalPref.get().dp(app)
-        .toInt() * selectedScale).toInt()
+    val result = bitmapManipulator.createEmptyBitmap(resultWidth, resultHeight)
+    val spacingHorizontal = (spacingHorizontalPref.get().dp() *
+        selectedScale).toInt()
 
-    val resultCanvas = Canvas(result)
-    val paint = Paint().apply {
-      isFilterBitmap = true
-      isAntiAlias = true
-      isDither = true
-    }
+    val resultCanvas = canvasCreator(result)
+    val paint = paintCreator()
 
     val bgFillColor = bgFillColorPref.get()
     if (bgFillColor != TRANSPARENT) {
@@ -350,9 +328,8 @@ class RealAffixEngine @Inject constructor(
 
     engineOwner.showContentLoading(true)
 
-    GlobalScope.launch(IO) {
+    withContext(ioContext) {
       // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
-      val dstRect = Rect(0, 0, 10, 10)
       var processedCount = 0
       val scalingPriority = scalePriorityPref.get()
 
@@ -367,34 +344,36 @@ class RealAffixEngine @Inject constructor(
           val height = options.outHeight
           val ratio = width.toFloat() / height.toFloat()
 
-          var scaledWidth = (width * selectedScale).toInt()
-          var scaledHeight = (height * selectedScale).toInt()
+          var scaledWidth = (width * selectedScale).toRoundedInt()
+          var scaledHeight = (height * selectedScale).toRoundedInt()
 
           if (scalingPriority) {
             // Scale up to largest height, fill total height
             if (scaledHeight < resultHeight) {
               scaledHeight = resultHeight
-              scaledWidth = (scaledHeight.toFloat() * ratio).toInt()
+              scaledWidth = (scaledHeight.toFloat() * ratio).toRoundedInt()
             }
           } else {
             // Scale down to smallest height, fill total height
             if (scaledHeight > resultHeight) {
               scaledHeight = resultHeight
-              scaledWidth = (scaledHeight.toFloat() * ratio).toInt()
+              scaledWidth = (scaledHeight.toFloat() * ratio).toRoundedInt()
             }
           }
 
-          // Left is right of last image plus horizontal spacing
-          dstRect.left = currentX + spacingHorizontal
           // Right is left plus width of the current image
-          dstRect.right = dstRect.left + scaledWidth
-          dstRect.top = spacingVertical
-          dstRect.bottom = dstRect.top + scaledHeight
+          val right = currentX + scaledWidth
+          val dstRect = rectCreator(
+              currentX,
+              0,
+              right,
+              scaledHeight
+          )
 
           options.inJustDecodeBounds = false
           options.inSampleSize = (dstRect.bottom - dstRect.top) / options.outHeight
 
-          val bm = bitmapIterator.currentBitmap() ?: continue
+          val bm = bitmapIterator.currentBitmap()
           try {
             bm.density = DENSITY_NONE
             resultCanvas.drawBitmap(bm, null, dstRect, paint)
@@ -402,37 +381,36 @@ class RealAffixEngine @Inject constructor(
             bm.safeRecycle()
           }
 
-          currentX = dstRect.right
+          currentX = dstRect.right + spacingHorizontal
         }
       } catch (e: Exception) {
-        engineOwner.showErrorDialog(e)
+        withContext(mainContext) { engineOwner.showErrorDialog(e) }
         reset()
-        return@launch
+        return@withContext
       }
 
-      finishProcessing(processedCount, result, format, quality)
+      finishProcessing(
+          processedCount = processedCount,
+          result = result,
+          format = format,
+          quality = quality
+      )
     }
   }
 
-  @VisibleForTesting fun performVerticalProcessing(
+  @VisibleForTesting suspend fun performVerticalProcessing(
     selectedScale: Double,
     resultWidth: Int,
     resultHeight: Int,
     format: Bitmap.CompressFormat,
     quality: Int
   ) {
-    val result = Bitmap.createBitmap(resultWidth, resultHeight, ARGB_8888)
-    val spacingHorizontal = (spacingHorizontalPref.get().dp(app)
-        .toInt() * selectedScale).toInt()
-    val spacingVertical = (spacingVerticalPref.get().dp(app)
-        .toInt() * selectedScale).toInt()
+    val result = bitmapManipulator.createEmptyBitmap(resultWidth, resultHeight)
+    val spacingVertical = (spacingVerticalPref.get().dp() *
+        selectedScale).toInt()
 
-    val resultCanvas = Canvas(result)
-    val paint = Paint().apply {
-      isFilterBitmap = true
-      isAntiAlias = true
-      isDither = true
-    }
+    val resultCanvas = canvasCreator(result)
+    val paint = paintCreator()
 
     val bgFillColor = bgFillColorPref.get()
     if (bgFillColor != TRANSPARENT) {
@@ -442,9 +420,8 @@ class RealAffixEngine @Inject constructor(
 
     engineOwner.showContentLoading(true)
 
-    GlobalScope.launch(IO) {
+    withContext(ioContext) {
       // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
-      val dstRect = Rect(0, 0, 10, 10)
       var processedCount = 0
       val scalingPriority = scalePriorityPref.get()
 
@@ -459,34 +436,31 @@ class RealAffixEngine @Inject constructor(
           val height = options.outHeight
           val ratio = height.toFloat() / width.toFloat()
 
-          var scaledWidth = (width * selectedScale).toInt()
-          var scaledHeight = (height * selectedScale).toInt()
+          var scaledWidth = (width * selectedScale).toRoundedInt()
+          var scaledHeight = (height * selectedScale).toRoundedInt()
 
           if (scalingPriority) {
             // Scale up to largest width, fill total width
             if (scaledWidth < resultWidth) {
               scaledWidth = resultWidth
-              scaledHeight = (scaledWidth.toFloat() * ratio).toInt()
+              scaledHeight = (scaledWidth.toFloat() * ratio).toRoundedInt()
             }
           } else {
             // Scale down to smallest width, fill total width
             if (scaledWidth > resultWidth) {
               scaledWidth = resultWidth
-              scaledHeight = (scaledWidth.toFloat() * ratio).toInt()
+              scaledHeight = (scaledWidth.toFloat() * ratio).toRoundedInt()
             }
           }
 
-          // Top is bottom of the last image plus vertical spacing
-          dstRect.top = currentY + spacingVertical
           // Bottom is top plus height of the current image
-          dstRect.bottom = dstRect.top + scaledHeight
-          dstRect.left = spacingHorizontal
-          dstRect.right = dstRect.left + scaledWidth
+          val bottom = currentY + scaledHeight
+          val dstRect = rectCreator(0, currentY, scaledWidth, bottom)
 
           options.inJustDecodeBounds = false
           options.inSampleSize = (dstRect.right - dstRect.left) / options.outWidth
 
-          val bm = bitmapIterator.currentBitmap() ?: continue
+          val bm = bitmapIterator.currentBitmap()
           try {
             bm.density = DENSITY_NONE
             resultCanvas.drawBitmap(bm, null, dstRect, paint)
@@ -494,15 +468,20 @@ class RealAffixEngine @Inject constructor(
             bm.safeRecycle()
           }
 
-          currentY = dstRect.bottom
+          currentY = dstRect.bottom + spacingVertical
         }
       } catch (e: Exception) {
-        engineOwner.showErrorDialog(e)
+        withContext(mainContext) { engineOwner.showErrorDialog(e) }
         reset()
-        return@launch
+        return@withContext
       }
 
-      finishProcessing(processedCount, result, format, quality)
+      finishProcessing(
+          processedCount = processedCount,
+          result = result,
+          format = format,
+          quality = quality
+      )
     }
   }
 
@@ -514,21 +493,23 @@ class RealAffixEngine @Inject constructor(
   ) {
     if (processedCount == 0) {
       result.safeRecycle()
-      withContext(Dispatchers.Main) { engineOwner.showContentLoading(false) }
+      withContext(mainContext) { engineOwner.showContentLoading(false) }
       return
     }
 
     // Save results to file
     val cacheFile = ioManager.makeTempFile(format.extension())
-    var os: FileOutputStream? = null
-
+    requireNotNull(cacheFile) { "Generated temp file cannot be null." }
     try {
-      os = FileOutputStream(cacheFile)
-      result.compress(format, quality, os)
+      bitmapManipulator.encodeBitmap(
+          bitmap = result,
+          format = format,
+          quality = quality,
+          file = cacheFile
+      )
     } catch (e: Exception) {
-      engineOwner.showErrorDialog(e)
-    } finally {
-      os.closeQuietely()
+      cacheFile.delete()
+      withContext(mainContext) { engineOwner.showErrorDialog(e) }
     }
 
     // Recycle the large final image
@@ -536,25 +517,45 @@ class RealAffixEngine @Inject constructor(
     done(cacheFile)
   }
 
-  @VisibleForTesting suspend fun done(file: File) = withContext(Main) {
+  @VisibleForTesting suspend fun done(file: File) = withContext(mainContext) {
     engineOwner.onDoneProcessing()
 
     // Add the affixed file to the media store so gallery apps can see it
-    scanFile(app, arrayOf(file.toString()), null) { _, uri ->
+    mediaScanner.scan(file.toString()) { _, uri ->
       engineOwner.showContentLoading(false)
       engineOwner.launchViewer(uri)
     }
   }
 
-  @TestOnly fun setEngineOwner(engineOwner: EngineOwner) {
+  private fun Int.dp() = dpConverter(this).toInt()
+
+  // Unit test setters
+
+  @TestOnly internal fun setEngineOwner(engineOwner: EngineOwner) {
     this.engineOwner = engineOwner
   }
 
-  @TestOnly fun getEngineOwner() = this.engineOwner
+  @TestOnly internal fun getEngineOwner() = this.engineOwner
 
-  @TestOnly fun setBitmapIterator(bitmapIterator: BitmapIterator) {
+  @TestOnly internal fun setBitmapIterator(bitmapIterator: BitmapIterator) {
     this.bitmapIterator = bitmapIterator
   }
 
-  @TestOnly fun getBitmapIterator() = this.bitmapIterator
+  @TestOnly internal fun getBitmapIterator() = this.bitmapIterator
+
+  @TestOnly internal fun setDpConverter(converter: DpConverter) {
+    this.dpConverter = converter
+  }
+
+  @TestOnly internal fun setPaintCreator(creator: PaintCreator) {
+    this.paintCreator = creator
+  }
+
+  @TestOnly internal fun setCanvasCreator(creator: CanvasCreator) {
+    this.canvasCreator = creator
+  }
+
+  @TestOnly internal fun setRectCreator(creator: RectCreator) {
+    this.rectCreator = creator
+  }
 }

@@ -6,7 +6,7 @@
 package com.afollestad.photoaffix.engine
 
 import android.app.Application
-import com.afollestad.photoaffix.utilities.toUri
+import com.afollestad.photoaffix.utilities.ext.toUri
 import javax.inject.Inject
 
 interface PhotoLoader {
