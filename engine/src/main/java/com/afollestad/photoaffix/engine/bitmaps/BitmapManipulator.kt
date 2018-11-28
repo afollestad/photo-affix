@@ -3,7 +3,7 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.engine
+package com.afollestad.photoaffix.engine.bitmaps
 
 import android.graphics.Bitmap
 import android.graphics.Bitmap.CompressFormat
@@ -11,6 +11,7 @@ import android.graphics.Bitmap.Config.ARGB_8888
 import android.graphics.BitmapFactory.Options
 import android.graphics.BitmapFactory.decodeStream
 import android.net.Uri
+import com.afollestad.photoaffix.engine.photos.Photo
 import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.ext.closeQuietely
 import java.io.File

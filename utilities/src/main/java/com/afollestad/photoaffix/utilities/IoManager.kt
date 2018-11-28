@@ -8,6 +8,7 @@ package com.afollestad.photoaffix.utilities
 import android.app.Application
 import android.net.Uri
 import android.os.Environment
+import com.afollestad.photoaffix.utilities.qualifiers.AppName
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream

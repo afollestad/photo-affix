@@ -3,10 +3,11 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.engine
+package com.afollestad.photoaffix.engine.bitmaps
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory.Options
+import com.afollestad.photoaffix.engine.photos.Photo
 import org.jetbrains.annotations.TestOnly
 
 /** @author Aidan Follestad (afollestad) */

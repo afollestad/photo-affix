@@ -10,7 +10,7 @@ import android.graphics.Bitmap.CompressFormat
 import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
 import com.afollestad.photoaffix.engine.AffixEngine
-import com.afollestad.photoaffix.engine.Photo
+import com.afollestad.photoaffix.engine.photos.Photo
 import com.afollestad.photoaffix.utilities.IoManager
 import com.afollestad.photoaffix.utilities.ext.closeQuietely
 import com.afollestad.photoaffix.views.MainView
@@ -103,7 +103,7 @@ class RealMainPresenter @Inject constructor(
       mainView?.unlockOrientation()
       return
     }
-    affixEngine.onSizeConfirmed(
+    affixEngine.confirmSize(
         scale,
         resultWidth,
         resultHeight,

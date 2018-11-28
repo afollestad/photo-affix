@@ -5,18 +5,10 @@
  */
 package com.afollestad.photoaffix.di
 
-import com.afollestad.photoaffix.engine.AffixEngine
-import com.afollestad.photoaffix.engine.BitmapManipulator
-import com.afollestad.photoaffix.engine.PhotoLoader
-import com.afollestad.photoaffix.engine.RealAffixEngine
-import com.afollestad.photoaffix.engine.RealBitmapManipulator
-import com.afollestad.photoaffix.engine.RealPhotoLoader
+import com.afollestad.photoaffix.engine.photos.PhotoLoader
+import com.afollestad.photoaffix.engine.photos.RealPhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
 import com.afollestad.photoaffix.presenters.RealMainPresenter
-import com.afollestad.photoaffix.utilities.IoManager
-import com.afollestad.photoaffix.utilities.MediaScanner
-import com.afollestad.photoaffix.utilities.RealIoManager
-import com.afollestad.photoaffix.utilities.RealMediaScanner
 import dagger.Binds
 import dagger.Module
 import javax.inject.Singleton
@@ -32,20 +24,4 @@ abstract class AppBindModule {
   @Binds
   @Singleton
   abstract fun provideMainPresenter(presenter: RealMainPresenter): MainPresenter
-
-  @Binds
-  @Singleton
-  abstract fun provideIoManager(ioManager: RealIoManager): IoManager
-
-  @Binds
-  @Singleton
-  abstract fun provideBitmapDecoder(bitmapManipulator: RealBitmapManipulator): BitmapManipulator
-
-  @Binds
-  @Singleton
-  abstract fun provideMediaScanner(mediaScanner: RealMediaScanner): MediaScanner
-
-  @Binds
-  @Singleton
-  abstract fun provideAffixEngine(affixEngine: RealAffixEngine): AffixEngine
 }

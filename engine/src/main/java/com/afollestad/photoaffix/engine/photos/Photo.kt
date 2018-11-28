@@ -3,7 +3,7 @@
  *
  * Designed and developed by Aidan Follestad (@afollestad)
  */
-package com.afollestad.photoaffix.engine
+package com.afollestad.photoaffix.engine.photos
 
 import android.database.Cursor
 import android.net.Uri

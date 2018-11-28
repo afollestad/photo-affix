@@ -6,6 +6,9 @@
 package com.afollestad.photoaffix.engine
 
 import android.graphics.BitmapFactory.Options
+import com.afollestad.photoaffix.engine.bitmaps.BitmapIterator
+import com.afollestad.photoaffix.engine.bitmaps.BitmapManipulator
+import com.afollestad.photoaffix.engine.photos.Photo
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.argumentCaptor

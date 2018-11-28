@@ -45,8 +45,8 @@ import com.afollestad.photoaffix.dialogs.ImageSizingDialog
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
 import com.afollestad.photoaffix.dialogs.SizingCallback
 import com.afollestad.photoaffix.dialogs.SpacingCallback
-import com.afollestad.photoaffix.engine.Photo
-import com.afollestad.photoaffix.engine.PhotoLoader
+import com.afollestad.photoaffix.engine.photos.Photo
+import com.afollestad.photoaffix.engine.photos.PhotoLoader
 import com.afollestad.photoaffix.presenters.MainPresenter
 import com.afollestad.photoaffix.utilities.ext.showOrHide
 import com.afollestad.photoaffix.utilities.ext.toast

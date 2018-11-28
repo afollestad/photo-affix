@@ -15,8 +15,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.dragselectrecyclerview.DragSelectReceiver
 import com.afollestad.dragselectrecyclerview.DragSelectTouchListener
 import com.afollestad.photoaffix.R
-import com.afollestad.photoaffix.engine.Photo
-import com.afollestad.photoaffix.engine.PhotoHolder
+import com.afollestad.photoaffix.engine.photos.Photo
+import com.afollestad.photoaffix.engine.photos.PhotoHolder
 import com.afollestad.photoaffix.utilities.ext.loadImage
 import com.afollestad.photoaffix.views.MainActivity
 import kotlinx.android.synthetic.main.griditem_photo.view.check
@@ -124,7 +124,8 @@ class PhotoGridAdapter(val context: MainActivity) : RecyclerView.Adapter<PhotoVi
 
   fun restoreInstanceState(savedState: Bundle?) {
     if (savedState?.containsKey(KEY_PHOTOS) == true) {
-      val ph = savedState.getSerializable(KEY_PHOTOS) as? PhotoHolder ?: return
+      val ph = savedState.getSerializable(KEY_PHOTOS) as? PhotoHolder
+          ?: return
       setPhotos(ph.photos)
     }
     savedState?.getIntArray(KEY_SELECTED_INDICES)
