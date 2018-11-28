@@ -5,20 +5,17 @@
  */
 package com.afollestad.photoaffix.presenters
 
-import android.app.Application
 import android.graphics.Bitmap.CompressFormat
-import android.media.MediaScannerConnection.scanFile
 import android.net.Uri
 import com.afollestad.photoaffix.engine.AffixEngine
 import com.afollestad.photoaffix.engine.photos.Photo
 import com.afollestad.photoaffix.engine.photos.PhotoLoader
 import com.afollestad.photoaffix.utilities.IoManager
+import com.afollestad.photoaffix.utilities.MediaScanner
 import com.afollestad.photoaffix.utilities.ext.closeQuietely
 import com.afollestad.photoaffix.utilities.qualifiers.IoDispatcher
 import com.afollestad.photoaffix.utilities.qualifiers.MainDispatcher
 import com.afollestad.photoaffix.views.MainView
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -34,6 +31,8 @@ interface MainPresenter {
   fun attachView(mainView: MainView)
 
   fun loadPhotos()
+
+  fun resetLoadThreshold()
 
   fun onClickAffix(photos: List<Photo>)
 
@@ -55,7 +54,7 @@ interface MainPresenter {
 
 /** @author Aidan Follestad (afollestad) */
 class RealMainPresenter @Inject constructor(
-  private val app: Application,
+  private val mediaScanner: MediaScanner,
   private val affixEngine: AffixEngine,
   private val ioManager: IoManager,
   private val photoLoader: PhotoLoader,
@@ -90,13 +89,17 @@ class RealMainPresenter @Inject constructor(
     }
   }
 
+  override fun resetLoadThreshold() {
+    lastLoadTimestamp = -1
+  }
+
   override fun onClickAffix(photos: List<Photo>) {
     mainView?.lockOrientation() ?: return
     affixEngine.process(photos, mainView!!)
   }
 
   override fun onExternalPhotoSelected(uri: Uri) {
-    GlobalScope.launch(Dispatchers.IO) {
+    GlobalScope.launch(ioContext) {
       var input: InputStream? = null
       var output: FileOutputStream? = null
       val targetFile = ioManager.makeTempFile(".png")
@@ -107,12 +110,13 @@ class RealMainPresenter @Inject constructor(
         input!!.copyTo(output)
         output.close()
 
-        withContext(Main) {
-          scanFile(app, arrayOf(targetFile.toString()), null) { _, _ ->
-            mainView?.refresh()
+        withContext(mainContext) {
+          mediaScanner.scan(targetFile.toString()) { _, _ ->
+            mainView?.refresh(force = true)
           }
         }
       } catch (e: Exception) {
+        targetFile.delete()
         mainView?.showErrorDialog(e)
       } finally {
         input.closeQuietely()

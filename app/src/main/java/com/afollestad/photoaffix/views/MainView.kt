@@ -10,7 +10,7 @@ import com.afollestad.photoaffix.engine.photos.Photo
 
 interface MainView : EngineOwner {
 
-  fun refresh()
+  fun refresh(force: Boolean = false)
 
   fun setPhotos(photos: List<Photo>)
 

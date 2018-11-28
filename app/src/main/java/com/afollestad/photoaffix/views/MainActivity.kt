@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity(),
     private const val BROWSE_RC = 21
   }
 
-  @Inject lateinit var mainPresenter: MainPresenter
+  @Inject lateinit var presenter: MainPresenter
 
   private lateinit var adapter: PhotoGridAdapter
 
@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity(),
 
     affixButton.setOnClickListener {
       runWithPermissions(WRITE_EXTERNAL_STORAGE) {
-        mainPresenter.onClickAffix(adapter.selectedPhotos)
+        presenter.onClickAffix(adapter.selectedPhotos)
       }
     }
     expandButton.setOnClickListener { toggleSettingsExpansion() }
@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity(),
   }
 
   override fun clearSelection() {
-    mainPresenter.clearPhotos()
+    presenter.clearPhotos()
     adapter.clearSelected()
     appbar_toolbar.menu
         .findItem(R.id.clear)
@@ -172,6 +172,7 @@ class MainActivity : AppCompatActivity(),
   }
 
   override fun showErrorDialog(e: Exception) {
+    presenter.resetLoadThreshold()
     e.printStackTrace()
     val message = if (e is OutOfMemoryError) {
       "Your device is low on RAM!"
@@ -193,6 +194,7 @@ class MainActivity : AppCompatActivity(),
   override fun showImageSpacingDialog() = ImageSpacingDialog.show(this)
 
   fun browseExternalPhotos() {
+    presenter.resetLoadThreshold()
     val intent = Intent(Intent.ACTION_GET_CONTENT).setType("image/*")
     startActivityForResult(intent, BROWSE_RC)
   }
@@ -212,7 +214,7 @@ class MainActivity : AppCompatActivity(),
 
   override fun onStart() {
     super.onStart()
-    mainPresenter.attachView(this)
+    presenter.attachView(this)
     refresh()
   }
 
@@ -224,7 +226,7 @@ class MainActivity : AppCompatActivity(),
   }
 
   override fun onStop() {
-    mainPresenter.detachView()
+    presenter.detachView()
     super.onStop()
   }
 
@@ -240,9 +242,10 @@ class MainActivity : AppCompatActivity(),
     format: CompressFormat,
     quality: Int,
     cancelled: Boolean
-  ) = mainPresenter.sizeDetermined(scale, resultWidth, resultHeight, format, quality, cancelled)
+  ) = presenter.sizeDetermined(scale, resultWidth, resultHeight, format, quality, cancelled)
 
   override fun onDoneProcessing() {
+    presenter.resetLoadThreshold()
     clearSelection()
     unlockOrientation()
   }
@@ -263,7 +266,7 @@ class MainActivity : AppCompatActivity(),
     super.onActivityResult(requestCode, resultCode, data)
     if (data != null && requestCode == BROWSE_RC && resultCode == RESULT_OK) {
       autoSelectFirst = true
-      mainPresenter.onExternalPhotoSelected(data.data!!)
+      presenter.onExternalPhotoSelected(data.data!!)
     }
   }
 
@@ -272,8 +275,8 @@ class MainActivity : AppCompatActivity(),
       val uris = intent.getParcelableArrayListExtra<Uri>(EXTRA_STREAM)
       if (uris != null && uris.size > 1) {
         val photos = uris.map { Photo(0, it.toString(), 0) }
-        mainPresenter.attachView(this)
-        mainPresenter.onClickAffix(photos)
+        presenter.attachView(this)
+        presenter.onClickAffix(photos)
       } else {
         toast(R.string.need_two_or_more)
         finish()
@@ -281,8 +284,11 @@ class MainActivity : AppCompatActivity(),
     }
   }
 
-  override fun refresh() = runWithPermissions(READ_EXTERNAL_STORAGE) {
-    mainPresenter.loadPhotos()
+  override fun refresh(force: Boolean) = runWithPermissions(READ_EXTERNAL_STORAGE) {
+    if (force) {
+      presenter.resetLoadThreshold()
+    }
+    presenter.loadPhotos()
   }
 
   override fun setPhotos(photos: List<Photo>) {
