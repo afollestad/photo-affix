@@ -10,9 +10,10 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
+import android.util.TypedValue
+import android.util.TypedValue.applyDimension
 import android.view.View
 import androidx.annotation.ColorInt
-import com.afollestad.photoaffix.utilities.dp
 
 /** @author Aidan Follestad (afollestad) */
 class LineView(
@@ -35,7 +36,11 @@ class LineView(
   }
 
   fun setWidth(width: Int) {
-    paint.strokeWidth = width.dp(context)
+    paint.strokeWidth = applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        width.toFloat(),
+        resources.displayMetrics
+    )
     invalidate()
   }
 

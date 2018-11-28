@@ -6,8 +6,8 @@
 package com.afollestad.photoaffix.engine.subengines
 
 import android.graphics.Bitmap
+import android.graphics.Bitmap.DENSITY_NONE
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Color.TRANSPARENT
 import android.graphics.Paint
 import android.graphics.Rect
@@ -97,7 +97,7 @@ class RealStitchEngine @Inject constructor(
   ): ProcessingResult {
     val horizontalOrientation = stackHorizontallyPref.get()
     return if (horizontalOrientation) {
-      performHorizontalProcessing(
+      stitchHorizontally(
           selectedScale,
           resultWidth,
           resultHeight,
@@ -105,7 +105,7 @@ class RealStitchEngine @Inject constructor(
           quality
       )
     } else {
-      performVerticalProcessing(
+      stitchVertically(
           selectedScale,
           resultWidth,
           resultHeight,
@@ -115,7 +115,7 @@ class RealStitchEngine @Inject constructor(
     }
   }
 
-  private suspend fun performHorizontalProcessing(
+  private suspend fun stitchHorizontally(
     selectedScale: Double,
     resultWidth: Int,
     resultHeight: Int,
@@ -130,12 +130,12 @@ class RealStitchEngine @Inject constructor(
     val paint = paintCreator()
 
     val bgFillColor = bgFillColorPref.get()
-    if (bgFillColor != Color.TRANSPARENT) {
+    if (bgFillColor != TRANSPARENT) {
       // Fill the canvas (blank image) with the user's selected background fill color
       resultCanvas.drawColor(bgFillColor)
     }
 
-    engineOwner.showContentLoading(true)
+    withContext(mainContext) { engineOwner.showContentLoading(true) }
 
     val processingResult = GlobalScope.async(ioContext) {
       // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
@@ -184,7 +184,7 @@ class RealStitchEngine @Inject constructor(
 
           val bm = bitmapIterator.currentBitmap()
           try {
-            bm.density = Bitmap.DENSITY_NONE
+            bm.density = DENSITY_NONE
             resultCanvas.drawBitmap(bm, null, dstRect, paint)
           } finally {
             bm.safeRecycle()
@@ -211,7 +211,7 @@ class RealStitchEngine @Inject constructor(
     return processingResult.await()
   }
 
-  private suspend fun performVerticalProcessing(
+  private suspend fun stitchVertically(
     selectedScale: Double,
     resultWidth: Int,
     resultHeight: Int,
@@ -231,7 +231,7 @@ class RealStitchEngine @Inject constructor(
       resultCanvas.drawColor(bgFillColor)
     }
 
-    engineOwner.showContentLoading(true)
+    withContext(mainContext) { engineOwner.showContentLoading(true) }
 
     val processingResult = GlobalScope.async(ioContext) {
       // Used to set destination dimensions when drawn onto the canvas, e.g. when padding is used
@@ -275,7 +275,7 @@ class RealStitchEngine @Inject constructor(
 
           val bm = bitmapIterator.currentBitmap()
           try {
-            bm.density = Bitmap.DENSITY_NONE
+            bm.density = DENSITY_NONE
             resultCanvas.drawBitmap(bm, null, dstRect, paint)
           } finally {
             bm.safeRecycle()

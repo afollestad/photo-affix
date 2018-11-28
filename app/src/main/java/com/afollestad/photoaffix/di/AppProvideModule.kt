@@ -14,6 +14,7 @@ import dagger.Module
 import dagger.Provides
 import kotlinx.coroutines.Dispatchers
 import javax.inject.Singleton
+import kotlin.coroutines.CoroutineContext
 
 /** @author Aidan Follestad (afollestad) */
 @Module
@@ -27,10 +28,10 @@ open class AppProvideModule {
   @Provides
   @Singleton
   @MainDispatcher
-  fun provideMainDispatcher() = Dispatchers.Main
+  fun provideMainDispatcher(): CoroutineContext = Dispatchers.Main
 
   @Provides
   @Singleton
   @IoDispatcher
-  fun provideIoDispatcher() = Dispatchers.IO
+  fun provideIoDispatcher(): CoroutineContext = Dispatchers.IO
 }
