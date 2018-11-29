@@ -23,7 +23,7 @@ open class AppProvideModule {
   @Provides
   @Singleton
   @AppName
-  fun provideAppName(app: Application) = app.resources.getString(R.string.app_name)
+  fun provideAppName(app: Application): String = app.resources.getString(R.string.app_name)
 
   @Provides
   @Singleton
