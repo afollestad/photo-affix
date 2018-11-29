@@ -166,7 +166,7 @@ class SettingsLayout(
 
   private fun onClickScalePriority() {
     scalePrioritySwitch.isChecked = !scalePrioritySwitch.isChecked
-    scalePrioritySwitch.setText(
+    scalePriorityLabel.setText(
         if (scalePrioritySwitch.isChecked) {
           R.string.scale_priority_on
         } else {
