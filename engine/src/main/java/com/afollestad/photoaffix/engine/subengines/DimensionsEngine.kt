@@ -5,7 +5,6 @@
  */
 package com.afollestad.photoaffix.engine.subengines
 
-import com.afollestad.photoaffix.engine.EngineOwner
 import com.afollestad.photoaffix.engine.bitmaps.BitmapIterator
 import com.afollestad.photoaffix.prefs.ImageSpacingHorizontal
 import com.afollestad.photoaffix.prefs.ImageSpacingVertical
@@ -13,21 +12,13 @@ import com.afollestad.photoaffix.prefs.ScalePriority
 import com.afollestad.photoaffix.prefs.StackHorizontally
 import com.afollestad.photoaffix.utilities.DpConverter
 import com.afollestad.photoaffix.utilities.ext.toRoundedInt
-import com.afollestad.photoaffix.utilities.qualifiers.MainDispatcher
 import com.afollestad.rxkprefs.Pref
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
 /** @author Aidan Follestad (afollestad) */
 interface DimensionsEngine {
 
-  fun setup(
-    bitmapIterator: BitmapIterator,
-    engineOwner: EngineOwner
-  )
-
-  suspend fun calculateSize(): Size
+  fun calculateSize(bitmapIterator: BitmapIterator): SizingResult
 }
 
 class RealDimensionsEngine @Inject constructor(
@@ -35,30 +26,18 @@ class RealDimensionsEngine @Inject constructor(
   @StackHorizontally private val stackHorizontallyPref: Pref<Boolean>,
   @ScalePriority private val scalePriorityPref: Pref<Boolean>,
   @ImageSpacingVertical private val spacingVerticalPref: Pref<Int>,
-  @ImageSpacingHorizontal private val spacingHorizontalPref: Pref<Int>,
-  @MainDispatcher private val mainContext: CoroutineContext
+  @ImageSpacingHorizontal private val spacingHorizontalPref: Pref<Int>
 ) : DimensionsEngine {
 
-  private lateinit var bitmapIterator: BitmapIterator
-  private lateinit var engineOwner: EngineOwner
-
-  override fun setup(
-    bitmapIterator: BitmapIterator,
-    engineOwner: EngineOwner
-  ) {
-    this.bitmapIterator = bitmapIterator
-    this.engineOwner = engineOwner
-  }
-
-  override suspend fun calculateSize(): Size {
+  override fun calculateSize(bitmapIterator: BitmapIterator): SizingResult {
     return if (stackHorizontallyPref.get()) {
-      calculateHorizontalSize()
+      calculateHorizontalSize(bitmapIterator)
     } else {
-      calculateVerticalSize()
+      calculateVerticalSize(bitmapIterator)
     }
   }
 
-  private suspend fun calculateHorizontalSize(): Size {
+  private fun calculateHorizontalSize(bitmapIterator: BitmapIterator): SizingResult {
     val spacingHorizontal = spacingHorizontalPref.get()
         .dp()
 
@@ -86,9 +65,10 @@ class RealDimensionsEngine @Inject constructor(
         }
       }
     } catch (e: Exception) {
-      engineOwner.showErrorDialog(e)
       bitmapIterator.reset()
-      return Size(0, 0)
+      return SizingResult(
+          error = Exception("Unable to process horizontal sizing", e)
+      )
     }
 
     // Traverse images again now that we know the min/max height, scale widths accordingly
@@ -119,20 +99,23 @@ class RealDimensionsEngine @Inject constructor(
         totalWidth += w
       }
     } catch (e: Exception) {
-      withContext(mainContext) { engineOwner.showErrorDialog(e) }
       bitmapIterator.reset()
-      return Size(0, 0)
+      return SizingResult(
+          error = Exception("Unable to process horizontal sizing", e)
+      )
     }
 
     // Compensate for horizontal spacing
     totalWidth += spacingHorizontal * (bitmapIterator.size() - 1)
 
-    return Size(
-        totalWidth, if (scalePriority) maxHeight else minHeight
+    val size = Size(
+        width = totalWidth,
+        height = if (scalePriority) maxHeight else minHeight
     )
+    return SizingResult(size = size)
   }
 
-  private suspend fun calculateVerticalSize(): Size {
+  private fun calculateVerticalSize(bitmapIterator: BitmapIterator): SizingResult {
     val spacingVertical = spacingVerticalPref.get()
         .dp()
 
@@ -160,9 +143,10 @@ class RealDimensionsEngine @Inject constructor(
         }
       }
     } catch (e: Exception) {
-      withContext(mainContext) { engineOwner.showErrorDialog(e) }
       bitmapIterator.reset()
-      return Size(0, 0)
+      return SizingResult(
+          error = Exception("Unable to process vertical sizing", e)
+      )
     }
 
     // Traverse images again now that we know the min/max height, scale widths accordingly
@@ -193,17 +177,20 @@ class RealDimensionsEngine @Inject constructor(
         totalHeight += h
       }
     } catch (e: Exception) {
-      withContext(mainContext) { engineOwner.showErrorDialog(e) }
       bitmapIterator.reset()
-      return Size(0, 0)
+      return SizingResult(
+          error = Exception("Unable to process vertical sizing", e)
+      )
     }
 
     // Compensate for spacing
     totalHeight += spacingVertical * (bitmapIterator.size() - 1)
 
-    return Size(
-        if (scalePriority) maxWidth else minWidth, totalHeight
+    val size = Size(
+        width = if (scalePriority) maxWidth else minWidth,
+        height = totalHeight
     )
+    return SizingResult(size = size)
   }
 
   private fun Int.dp() = dpConverter.toDp(this).toInt()

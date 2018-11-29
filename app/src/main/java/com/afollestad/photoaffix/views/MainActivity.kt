@@ -7,25 +7,16 @@ package com.afollestad.photoaffix.views
 
 import android.animation.ValueAnimator
 import android.animation.ValueAnimator.ofObject
-import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.Intent.ACTION_GET_CONTENT
 import android.content.Intent.ACTION_SEND_MULTIPLE
 import android.content.Intent.EXTRA_STREAM
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT
-import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.graphics.Bitmap.CompressFormat
 import android.net.Uri
 import android.os.Bundle
 import android.os.PersistableBundle
-import android.view.Surface.ROTATION_0
-import android.view.Surface.ROTATION_180
-import android.view.Surface.ROTATION_90
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -34,7 +25,6 @@ import com.afollestad.assent.Permission.READ_EXTERNAL_STORAGE
 import com.afollestad.assent.Permission.WRITE_EXTERNAL_STORAGE
 import com.afollestad.assent.runWithPermissions
 import com.afollestad.dragselectrecyclerview.DragSelectTouchListener
-import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.photoaffix.App
 import com.afollestad.photoaffix.R
 import com.afollestad.photoaffix.adapters.PhotoGridAdapter
@@ -45,8 +35,13 @@ import com.afollestad.photoaffix.dialogs.ImageSizingDialog
 import com.afollestad.photoaffix.dialogs.ImageSpacingDialog
 import com.afollestad.photoaffix.dialogs.SizingCallback
 import com.afollestad.photoaffix.dialogs.SpacingCallback
+import com.afollestad.photoaffix.engine.AffixEngine
 import com.afollestad.photoaffix.engine.photos.Photo
 import com.afollestad.photoaffix.presenters.MainPresenter
+import com.afollestad.photoaffix.utilities.MediaScanner
+import com.afollestad.photoaffix.utilities.ext.hide
+import com.afollestad.photoaffix.utilities.ext.scopeWhileAttached
+import com.afollestad.photoaffix.utilities.ext.show
 import com.afollestad.photoaffix.utilities.ext.showOrHide
 import com.afollestad.photoaffix.utilities.ext.toast
 import com.afollestad.photoaffix.viewcomponents.ImageSpacingDialogShower
@@ -57,13 +52,16 @@ import kotlinx.android.synthetic.main.activity_main.empty
 import kotlinx.android.synthetic.main.activity_main.expandButton
 import kotlinx.android.synthetic.main.activity_main.list
 import kotlinx.android.synthetic.main.activity_main.settingsLayout
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** @author Aidan Follestad (afollestad) */
 class MainActivity : AppCompatActivity(),
     SpacingCallback,
     SizingCallback,
-    MainView,
     ImageSpacingDialogShower {
 
   companion object {
@@ -71,6 +69,8 @@ class MainActivity : AppCompatActivity(),
   }
 
   @Inject lateinit var presenter: MainPresenter
+  @Inject lateinit var affixEngine: AffixEngine
+  @Inject lateinit var mediaScanner: MediaScanner
 
   private lateinit var adapter: PhotoGridAdapter
 
@@ -100,13 +100,20 @@ class MainActivity : AppCompatActivity(),
 
     affixButton.setOnClickListener {
       runWithPermissions(WRITE_EXTERNAL_STORAGE) {
-        presenter.onClickAffix(adapter.selectedPhotos)
+        performAffix(adapter.selectedPhotos)
       }
     }
     expandButton.setOnClickListener { toggleSettingsExpansion() }
 
     setupMainGrid(savedInstanceState)
     processIntent(intent)
+  }
+
+  fun browseExternalPhotos() {
+    presenter.resetLoadThreshold()
+    val intent = Intent(ACTION_GET_CONTENT)
+        .setType("image/*")
+    startActivityForResult(intent, BROWSE_RC)
   }
 
   private fun setupMainGrid(savedInstanceState: Bundle?) {
@@ -133,71 +140,110 @@ class MainActivity : AppCompatActivity(),
     list.addOnItemTouchListener(dragListener)
   }
 
-  override fun clearSelection() {
-    presenter.clearPhotos()
+  private fun performAffix(photos: List<Photo>) {
+    lockOrientation()
+    content_loading_progress_frame.show()
+
+    appbar_toolbar.scopeWhileAttached(Main) {
+      launch(coroutineContext) {
+        val sizingResult = async(IO) {
+          affixEngine.process(photos)
+        }.await()
+
+        if (sizingResult.isError()) {
+          showErrorDialog(sizingResult.error!!)
+          return@launch
+        }
+
+        val size = sizingResult.size!!
+        ImageSizingDialog.show(
+            context = this@MainActivity,
+            width = size.width,
+            height = size.height
+        )
+      }
+    }
+  }
+
+  private fun refresh(force: Boolean = false) = runWithPermissions(READ_EXTERNAL_STORAGE) {
+    if (force) {
+      presenter.resetLoadThreshold()
+    }
+
+    appbar_toolbar.scopeWhileAttached(Main) {
+      launch(coroutineContext) {
+        val photos = async(IO) {
+          presenter.loadPhotos()
+        }.await()
+
+        if (photos.isEmpty()) {
+          return@launch
+        }
+        adapter.setPhotos(photos)
+        empty.showOrHide(photos.isEmpty())
+
+        if (photos.isNotEmpty() && autoSelectFirst) {
+          adapter.shiftSelections()
+          adapter.setSelected(1, true)
+          autoSelectFirst = false
+        }
+      }
+    }
+  }
+
+  private fun clearSelection() {
+    affixEngine.reset()
     adapter.clearSelected()
     appbar_toolbar.menu
         .findItem(R.id.clear)
         .isVisible = false
   }
 
-  override fun showContentLoading(loading: Boolean) =
-    content_loading_progress_frame.showOrHide(loading)
+  override fun onSizeChanged(
+    scale: Double,
+    resultWidth: Int,
+    resultHeight: Int,
+    format: CompressFormat,
+    quality: Int,
+    cancelled: Boolean
+  ) {
+    if (cancelled) {
+      affixEngine.reset()
+      unlockOrientation()
+      content_loading_progress_frame.hide()
+      return
+    }
 
-  override fun launchViewer(uri: Uri) {
-    try {
-      startActivity(Intent(Intent.ACTION_VIEW).setDataAndType(uri, "image/*"))
-    } catch (_: ActivityNotFoundException) {
-      // If there is no viewer to see the result with, refresh the grid.
-      refresh()
+    appbar_toolbar.scopeWhileAttached(Main) {
+      launch(coroutineContext) {
+        val result = async(IO) {
+          affixEngine.commit(
+              scale,
+              resultWidth,
+              resultHeight,
+              format,
+              quality
+          )
+        }.await()
+
+        if (result.isError()) {
+          showErrorDialog(result.error!!)
+          return@launch
+        }
+
+        mediaScanner.scan(result.outputFile!!) { _, uri ->
+          presenter.resetLoadThreshold()
+          clearSelection()
+          unlockOrientation()
+          content_loading_progress_frame.hide()
+          viewUri(uri) { refresh(force = true) }
+        }
+      }
     }
   }
 
-  override fun lockOrientation() {
-    val orientation: Int
-    val rotation = (getSystemService(WINDOW_SERVICE) as WindowManager)
-        .defaultDisplay
-        .rotation
-    orientation = when (rotation) {
-      ROTATION_0 -> SCREEN_ORIENTATION_PORTRAIT
-      ROTATION_90 -> SCREEN_ORIENTATION_LANDSCAPE
-      ROTATION_180 -> SCREEN_ORIENTATION_REVERSE_PORTRAIT
-      else -> SCREEN_ORIENTATION_REVERSE_LANDSCAPE
-    }
-    requestedOrientation = orientation
-  }
-
-  override fun unlockOrientation() {
-    requestedOrientation = SCREEN_ORIENTATION_UNSPECIFIED
-  }
-
-  override fun showErrorDialog(e: Exception) {
-    presenter.resetLoadThreshold()
-    e.printStackTrace()
-    val message = if (e is OutOfMemoryError) {
-      "Your device is low on RAM!"
-    } else {
-      e.message
-    }
-    MaterialDialog(this).show {
-      title(R.string.error)
-      message(text = message)
-      positiveButton(android.R.string.ok)
-    }
-  }
-
-  override fun showImageSizingDialog(
-    width: Int,
-    height: Int
-  ) = ImageSizingDialog.show(this, width, height)
-
-  override fun showImageSpacingDialog() = ImageSpacingDialog.show(this)
-
-  fun browseExternalPhotos() {
-    presenter.resetLoadThreshold()
-    val intent = Intent(Intent.ACTION_GET_CONTENT).setType("image/*")
-    startActivityForResult(intent, BROWSE_RC)
-  }
+  override fun showImageSpacingDialog() =
+    ImageSpacingDialog.show(this)
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
@@ -214,7 +260,6 @@ class MainActivity : AppCompatActivity(),
 
   override fun onStart() {
     super.onStart()
-    presenter.attachView(this)
     refresh()
   }
 
@@ -225,30 +270,10 @@ class MainActivity : AppCompatActivity(),
     }
   }
 
-  override fun onStop() {
-    presenter.detachView()
-    super.onStop()
-  }
-
   override fun onSpacingChanged(
     horizontal: Int,
     vertical: Int
   ) = settingsLayout.imageSpacingUpdated(horizontal, vertical)
-
-  override fun onSizeChanged(
-    scale: Double,
-    resultWidth: Int,
-    resultHeight: Int,
-    format: CompressFormat,
-    quality: Int,
-    cancelled: Boolean
-  ) = presenter.sizeDetermined(scale, resultWidth, resultHeight, format, quality, cancelled)
-
-  override fun onDoneProcessing() {
-    presenter.resetLoadThreshold()
-    clearSelection()
-    unlockOrientation()
-  }
 
   override fun onBackPressed() {
     if (adapter.hasSelection()) {
@@ -266,39 +291,36 @@ class MainActivity : AppCompatActivity(),
     super.onActivityResult(requestCode, resultCode, data)
     if (data != null && requestCode == BROWSE_RC && resultCode == RESULT_OK) {
       autoSelectFirst = true
-      presenter.onExternalPhotoSelected(data.data!!)
+
+      appbar_toolbar.scopeWhileAttached(Main) {
+        launch(coroutineContext) {
+          try {
+            val selection = async(IO) {
+              presenter.onExternalPhotoSelected(data.data!!)
+            }.await()!!
+
+            mediaScanner.scan(selection) { _, _ ->
+              refresh(force = true)
+            }
+          } catch (e: Exception) {
+            showErrorDialog(e)
+          }
+        }
+      }
     }
   }
 
   private fun processIntent(intent: Intent?) {
     if (intent != null && ACTION_SEND_MULTIPLE == intent.action) {
       val uris = intent.getParcelableArrayListExtra<Uri>(EXTRA_STREAM)
+
       if (uris != null && uris.size > 1) {
         val photos = uris.map { Photo(0, it.toString(), 0) }
-        presenter.attachView(this)
-        presenter.onClickAffix(photos)
+        performAffix(photos)
       } else {
         toast(R.string.need_two_or_more)
         finish()
       }
-    }
-  }
-
-  override fun refresh(force: Boolean) = runWithPermissions(READ_EXTERNAL_STORAGE) {
-    if (force) {
-      presenter.resetLoadThreshold()
-    }
-    presenter.loadPhotos()
-  }
-
-  override fun setPhotos(photos: List<Photo>) {
-    adapter.setPhotos(photos)
-    empty.showOrHide(photos.isEmpty())
-
-    if (photos.isNotEmpty() && autoSelectFirst) {
-      adapter.shiftSelections()
-      adapter.setSelected(1, true)
-      autoSelectFirst = false
     }
   }
 
@@ -328,7 +350,7 @@ class MainActivity : AppCompatActivity(),
       settingsFrameAnimator!!.addListener(ViewHideAnimationListener(settingsLayout))
     }
 
-    settingsFrameAnimator!!.run {
+    settingsFrameAnimator?.run {
       interpolator = FastOutSlowInInterpolator()
       duration = 200
       start()

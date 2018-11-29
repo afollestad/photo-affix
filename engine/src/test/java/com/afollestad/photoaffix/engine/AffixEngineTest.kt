@@ -6,24 +6,24 @@
 package com.afollestad.photoaffix.engine
 
 import android.graphics.Bitmap
-import android.graphics.Bitmap.CompressFormat.JPEG
+import android.graphics.Bitmap.CompressFormat.PNG
+import com.afollestad.photoaffix.engine.bitmaps.BitmapIterator
 import com.afollestad.photoaffix.engine.bitmaps.BitmapManipulator
 import com.afollestad.photoaffix.engine.photos.Photo
 import com.afollestad.photoaffix.engine.subengines.DimensionsEngine
 import com.afollestad.photoaffix.engine.subengines.ProcessingResult
 import com.afollestad.photoaffix.engine.subengines.Size
+import com.afollestad.photoaffix.engine.subengines.SizingResult
 import com.afollestad.photoaffix.engine.subengines.StitchEngine
 import com.afollestad.photoaffix.utilities.IoManager
 import com.google.common.truth.Truth.assertThat
 import com.nhaarman.mockitokotlin2.any
 import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.doReturn
-import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.never
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import java.io.File
@@ -35,25 +35,15 @@ class AffixEngineTest {
       Photo(0, "file://idk/2", 0, testUriParser)
   )
 
-  private val mediaScanner = runBlocking { testMediaScanner() }
-
   private val ioManager = mock<IoManager>()
   private val bitmapManipulator = mock<BitmapManipulator>()
-  private val engineOwner = mock<EngineOwner> {
-    on { showErrorDialog(any()) } doAnswer { inv ->
-      val exception = inv.getArgument<Exception>(0)
-      throw exception
-    }
-  }
+  private val bitmapIterator = BitmapIterator(photos, bitmapManipulator)
 
   private val dimensionsEngine = mock<DimensionsEngine>()
   private val stitchEngine = mock<StitchEngine>()
   private val engine = RealAffixEngine(
-      mediaScanner,
       ioManager,
       bitmapManipulator,
-      Dispatchers.Default,
-      Dispatchers.Default,
       dimensionsEngine,
       stitchEngine
   )
@@ -61,131 +51,135 @@ class AffixEngineTest {
   // Process
 
   @Test fun process() = runBlocking {
-    whenever(dimensionsEngine.calculateSize())
-        .doReturn(Size(1, 1))
+    val size = Size(width = 1, height = 1)
+    val sizingResult = SizingResult(size = size)
+    whenever(dimensionsEngine.calculateSize(any()))
+        .doReturn(sizingResult)
 
-    engine.process(photos, engineOwner)
-    assertThat(engine.getEngineOwner()).isEqualTo(engineOwner)
+    val processResult = engine.process(photos)
     assertThat(engine.getBitmapIterator().size()).isEqualTo(photos.size)
-
-    verify(dimensionsEngine).setup(engine.getBitmapIterator(), engineOwner)
-    verify(engineOwner).showImageSizingDialog(1, 1)
-  }
-
-  @Test fun process_noSize() = runBlocking {
-    whenever(dimensionsEngine.calculateSize())
-        .doReturn(Size(0, 0))
-
-    engine.process(photos, engineOwner)
-    assertThat(engine.getEngineOwner()).isEqualTo(engineOwner)
-    assertThat(engine.getBitmapIterator().size()).isEqualTo(photos.size)
-
-    verify(dimensionsEngine).setup(engine.getBitmapIterator(), engineOwner)
-    verify(engineOwner, never()).showImageSizingDialog(any(), any())
+    assertThat(processResult).isEqualTo(sizingResult)
   }
 
   // Commit results
 
-  @Test fun commitResult_none() = runBlocking {
-    // Override since we don't call engine.process()
-    engine.setEngineOwner(engineOwner)
+  @Test fun commitResult_noProcessed() = runBlocking {
+    engine.setBitmapIterator(bitmapIterator)
 
     val bitmap = mock<Bitmap>()
     val processingResult = ProcessingResult(
         processedCount = 0,
         output = bitmap
     )
-    val result = engine.commitResult(processingResult)
 
-    assertThat(result).isNull()
+    whenever(
+        stitchEngine.stitch(
+            bitmapIterator = bitmapIterator,
+            selectedScale = 1.0,
+            resultWidth = 1,
+            resultHeight = 1,
+            format = PNG,
+            quality = 100
+        )
+    ).doReturn(processingResult)
+
+    val result = engine.commit(
+        scale = 1.0,
+        width = 1,
+        height = 1,
+        format = PNG,
+        quality = 100
+    )
+
+    assertThat(result.error).isNotNull()
+    assertThat(result.outputFile).isNull()
     verify(bitmap).recycle()
-    verify(engineOwner).showContentLoading(false)
-    verify(bitmapManipulator, never())
-        .encodeBitmap(any(), any(), any(), any())
   }
 
   @Test fun commitResult() = runBlocking {
-    // Override since we don't call engine.process()
-    engine.setEngineOwner(engineOwner)
-
-    val cacheFile = mock<File>()
-    whenever(ioManager.makeTempFile(".jpg"))
-        .doReturn(cacheFile)
+    engine.setBitmapIterator(bitmapIterator)
 
     val bitmap = mock<Bitmap>()
     val processingResult = ProcessingResult(
         processedCount = 1,
-        output = bitmap,
-        format = JPEG,
-        quality = 50
+        output = bitmap
     )
-    val result = engine.commitResult(processingResult)
 
-    assertThat(result).isEqualTo(cacheFile)
+    val outputFile = mock<File>()
+    whenever(ioManager.makeTempFile(".png"))
+        .doReturn(outputFile)
+    whenever(
+        stitchEngine.stitch(
+            bitmapIterator = bitmapIterator,
+            selectedScale = 1.0,
+            resultWidth = 1,
+            resultHeight = 1,
+            format = PNG,
+            quality = 100
+        )
+    ).doReturn(processingResult)
+
+    val result = engine.commit(
+        scale = 1.0,
+        width = 1,
+        height = 1,
+        format = PNG,
+        quality = 100
+    )
+
+    assertThat(result.error).isNull()
+    assertThat(result.outputFile).isEqualTo(outputFile)
     verify(bitmap).recycle()
-    verify(engineOwner, never()).showContentLoading(any())
+    verify(outputFile, never()).delete()
     verify(bitmapManipulator).encodeBitmap(
-        bitmap,
-        JPEG,
-        50,
-        cacheFile
+        bitmap = bitmap,
+        format = PNG,
+        quality = 100,
+        file = outputFile
     )
   }
 
-  @Test fun commitResult_error() = runBlocking {
-    // Override since we don't call engine.process()
-    engine.setEngineOwner(engineOwner)
+  @Test fun commitResult_encodeError() = runBlocking {
+    engine.setBitmapIterator(bitmapIterator)
 
-    val cacheFile = mock<File>()
-    whenever(ioManager.makeTempFile(".jpg"))
-        .doReturn(cacheFile)
+    val bitmap = mock<Bitmap>()
+    val processingResult = ProcessingResult(
+        processedCount = 0,
+        output = bitmap
+    )
+
+    val outputFile = mock<File>()
+    whenever(ioManager.makeTempFile(".png"))
+        .doReturn(outputFile)
+    whenever(
+        stitchEngine.stitch(
+            bitmapIterator = bitmapIterator,
+            selectedScale = 1.0,
+            resultWidth = 1,
+            resultHeight = 1,
+            format = PNG,
+            quality = 100
+        )
+    ).doReturn(processingResult)
+
     val error = Exception("Oh no!")
-    whenever(bitmapManipulator.encodeBitmap(any(), any(), any(), any()))
-        .doAnswer { throw error }
+    whenever(
+        bitmapManipulator.encodeBitmap(
+            any(), any(), any(), any()
+        )
+    ).doAnswer { throw error }
 
-    whenever(engineOwner.showErrorDialog(any())).doAnswer { inv ->
-      val arg = inv.getArgument<Exception>(0)
-      if (arg != error) {
-        throw arg
-      }
-    }
-
-    val bitmap = mock<Bitmap>()
-    val processingResult = ProcessingResult(
-        processedCount = 1,
-        output = bitmap,
-        format = JPEG,
-        quality = 50
+    val result = engine.commit(
+        scale = 1.0,
+        width = 1,
+        height = 1,
+        format = PNG,
+        quality = 100
     )
-    val result = engine.commitResult(processingResult)
 
-    assertThat(result).isNull()
-    verify(cacheFile).delete()
     verify(bitmap).recycle()
-    verify(engineOwner).showErrorDialog(error)
-    verify(engineOwner, never()).showContentLoading(any())
-    verify(bitmapManipulator).encodeBitmap(
-        bitmap,
-        JPEG,
-        50,
-        cacheFile
-    )
-  }
-
-  // Done
-
-  @Test fun done() = runBlocking {
-    engine.setEngineOwner(engineOwner)
-
-    val path = "file://idk/hello.jpg"
-    val cacheFile = mock<File> {
-      on { toString() } doReturn path
-    }
-    engine.done(cacheFile)
-
-    verify(mediaScanner).scan(eq(path), any())
-    verify(engineOwner).onDoneProcessing()
-    verify(engineOwner).showContentLoading(false)
-    verify(engineOwner).launchViewer(any())
+    //verify(outputFile).delete()
+    assertThat(result.error).isNotNull()
+    assertThat(result.outputFile).isNull()
   }
 }

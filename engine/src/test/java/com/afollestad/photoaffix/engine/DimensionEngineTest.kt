@@ -19,11 +19,7 @@ import com.nhaarman.mockitokotlin2.doAnswer
 import com.nhaarman.mockitokotlin2.doReturn
 import com.nhaarman.mockitokotlin2.eq
 import com.nhaarman.mockitokotlin2.mock
-import com.nhaarman.mockitokotlin2.never
-import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
 
@@ -45,20 +41,13 @@ class DimensionEngineTest {
       Options().apply { inJustDecodeBounds = inv.getArgument(0) }
     }
   }
-  private val engineOwner = mock<EngineOwner> {
-    on { showErrorDialog(any()) } doAnswer { inv ->
-      val exception = inv.getArgument<Exception>(0)
-      throw exception
-    }
-  }
 
   private val engine = RealDimensionsEngine(
       testDpConverter(),
       stackHorizontallyPref,
       scalePriorityPref,
       spacingVerticalPref,
-      spacingHorizontalPref,
-      Dispatchers.Default
+      spacingHorizontalPref
   )
 
   @Before fun setup() {
@@ -81,144 +70,135 @@ class DimensionEngineTest {
 
   // Horizontal width and height calculation
 
-  @Test fun calculateHorizontalWidthAndHeight_smallestFirst_noSpacing_scaleToLargest() =
-    runBlocking {
-      val bitmapIterator = mockBitmapIterator(
-          Size(2, 4),
-          Size(2, 8)
-      )
-      engine.setup(bitmapIterator, engineOwner)
+  @Test fun calculateHorizontalWidthAndHeight_smallestFirst_noSpacing_scaleToLargest() {
+    val bitmapIterator = mockBitmapIterator(
+        Size(2, 4),
+        Size(2, 8)
+    )
 
-      // No spacing and scale to largest
-      val horizontalSpacing = 0
-      whenever(spacingHorizontalPref.get()).doReturn(horizontalSpacing)
-      whenever(scalePriorityPref.get()).doReturn(true)
-      whenever(stackHorizontallyPref.get()).doReturn(true)
+    // No spacing and scale to largest
+    val horizontalSpacing = 0
+    whenever(spacingHorizontalPref.get()).doReturn(horizontalSpacing)
+    whenever(scalePriorityPref.get()).doReturn(true)
+    whenever(stackHorizontallyPref.get()).doReturn(true)
 
-      // Perform actions
-      val size = engine.calculateSize()
-      verify(engineOwner, never()).showErrorDialog(any())
+    // Perform actions
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
-      // Verify results
-      val expectedFirstWidth = 4 // scale to largest height ratio
-      val expectedFirstHeight = 8 // scale to largest height ratio
-      val expectedLastWidth = 2 // Remains the same
+    // Verify results
+    val expectedFirstWidth = 4 // scale to largest height ratio
+    val expectedFirstHeight = 8 // scale to largest height ratio
+    val expectedLastWidth = 2 // Remains the same
 
-      assertThat(size).isEqualTo(
-          Size(
-              // total width
-              width = expectedFirstWidth + expectedLastWidth,
-              // max height
-              height = expectedFirstHeight
-          )
-      )
-    }
+    assertThat(sizingResult.size).isEqualTo(
+        Size(
+            // total width
+            width = expectedFirstWidth + expectedLastWidth,
+            // max height
+            height = expectedFirstHeight
+        )
+    )
+  }
 
-  @Test fun calculateHorizontalWidthAndHeight_largestFirst_noSpacing_scaleToLargest() =
-    runBlocking {
-      val bitmapIterator = mockBitmapIterator(
-          Size(2, 8),
-          Size(2, 4)
-      )
-      engine.setup(bitmapIterator, engineOwner)
+  @Test fun calculateHorizontalWidthAndHeight_largestFirst_noSpacing_scaleToLargest() {
+    val bitmapIterator = mockBitmapIterator(
+        Size(2, 8),
+        Size(2, 4)
+    )
 
-      // No spacing and scale to largest
-      val horizontalSpacing = 0
-      whenever(spacingHorizontalPref.get()).doReturn(horizontalSpacing)
-      whenever(scalePriorityPref.get()).doReturn(true)
-      whenever(stackHorizontallyPref.get()).doReturn(true)
+    // No spacing and scale to largest
+    val horizontalSpacing = 0
+    whenever(spacingHorizontalPref.get()).doReturn(horizontalSpacing)
+    whenever(scalePriorityPref.get()).doReturn(true)
+    whenever(stackHorizontallyPref.get()).doReturn(true)
 
-      // Perform actions
-      val size = engine.calculateSize()
-      verify(engineOwner, never()).showErrorDialog(any())
+    // Perform actions
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
-      // Verify results
-      val expectedFirstWidth = 4 // scale to largest height ratio
-      val expectedFirstHeight = 8 // scale to largest height ratio
-      val expectedLastWidth = 2 // Remains the same
+    // Verify results
+    val expectedFirstWidth = 4 // scale to largest height ratio
+    val expectedFirstHeight = 8 // scale to largest height ratio
+    val expectedLastWidth = 2 // Remains the same
 
-      assertThat(size).isEqualTo(
-          Size(
-              // total width
-              width = expectedFirstWidth + expectedLastWidth,
-              // max height
-              height = expectedFirstHeight
-          )
-      )
-    }
+    assertThat(sizingResult.size).isEqualTo(
+        Size(
+            // total width
+            width = expectedFirstWidth + expectedLastWidth,
+            // max height
+            height = expectedFirstHeight
+        )
+    )
+  }
 
-  @Test fun calculateSizeHorizontal_largestFirst_noSpacing_scaleToSmallest() =
-    runBlocking {
-      val bitmapIterator = mockBitmapIterator(
-          Size(3, 12),
-          Size(1, 3)
-      )
-      engine.setup(bitmapIterator, engineOwner)
+  @Test fun calculateSizeHorizontal_largestFirst_noSpacing_scaleToSmallest() {
+    val bitmapIterator = mockBitmapIterator(
+        Size(3, 12),
+        Size(1, 3)
+    )
 
-      // No spacing and scale to smallest
-      val horizontalSpacing = 0
-      whenever(spacingHorizontalPref.get()).doReturn(horizontalSpacing)
-      whenever(scalePriorityPref.get()).doReturn(false)
-      whenever(stackHorizontallyPref.get()).doReturn(true)
+    // No spacing and scale to smallest
+    val horizontalSpacing = 0
+    whenever(spacingHorizontalPref.get()).doReturn(horizontalSpacing)
+    whenever(scalePriorityPref.get()).doReturn(false)
+    whenever(stackHorizontallyPref.get()).doReturn(true)
 
-      // Perform actions
-      val size = engine.calculateSize()
-      verify(engineOwner, never()).showErrorDialog(any())
+    // Perform actions
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
-      // Verify results
-      val expectedFirstWidth = 1 // Scale to smallest height ratio
-      val expectedFirstHeight = 3 // Scale to smallest height ratio
-      val expectedLastWidth = 1 // Remains the same
+    // Verify results
+    val expectedFirstWidth = 1 // Scale to smallest height ratio
+    val expectedFirstHeight = 3 // Scale to smallest height ratio
+    val expectedLastWidth = 1 // Remains the same
 
-      assertThat(size).isEqualTo(
-          Size(
-              // total width
-              width = expectedFirstWidth + expectedLastWidth,
-              // max height
-              height = expectedFirstHeight
-          )
-      )
-    }
+    assertThat(sizingResult.size).isEqualTo(
+        Size(
+            // total width
+            width = expectedFirstWidth + expectedLastWidth,
+            // max height
+            height = expectedFirstHeight
+        )
+    )
+  }
 
-  @Test fun calculateSizeHorizontal_smallestFirst_noSpacing_scaleToSmallest() =
-    runBlocking {
-      val bitmapIterator = mockBitmapIterator(
-          Size(1, 3),
-          Size(3, 12)
-      )
-      engine.setup(bitmapIterator, engineOwner)
+  @Test fun calculateSizeHorizontal_smallestFirst_noSpacing_scaleToSmallest() {
+    val bitmapIterator = mockBitmapIterator(
+        Size(1, 3),
+        Size(3, 12)
+    )
 
-      // No spacing and scale to smallest
-      val horizontalSpacing = 0
-      whenever(spacingHorizontalPref.get()).doReturn(horizontalSpacing)
-      whenever(scalePriorityPref.get()).doReturn(false)
-      whenever(stackHorizontallyPref.get()).doReturn(true)
+    // No spacing and scale to smallest
+    val horizontalSpacing = 0
+    whenever(spacingHorizontalPref.get()).doReturn(horizontalSpacing)
+    whenever(scalePriorityPref.get()).doReturn(false)
+    whenever(stackHorizontallyPref.get()).doReturn(true)
 
-      // Perform actions
-      val size = engine.calculateSize()
-      verify(engineOwner, never()).showErrorDialog(any())
+    // Perform actions
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
-      // Verify results
-      val expectedFirstWidth = 1 // Scale to smallest height ratio
-      val expectedFirstHeight = 3 // Scale to smallest height ratio
-      val expectedLastWidth = 1 // Remains the same
+    // Verify results
+    val expectedFirstWidth = 1 // Scale to smallest height ratio
+    val expectedFirstHeight = 3 // Scale to smallest height ratio
+    val expectedLastWidth = 1 // Remains the same
 
-      assertThat(size).isEqualTo(
-          Size(
-              // total width
-              width = expectedFirstWidth + expectedLastWidth,
-              // max height
-              height = expectedFirstHeight
-          )
-      )
-    }
+    assertThat(sizingResult.size).isEqualTo(
+        Size(
+            // total width
+            width = expectedFirstWidth + expectedLastWidth,
+            // max height
+            height = expectedFirstHeight
+        )
+    )
+  }
 
-  @Test fun calculateSizeHorizontal_largestFirst_withSpacing_scaleToLargest() = runBlocking {
+  @Test fun calculateSizeHorizontal_largestFirst_withSpacing_scaleToLargest() {
     val bitmapIterator = mockBitmapIterator(
         Size(4, 8),
         Size(2, 4)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to largest
     val horizontalSpacing = 2
@@ -227,15 +207,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(true)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 4
     val expectedFirstHeight = 8
     val expectedLastWidth = 4
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // total width
             width = expectedFirstWidth + expectedLastWidth + horizontalSpacing,
@@ -245,12 +225,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeHorizontal_smallestFirst_withSpacing_scaleToLargest() = runBlocking {
+  @Test fun calculateSizeHorizontal_smallestFirst_withSpacing_scaleToLargest() {
     val bitmapIterator = mockBitmapIterator(
         Size(2, 4),
         Size(4, 8)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to largest
     val horizontalSpacing = 2
@@ -259,15 +238,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(true)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 4
     val expectedFirstHeight = 8
     val expectedLastWidth = 4
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // total width
             width = expectedFirstWidth + expectedLastWidth + horizontalSpacing,
@@ -277,12 +256,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeHorizontal_largestFirst_withSpacing_scaleToSmallest() = runBlocking {
+  @Test fun calculateSizeHorizontal_largestFirst_withSpacing_scaleToSmallest() {
     val bitmapIterator = mockBitmapIterator(
         Size(4, 8),
         Size(2, 4)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to largest
     val horizontalSpacing = 2
@@ -291,15 +269,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(true)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 2
     val expectedFirstHeight = 4
     val expectedLastWidth = 2
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // total width
             width = expectedFirstWidth + expectedLastWidth + horizontalSpacing,
@@ -309,12 +287,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeHorizontal_smallestFirst_withSpacing_scaleToSmallest() = runBlocking {
+  @Test fun calculateSizeHorizontal_smallestFirst_withSpacing_scaleToSmallest() {
     val bitmapIterator = mockBitmapIterator(
         Size(2, 4),
         Size(4, 8)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to largest
     val horizontalSpacing = 2
@@ -323,15 +300,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(true)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 2
     val expectedFirstHeight = 4
     val expectedLastWidth = 2
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // total width
             width = expectedFirstWidth + expectedLastWidth + horizontalSpacing,
@@ -341,35 +318,29 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeHorizontal_error_showDialogAndReset() = runBlocking {
+  @Test fun calculateSizeHorizontal_error_showDialogAndReset() {
     val bitmapIterator = mockBitmapIterator(
         Size(2, 4),
         Size(4, 8)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     whenever(spacingHorizontalPref.get()).doReturn(0)
     whenever(stackHorizontallyPref.get()).doReturn(true)
-    whenever(engineOwner.showErrorDialog(any())).doAnswer {
-      // no-op
-    }
 
     val error = Exception("Oh no!")
     whenever(bitmapManipulator.createOptions(any())).doAnswer { throw error }
 
-    val size = engine.calculateSize()
-    verify(engineOwner).showErrorDialog(error)
-    assertThat(size.isZero()).isTrue()
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNotNull()
   }
 
   // Vertical width and height calculation
 
-  @Test fun calculateSizeVertical_smallestFirst_noSpacing_scaleToLargest() = runBlocking {
+  @Test fun calculateSizeVertical_smallestFirst_noSpacing_scaleToLargest() {
     val bitmapIterator = mockBitmapIterator(
         Size(2, 4),
         Size(4, 8)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to largest
     val verticalSpacing = 0
@@ -378,15 +349,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(false)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 4  // scale to largest width ratio
     val expectedFirstHeight = 8 // scale to largest width ratio
     val expectedLastHeight = 8  // Remains the same
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // max width
             width = expectedFirstWidth,
@@ -396,12 +367,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeVertical_largestFirst_noSpacing_scaleToLargest() = runBlocking {
+  @Test fun calculateSizeVertical_largestFirst_noSpacing_scaleToLargest() {
     val bitmapIterator = mockBitmapIterator(
         Size(4, 8),
         Size(2, 4)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to largest
     val verticalSpacing = 0
@@ -410,15 +380,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(false)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 4  // scale to largest width ratio
     val expectedFirstHeight = 8 // Remains the same
     val expectedLastHeight = 8  // scale to largest width ratio
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // max width
             width = expectedFirstWidth,
@@ -428,12 +398,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeVertical_largestFirst_noSpacing_scaleToSmallest() = runBlocking {
+  @Test fun calculateSizeVertical_largestFirst_noSpacing_scaleToSmallest() {
     val bitmapIterator = mockBitmapIterator(
         Size(3, 12),
         Size(1, 3)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to smallest
     val verticalSpacing = 0
@@ -442,15 +411,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(false)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 1  // scale to smallest width ratio
     val expectedFirstHeight = 4 // scale to smallest width ratio
     val expectedLastHeight = 3  // Remains the same
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // max width
             width = expectedFirstWidth,
@@ -460,12 +429,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeVertical_smallestFirst_noSpacing_scaleToSmallest() = runBlocking {
+  @Test fun calculateSizeVertical_smallestFirst_noSpacing_scaleToSmallest() {
     val bitmapIterator = mockBitmapIterator(
         Size(1, 3),
         Size(3, 12)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to smallest
     val verticalSpacing = 0
@@ -474,15 +442,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(false)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 1 // scale to smallest width ratio
     val expectedFirstHeight = 3 // Remains the same
     val expectedLastHeight = 4 // scale to smallest width ratio
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // max width
             width = expectedFirstWidth,
@@ -492,12 +460,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeVertical_largestFirst_withSpacing_scaleToLargest() = runBlocking {
+  @Test fun calculateSizeVertical_largestFirst_withSpacing_scaleToLargest() {
     val bitmapIterator = mockBitmapIterator(
         Size(3, 12),
         Size(1, 3)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to smallest
     val verticalSpacing = 4
@@ -506,15 +473,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(false)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 1  // scale to smallest width ratio
     val expectedFirstHeight = 4 // scale to smallest width ratio
     val expectedLastHeight = 3  // Remains the same
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // max width
             width = expectedFirstWidth,
@@ -524,12 +491,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeVertical_smallestFirst_withSpacing_scaleToLargest() = runBlocking {
+  @Test fun calculateSizeVertical_smallestFirst_withSpacing_scaleToLargest() {
     val bitmapIterator = mockBitmapIterator(
         Size(1, 3),
         Size(3, 12)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to smallest
     val verticalSpacing = 4
@@ -538,15 +504,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(false)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 1  // scale to smallest width ratio
     val expectedFirstHeight = 4 // scale to smallest width ratio
     val expectedLastHeight = 3  // Remains the same
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // max width
             width = expectedFirstWidth,
@@ -556,12 +522,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeVertical_largestFirst_withSpacing_scaleToSmallest() = runBlocking {
+  @Test fun calculateSizeVertical_largestFirst_withSpacing_scaleToSmallest() {
     val bitmapIterator = mockBitmapIterator(
         Size(3, 12),
         Size(1, 3)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to smallest
     val verticalSpacing = 6
@@ -570,15 +535,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(false)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 1  // scale to smallest width ratio
     val expectedFirstHeight = 4 // scale to smallest width ratio
     val expectedLastHeight = 3  // Remains the same
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // max width
             width = expectedFirstWidth,
@@ -588,12 +553,11 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeVertical_smallestFirst_withSpacing_scaleToSmallest() = runBlocking {
+  @Test fun calculateSizeVertical_smallestFirst_withSpacing_scaleToSmallest() {
     val bitmapIterator = mockBitmapIterator(
         Size(1, 3),
         Size(3, 12)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // No spacing and scale to smallest
     val verticalSpacing = 6
@@ -602,15 +566,15 @@ class DimensionEngineTest {
     whenever(stackHorizontallyPref.get()).doReturn(false)
 
     // Perform actions
-    val size = engine.calculateSize()
-    verify(engineOwner, never()).showErrorDialog(any())
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNull()
 
     // Verify results
     val expectedFirstWidth = 1  // scale to smallest width ratio
     val expectedFirstHeight = 4 // scale to smallest width ratio
     val expectedLastHeight = 3  // Remains the same
 
-    assertThat(size).isEqualTo(
+    assertThat(sizingResult.size).isEqualTo(
         Size(
             // max width
             width = expectedFirstWidth,
@@ -620,25 +584,20 @@ class DimensionEngineTest {
     )
   }
 
-  @Test fun calculateSizeVertical_error_showDialogAndReset() = runBlocking {
+  @Test fun calculateSizeVertical_error_showDialogAndReset() {
     val bitmapIterator = mockBitmapIterator(
         Size(2, 4),
         Size(4, 8)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     whenever(spacingVerticalPref.get()).doReturn(0)
     whenever(stackHorizontallyPref.get()).doReturn(false)
-    whenever(engineOwner.showErrorDialog(any())).doAnswer {
-      // no-op
-    }
 
     val error = Exception("Oh no!")
     whenever(bitmapManipulator.createOptions(any())).doAnswer { throw error }
 
-    val size = engine.calculateSize()
-    verify(engineOwner).showErrorDialog(error)
-    assertThat(size.isZero()).isTrue()
+    val sizingResult = engine.calculateSize(bitmapIterator)
+    assertThat(sizingResult.error).isNotNull()
   }
 
   // Utility functions

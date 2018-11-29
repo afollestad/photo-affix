@@ -27,7 +27,6 @@ import com.nhaarman.mockitokotlin2.mock
 import com.nhaarman.mockitokotlin2.times
 import com.nhaarman.mockitokotlin2.verify
 import com.nhaarman.mockitokotlin2.whenever
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
@@ -55,12 +54,6 @@ class StitchEngineTest {
       Options().apply { inJustDecodeBounds = inv.getArgument(0) }
     }
   }
-  private val engineOwner = mock<EngineOwner> {
-    on { showErrorDialog(any()) } doAnswer { inv ->
-      val exception = inv.getArgument<Exception>(0)
-      throw exception
-    }
-  }
 
   private var currentPaint: Paint? = null
   private var currentCanvas: Canvas? = null
@@ -71,9 +64,7 @@ class StitchEngineTest {
       scalePriorityPref,
       spacingVerticalPref,
       spacingHorizontalPref,
-      bgFillColorPref,
-      Dispatchers.Default,
-      Dispatchers.Default
+      bgFillColorPref
   ).apply {
     setPaintCreator {
       currentPaint = mock()
@@ -118,7 +109,6 @@ class StitchEngineTest {
         Size(5, 5),
         Size(5, 5)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // Setup Prefs
     val spacingHorizontal = 5
@@ -136,6 +126,7 @@ class StitchEngineTest {
 
     // Perform Actions
     engine.stitch(
+        bitmapIterator = bitmapIterator,
         selectedScale = 1.0,
         resultWidth = totalWidth,
         resultHeight = totalHeight,
@@ -145,7 +136,6 @@ class StitchEngineTest {
 
     // Verify Results
     verify(currentCanvas!!).drawColor(COLOR_BLUE)
-    verify(engineOwner).showContentLoading(true)
 
     // Draw first Bitmap
     val rectCaptor1 = argumentCaptor<Rect>()
@@ -183,7 +173,6 @@ class StitchEngineTest {
         Size(5, 5),
         Size(5, 5)
     )
-    engine.setup(bitmapIterator, engineOwner)
 
     // Setup Prefs
     val spacingVertical = 5
@@ -201,6 +190,7 @@ class StitchEngineTest {
 
     // Perform Actions
     engine.stitch(
+        bitmapIterator = bitmapIterator,
         selectedScale = 1.0,
         resultWidth = totalWidth,
         resultHeight = totalHeight,
@@ -210,7 +200,6 @@ class StitchEngineTest {
 
     // Verify Results
     verify(currentCanvas!!).drawColor(COLOR_BLUE)
-    verify(engineOwner).showContentLoading(true)
 
     // Draw first Bitmap
     val rectCaptor1 = argumentCaptor<Rect>()

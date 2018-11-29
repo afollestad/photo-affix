@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <item format="integer" name="tag_attached_disposables" type="id"/>
+  <item format="integer" name="tag_attached_jobs" type="id"/>
 </resources>
