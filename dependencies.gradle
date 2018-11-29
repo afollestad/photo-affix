@@ -17,7 +17,7 @@ ext.versions = [
     rxBinding         : '3.0.0-alpha1',
 
     assent            : '2.2.0',
-    materialDialogs   : '2.0.0-rc2',
+    materialDialogs   : '2.0.0-rc3',
     dragSelectRv      : '2.3.0',
     rxkPrefs          : '1.2.0',
 
