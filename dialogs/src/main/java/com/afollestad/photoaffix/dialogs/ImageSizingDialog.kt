@@ -7,6 +7,7 @@ package com.afollestad.photoaffix.dialogs
 
 import android.app.Dialog
 import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Bitmap.CompressFormat
 import android.graphics.Bitmap.CompressFormat.JPEG
 import android.graphics.Bitmap.CompressFormat.PNG
@@ -162,6 +163,18 @@ class ImageSizingDialog : DialogFragment() {
   override fun onAttach(context: Context?) {
     super.onAttach(context)
     callback = context as? SizingCallback
+  }
+
+  override fun onCancel(dialog: DialogInterface?) {
+    super.onCancel(dialog)
+    callback?.onSizeChanged(
+        scale = 0.0,
+        resultWidth = -1,
+        resultHeight = -1,
+        format = PNG,
+        quality = 100,
+        cancelled = true
+    )
   }
 
   private fun selectedFormat(): CompressFormat = with(dialog as MaterialDialog) {
