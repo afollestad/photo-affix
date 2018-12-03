@@ -13,15 +13,3 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.afollestad.photoaffix.engine.subengines
-
-/** @author Aidan Follestad (afollestad) */
-data class SizingResult(
-  val size: Size? = null,
-  val error: Exception? = null
-) {
-
-  fun hasSize() = size != null
-
-  fun isError() = error != null
-}
