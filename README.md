@@ -2,6 +2,8 @@
 
 ### To be clear, redistributing this app as your own without any sort of credit is NOT permitted.
 
+![Screenshots](https://raw.githubusercontent.com/afollestad/photo-affix/master/showcase.png)
+
 [![Build Status](https://travis-ci.org/afollestad/photo-affix.svg)](https://travis-ci.org/afollestad/photo-affix)
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg?style=flat-square)](https://www.apache.org/licenses/LICENSE-2.0.html)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/d64af0d6a4cf4d50a931da76bbb14bf1)](https://www.codacy.com/app/drummeraidan_50/photo-affix?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=afollestad/photo-affix&amp;utm_campaign=Badge_Grade)
