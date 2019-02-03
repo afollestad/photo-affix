@@ -14,6 +14,7 @@ ext.versions = [
     coroutines        : '1.1.1',
     androidx          : '1.0.2',
 
+    rxJava            : '2.2.6',
     rxBinding         : '3.0.0-alpha1',
 
     assent            : '2.2.3',

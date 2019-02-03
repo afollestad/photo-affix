@@ -21,7 +21,9 @@ dependencies {
   implementation 'com.google.dagger:dagger:' + versions.dagger
   kapt 'com.google.dagger:dagger-compiler:' + versions.dagger
 
-  api 'com.afollestad:rxkprefs:' + versions.rxkPrefs
+  api('com.afollestad:rxkprefs:' + versions.rxkPrefs) {
+    transitive = true
+  }
 }
 
 apply from: '../spotless.gradle'
